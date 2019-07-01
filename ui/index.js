@@ -29,8 +29,8 @@ module.exports = (api) => {
             ],
         }),
 
-        // onWrite: ({ prompts, api }) => {
-        //     // ...
-        // },
+        onWrite: ({ prompts, api }) => {
+            // ...
+        },
     });
 };
