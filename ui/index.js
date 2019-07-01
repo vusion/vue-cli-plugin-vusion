@@ -3,9 +3,9 @@ module.exports = (api) => {
         // Unique ID for the config
         id: 'org.vusion.config',
         // Displayed name
-        name: 'Greeting configuration',
+        name: 'Vusion Configration',
         // Shown below the name
-        description: 'This config defines the color of the greeting printed',
+        description: 'This config defines the Vusion configs',
         // "More info" link
         link: 'https://github.com/ktsn/vue-cli-plugin-auto-routing#readme',
 
@@ -18,16 +18,19 @@ module.exports = (api) => {
         },
 
         // other config properties
-        onRead: ({ data }) => ({
-            prompts: [
-                {
-                    name: `color`,
-                    type: 'input',
-                    message: 'Define the color for greeting message',
-                    value: 'white',
-                },
-            ],
-        }),
+        onRead: ({ data }) => {
+            console.log(data);
+            return {
+                prompts: [
+                    {
+                        name: `color`,
+                        type: 'input',
+                        message: 'Define the color for greeting message',
+                        value: 'white',
+                    },
+                ],
+            };
+        },
 
         onWrite: ({ prompts, api }) => {
             // ...
