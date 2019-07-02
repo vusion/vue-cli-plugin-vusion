@@ -21,7 +21,10 @@
   },
   "devDependencies": {
     "eslint": "^6.0.0",
-    "eslint-config-vusion": "^3.0.2"
+    "eslint-config-vusion": "^3.0.2",
+    "husky": "^3.0.0",
+    "mocha": "^6.1.4",
+    "vusion-hooks": "^0.2.2"
   },
   "dependencies": {
     "@vusion/doc-loader": "^0.10.2",
