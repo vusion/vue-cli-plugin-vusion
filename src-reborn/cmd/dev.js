@@ -1,6 +1,7 @@
 const checker = require('../checker');
-const webpackConfigFac = require('../webpack-cli/app');
-const { toString } = require('webpack-chain');
+
+const webpackEnvironmentFac = require('../env/dev');
+const Config = require('webpack-chain');
 module.exports = (api) => {
     api.registerCommand('vusion:dev',
         {
@@ -46,12 +47,7 @@ module.exports = (api) => {
             if (args['resolve-priority'])
                 config.resolvePriority = args['resolve-priority'];
 
-            webpackConfigFac(api, config);
-
-            const webpackConfig = api.resolveWebpackConfig();
-            console.log(toString(webpackConfig));
-
-        // const server = require('../lib/dev')(require('../webpack/' + config.type));
-        // server.start();
+            // const webpackChain = new Config();
+            webpackEnvironmentFac(api, config);
         });
 };

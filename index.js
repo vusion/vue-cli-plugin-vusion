@@ -1,8 +1,10 @@
 // require('../lib/register'); 这个有么有什么影响呢？
 // const resolver = require('../config/resolve');
-const devCmd = require('./src/cmd/dev');
+const addDevCmd = require('./src-reborn/cmd/dev');
+const addBuildCmd = require('./src-reborn/cmd/build');
 module.exports = function (api, options) {
-    devCmd(api);
+    addDevCmd(api);
+    addBuildCmd(api);
 };
 
 // module.exports = (api, options, rootOptions) => {

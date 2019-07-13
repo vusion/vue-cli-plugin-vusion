@@ -124,6 +124,9 @@ module.exports = (api, config) => {
             webpackConfig.resolve.modules.add(module);
             webpackConfig.resolveLoader.modules.add(module);
         });
+        // 清除默认配置
+        webpackConfig.module.rules.clear();
+        webpackConfig.plugins.clear();
         // alias
         webpackConfig.resolve.alias
             .set('vue$', path.resolve(process.cwd(), 'node_modules/vue/dist/vue.esm.js'))
@@ -163,7 +166,7 @@ module.exports = (api, config) => {
                 sourceMap: config.sourceMap,
             }, vueOptions.cssModules))
             .end()
-            .use('icon-font')
+            .use('icon-font-loader')
             .loader('icon-font-loader')
             .end()
             .use('postcss')
@@ -198,9 +201,12 @@ module.exports = (api, config) => {
 
         if (config.lint) {
             webpackConfig.module
-                .rule('js/vue')
+                .rule('js')
                 .test(/\.(js|vue)$/)
-                .exclude(/node_modules/)
+                .exclude
+                .add((filepath) =>
+                    // Don't transpile node_modules
+                    /node_modules/.test(filepath))
                 .use('eslint-loader')
                 .pre()
                 .options({
@@ -238,7 +244,6 @@ module.exports = (api, config) => {
         }
 
         //  webpackConfig.plugins;
-        console.log(webpackConfig);
         // webpackConfig.resolve.alias.add(module);
         // const webpackConfigResolved = api.resolveWebpackConfig();
         return webpackConfig;

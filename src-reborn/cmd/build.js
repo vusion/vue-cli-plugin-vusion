@@ -1,11 +1,12 @@
 const checker = require('../checker');
-const webpackConfigFac = require('../webpack-cli/app');
-const { toString } = require('webpack-chain');
+
+const webpackEnvironmentFac = require('../env/build');
+const Config = require('webpack-chain');
 module.exports = (api) => {
-    api.registerCommand('vusion:dev',
+    api.registerCommand('vusion:build',
         {
-            description: 'Vusion DEV',
-            usage: 'vue-cli-service vusion:dev [options]',
+            description: 'Vusion BUILD',
+            usage: 'vue-cli-service vusion:build [options]',
             options: {
                 '--config-path': 'Vusion config path',
                 '--entry-path': 'Vusion config path',
@@ -15,6 +16,11 @@ module.exports = (api) => {
                 '--no-open': 'Disable to open browser at the beginning',
                 '--no-hot': 'Disable to hot reload',
                 '--verbose': 'Show more information',
+                '--extract-css': 'Extract CSS by ExtractTextWebpackPlugin in build mode',
+                '--uglify-js': 'Compress and mangle JS by UglifyjsWebpackPlugin in build mode',
+                '--minify-js': 'Minify JS only in `build` mode. Set `true` or `babel-minify` to use BabelBabelMinifyWebpackPlugin, set `uglify-js` to use UglifyjsWebpackPlugin as same as `--uglify`',
+                '--force-shaking': 'Force to enable tree shaking under this path without care of side effects. It\'s different from default tree shaking of webpack.',
+                '--experimental': 'Enable some experimental loaders or plugins',
                 '--resolve-priority': 'Priority to resolve modules or loaders, "cwd"(default) or "cli"',
             },
         },
@@ -46,12 +52,7 @@ module.exports = (api) => {
             if (args['resolve-priority'])
                 config.resolvePriority = args['resolve-priority'];
 
-            webpackConfigFac(api, config);
-
-            const webpackConfig = api.resolveWebpackConfig();
-            console.log(toString(webpackConfig));
-
-        // const server = require('../lib/dev')(require('../webpack/' + config.type));
-        // server.start();
+            // const webpackChain = new Config();
+            webpackEnvironmentFac(api, config);
         });
 };
