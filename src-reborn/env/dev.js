@@ -66,9 +66,13 @@ const prepareChain = function (vusionConfig, domain) {
         }
     };
 };
-const prepareForVueCLI = function (api, vusionConfig, domain) {
+const generateVueCLIWebpackConfig = function (api, vusionConfig, domain) {
     api.chainWebpack(prepareChain(vusionConfig, domain));
     const webpackConfig = api.resolveWebpackConfig();
+    return webpackConfig;
+};
+const prepareCompiler = function (vusionConfig, domain, adapter) {
+    const webpackConfig = adapter();
     merge(webpackConfig, vusionConfig.webpack);
     const devOptions = Object.assign({
         contentBase: webpackConfig.output.path,
@@ -82,9 +86,11 @@ const prepareForVueCLI = function (api, vusionConfig, domain) {
         stats: vusionConfig.verbose ? { all: true, colors: true } : webpackConfig.stats,
         historyApiFallback: true,
     }, vusionConfig.webpackDevServer);
-
+    console.log(vusionConfig);
     vusionConfig.hot && addDevServerEntryPoints(webpackConfig, devOptions, domain);
     const compiler = webpack(webpackConfig);
+    console.log(webpackConfig);
+    console.log(devOptions);
     return { compiler, devOptions };
 };
 module.exports = function (api, vusionConfig) {
@@ -99,7 +105,8 @@ module.exports = function (api, vusionConfig) {
             options.port = port;
             const url = createDomain(options);
             // console.log(toString(api.resolveWebpackConfig()));
-            const { compiler, devOptions } = prepareForVueCLI(api, vusionConfig, url);
+            const adapter = generateVueCLIWebpackConfig.bind(null, api, vusionConfig, url);
+            const { compiler, devOptions } = prepareCompiler(vusionConfig, url, adapter);
             const server = new WebpackDevServer(compiler, devOptions);
             return new Promise((resolve, reject) => {
                 const spinner = ora('First compiling for developing...');
