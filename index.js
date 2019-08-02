@@ -1,19 +1,11 @@
-// require('../lib/register'); 这个有么有什么影响呢？
-// const resolver = require('../config/resolve');
-const addCmd = require('./src-core/cmd');
 module.exports = function (api, options) {
-    addCmd(api);
+    const adapter = (factory, vusionConfig, webpackConfigInVusionConfig) => {
+        api.chainWebpack((chain) => {
+            factory(chain);
+        }); // vusion webpack config inject function
+        // 直接合入 vusionConfig.webpack
+        api.configureWebpack(() =>
+            webpackConfigInVusionConfig);
+    };
+    require('vusion-cli-core').default(adapter);
 };
-
-// module.exports = (api, options, rootOptions) => {
-//     api.extendPackage({
-//         devDependencies: {
-//             '@vusion/css-loader': '^0.4.0',
-//             '@vusion/doc-loader': '^0.10.1',
-//             '@vusion/md-vue-loader': '^1.0.1',
-//             '@vusion/vue-loader': '~14.2.1',
-//             'vue-multifile-loader': '~14.2.2',
-//             'base-css-image-loader': '^0.2.4',
-//         },
-//     });
-// };

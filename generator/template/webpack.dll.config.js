@@ -5,7 +5,7 @@ module.exports = (env = {}) => {
     const name = env.NODE_ENV === 'production' ? '[name]' : '[name].dev';
     return {
         entry: {
-            vendor: ['babel-polyfill', 'whatwg-fetch', 'vue', 'vue-router'],
+            vendor: ['vue', 'vue-router'],
         },
         output: {
             filename: `${name}.js`,
@@ -19,6 +19,10 @@ module.exports = (env = {}) => {
                 'vue-router$': path.resolve(__dirname, 'node_modules/vue-router/dist/vue-router.esm.js'),
             },
         },
+        mode: 'development',
+        optimization: {
+            minimize: true,
+        },
         plugins: [
             new webpack.DefinePlugin({
                 'process.env': {
@@ -29,11 +33,11 @@ module.exports = (env = {}) => {
                 path: path.join(__dirname, './dll', `${name}.manifest.json`),
                 name: '[name]',
             }),
-            new webpack.optimize.UglifyJsPlugin({
-                compress: {
-                    warnings: false,
-                },
-            }),
+            // new webpack.optimize.UglifyJsPlugin({
+            //     compress: {
+            //         warnings: false,
+            //     },
+            // }),
         ],
     };
 };
