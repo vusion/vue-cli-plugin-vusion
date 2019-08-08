@@ -7,7 +7,7 @@ const vendorPath = process.env.NODE_ENV === 'production' ? path.resolve(__dirnam
 
 module.exports = {
     version: '>=0.8.2',
-    type: 'app',
+    type: 'vue-cli-plugin',
     staticPath: './static',
     docs: false,
     extractCSS: true,
@@ -19,9 +19,9 @@ module.exports = {
         entry: {
             // babel-polyfill 与 whatwg-fetch 为了兼容低版本浏览器
             // 而且在这里必须添加，相当于一个 import，否则 Dll 不知道要引入此包
-            index: ['@babel/polyfill', 'whatwg-fetch', './src/views/index/index.js'],
-            dashboard: ['@babel/polyfill', 'whatwg-fetch', './src/views/dashboard/index.js'],
-            login: ['@babel/polyfill', 'whatwg-fetch', './src/views/login/index.js'],
+            index: ['whatwg-fetch', './src/views/index/index.js'],
+            dashboard: ['whatwg-fetch', './src/views/dashboard/index.js'],
+            login: ['whatwg-fetch', './src/views/login/index.js'],
         },
         resolve: {
             alias: {

@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "vusion-cli-core": "file:../vusion-cli-core",
-    "webpack": "^4.35.3"
+    "webpack": "^4.35.3",
+    "webpack-merge": "^4.2.1"
   }
 }
