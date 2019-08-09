@@ -1,6 +1,7 @@
 {
   "name": "vue-cli-plugin-vusion",
-  "version": "1.0.0",
+  "version": "0.1.0",
+  "author": "wt911122 <452663934@qq.com>",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,8 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/vusion/vue-cli-plugin-vusion.git"
   },
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/vusion/vue-cli-plugin-vusion/issues"
   },
@@ -29,7 +29,7 @@
     "vusion-hooks": "^0.2.2"
   },
   "dependencies": {
-    "vusion-cli-core": "file:../vusion-cli-core",
+    "vusion-cli-core": "^0.10.0",
     "webpack": "^4.35.3",
     "webpack-merge": "^4.2.1"
   }
