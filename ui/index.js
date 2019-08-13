@@ -2,7 +2,7 @@ const resolver = require('../src/config/resolveConfig');
 module.exports = (api) => {
     api.describeConfig({
         // Unique ID for the config
-        id: 'org.vusion.config',
+        id: 'org.vusion',
         // Displayed name
         name: 'Vusion Configration',
         // Shown below the name
