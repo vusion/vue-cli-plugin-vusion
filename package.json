@@ -1,8 +1,8 @@
 {
   "name": "vue-cli-plugin-vusion",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "author": "wt911122 <452663934@qq.com>",
-  "description": "",
+  "description": "Vue CLI Plugin for Vusion Projects",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -20,21 +20,25 @@
     "node": ">=8"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.4",
-    "@babel/preset-env": "^7.5.4",
-    "babel-loader": "^8.0.6",
     "eslint": "^6.0.0",
     "eslint-config-vusion": "^3.0.2",
     "husky": "^3.0.0",
-    "loader-utils": "^1.2.3",
-    "vue-multifile-loader": "^15.0.1",
-    "vusion-api": "^0.2.0",
     "vusion-hooks": "^0.2.2"
   },
   "dependencies": {
+    "@babel/core": "^7.5.4",
+    "@babel/preset-env": "^7.5.4",
+    "@vusion/doc-loader": "^0.10.5",
+    "@vusion/md-vue-loader": "^1.0.2",
+    "babel-loader": "^8.0.6",
     "css-sprite-loader": "^0.3.1",
+    "icon-font-loader": "^2.1.0",
+    "loader-utils": "^1.2.3",
+    "markdown-it-for-inline": "^0.1.1",
+    "svg-classic-sprite-loader": "^0.3.0",
+    "vue-multifile-loader": "^15.0.1",
+    "vusion-api": "^0.2.0",
     "vusion-cli-core": "^0.10.0",
-    "webpack": "^4.35.3",
-    "webpack-merge": "^4.2.1"
+    "webpack": "^4.35.3"
   }
 }

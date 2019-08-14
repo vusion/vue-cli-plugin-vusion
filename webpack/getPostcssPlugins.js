@@ -11,13 +11,11 @@ const map2obj = ((aMap) => {
 
 module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
     const alias = map2obj(config.resolve.alias.store);
-    const aliasKeys = Object.keys(alias);
 
     const postcssExtendMark = postcssVusionExtendMark({
         resolve: postcssImportResolver({
             extensions: ['.js'],
             alias,
-        // modules: resolveModules,
         }),
     });
 
@@ -27,7 +25,6 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
         require('postcss-import')({
             resolve: postcssImportResolver({
                 alias,
-                // modules: resolveModules,
             }),
             skipDuplicates: false,
             plugins: [postcssExtendMark],
