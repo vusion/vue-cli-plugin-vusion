@@ -1,16 +1,18 @@
 const vusion = require('vusion-api');
 
-const registerDefault = require('./service/registerDefault');
+const chainDefault = require('./service/chainDefault');
 const registerDoc = require('./service/registerDoc');
+const registerDocBuild = require('./service/registerDocBuild');
 
 module.exports = function (api, vueConfig) {
     const vusionConfig = vusion.config.resolve(process.cwd());
 
-    registerDefault(api, vueConfig, vusionConfig);
+    chainDefault(api, vueConfig, vusionConfig);
     registerDoc(api, vueConfig, vusionConfig);
-    // console.log(options);
+    registerDocBuild(api, vueConfig, vusionConfig);
 };
 
 module.exports.defaultModes = {
     doc: 'development',
+    'doc-build': 'production',
 };

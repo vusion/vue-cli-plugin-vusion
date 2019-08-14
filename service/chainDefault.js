@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const chainCSS = require('../webpack/chainCSS');
 
-module.exports = function registerDefault(api, vueConfig, vusionConfig) {
+module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     vueConfig.publicPath = vusionConfig.publicPath;
     vueConfig.outputDir = vusionConfig.outputPath;
 
@@ -39,17 +39,37 @@ module.exports = function registerDefault(api, vueConfig, vusionConfig) {
 
         chainCSS(config, vueConfig, vusionConfig);
 
-        // const staticPath = path.resolve(process.cwd(), vusionConfig.staticPath || './static');
+        const staticPath = path.resolve(process.cwd(), vusionConfig.staticPath || './static');
+        if (!fs.existsSync(staticPath))
+            config.plugins.delete('copy');
+        else {
+            config.plugin('copy').tap((args) => {
+                args[0][0].from = staticPath;
+                return args;
+            });
+        }
 
-        // console.log(config.toConfig());
-        // if (!fs.existsSync(staticPath))
-        //     config.plugin('copy').delete();
-        // else {
-        // config.plugin('copy').tap((args) => {
-        //     if (args[0])
-        //         args[0][0].from = staticPath;
-        //     return args;
-        // });
-        // }
+        if (vusionConfig.type === 'library') {
+            config.entryPoints.clear();
+            config.entry('index').add('./index.js');
+
+            config.output.library(vusionConfig.CamelName || 'Library')
+                .libraryTarget('umd')
+                .umdNamedDefine(true);
+
+            config.externals({
+                vue: {
+                    root: 'Vue',
+                    commonjs: 'vue',
+                    commonjs2: 'vue',
+                    amd: 'vue',
+                },
+            });
+
+            // @TODO:
+            // console.log(config.toConfig().optimization);
+            // config.plugins.delete('html');
+            // console.log(config.toConfig().plugins);
+        }
     });
 };

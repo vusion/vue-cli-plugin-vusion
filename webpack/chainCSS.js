@@ -12,7 +12,6 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
 
     function chainOneOf(oneOf, modules) {
         const cssOptions = {
-            url: false,
             importLoaders: mode === 'production' ? 5 : 3,
             sourceMap: vueConfig.css.sourceMap,
         };
