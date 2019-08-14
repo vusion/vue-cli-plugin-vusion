@@ -3,6 +3,9 @@ const path = require('path');
 const chainCSS = require('../webpack/chainCSS');
 
 module.exports = function registerDefault(api, vueConfig, vusionConfig) {
+    vueConfig.publicPath = vusionConfig.publicPath;
+    vueConfig.outputDir = vusionConfig.outputPath;
+
     api.chainWebpack((config) => {
         const mode = config.get('mode');
 
@@ -10,6 +13,7 @@ module.exports = function registerDefault(api, vueConfig, vusionConfig) {
         // vue$, use default
             .set('@', vusionConfig.srcPath)
             .set('@@', vusionConfig.libraryPath)
+            .set('library', vusionConfig.libraryPath)
             .set('~', process.cwd())
             .set('globalCSS', vusionConfig.globalCSSPath)
             .set('baseCSS', vusionConfig.baseCSSPath);
@@ -35,14 +39,17 @@ module.exports = function registerDefault(api, vueConfig, vusionConfig) {
 
         chainCSS(config, vueConfig, vusionConfig);
 
-        const staticPath = path.resolve(process.cwd(), vusionConfig.staticPath || './static');
-        if (!fs.existsSync(staticPath))
-            config.plugin('copy').delete();
-        else {
-            config.plugin('copy').tap((args) => {
-                args[0][0].from = staticPath;
-                return args;
-            });
-        }
+        // const staticPath = path.resolve(process.cwd(), vusionConfig.staticPath || './static');
+
+        // console.log(config.toConfig());
+        // if (!fs.existsSync(staticPath))
+        //     config.plugin('copy').delete();
+        // else {
+        // config.plugin('copy').tap((args) => {
+        //     if (args[0])
+        //         args[0][0].from = staticPath;
+        //     return args;
+        // });
+        // }
     });
 };

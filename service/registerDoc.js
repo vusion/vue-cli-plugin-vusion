@@ -1,5 +1,9 @@
+const fs = require('fs');
 const path = require('path');
+const webpack = require('webpack');
 const iterator = require('markdown-it-for-inline');
+const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
+const HTMLPlugin = require('html-webpack-plugin');
 
 module.exports = function registerDoc(api, vueConfig, vusionConfig) {
     const serveCommand = api.service.commands.serve;
@@ -9,10 +13,20 @@ module.exports = function registerDoc(api, vueConfig, vusionConfig) {
         usage: 'vue-cli-service doc',
         options: serveCommand.opts.options,
     }, (args) => {
+        vueConfig.publicPath = vusionConfig.docs ? vusionConfig.docs.base : '/public/';
+        vueConfig.outputDir = 'public';
+        vueConfig.runtimeCompiler = true;
+
         api.chainWebpack((config) => {
             config.entryPoints.clear();
             config.entry('docs')
                 .add(require.resolve('@vusion/doc-loader/views/index.js'));
+
+            config.module.rule('entry')
+                .test(/@vusion\/doc-loader\/views\/empty\.js$/)
+                .use('auto-loader')
+                .loader(autoLoaderPath)
+                .options(vusionConfig);
 
             // @TODO: Cache loader
             config.module.rule('markdown')
@@ -48,6 +62,54 @@ module.exports = function registerDoc(api, vueConfig, vusionConfig) {
                             return code;
                     },
                 });
+
+            config.plugin('html').delete();
+
+            if (!vusionConfig.theme) {
+                config.plugin('html')
+                    .use(HTMLPlugin, [{
+                        filename: 'index.html',
+                        template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../index.html'),
+                        chunks: ['docs'],
+                        hash: true,
+                    }]);
+                // For history mode 404 on GitHub
+                config.plugin('html-404')
+                    .use(HTMLPlugin, [{
+                        filename: '404.html',
+                        template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../index.html'),
+                        chunks: ['docs'],
+                        hash: true,
+                    }]);
+            } else {
+                config.plugin('html')
+                    .use(HTMLPlugin, [{
+                        filename: 'index.html',
+                        template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../theme.html'),
+                        chunks: ['docs'],
+                        inject: false,
+                    }]);
+                config.plugin('html-404')
+                    .use(HTMLPlugin, [{
+                        filename: '404.html',
+                        template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../theme.html'),
+                        chunks: ['docs'],
+                        inject: false,
+                    }]);
+            }
+
+            const docsPath = path.resolve(process.cwd(), 'docs');
+            const docsComponentsPath = path.resolve(docsPath, 'components');
+            const docsViewsPath = path.resolve(docsPath, 'views');
+            const docsImportsPath = path.resolve(docsPath, 'imports.js');
+
+            config.plugin('define-docs')
+                .use(webpack.DefinePlugin, [{
+                    DOCS_PATH: fs.existsSync(docsPath) ? JSON.stringify(docsPath) : undefined,
+                    DOCS_COMPONENTS_PATH: fs.existsSync(docsComponentsPath) ? JSON.stringify(docsComponentsPath) : undefined,
+                    DOCS_VIEWS_PATH: fs.existsSync(docsViewsPath) ? JSON.stringify(docsViewsPath) : undefined,
+                    DOCS_IMPORTS_PATH: fs.existsSync(docsImportsPath) ? JSON.stringify(docsImportsPath) : undefined,
+                }]);
         });
 
         return serveCommand.fn(args);
