@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/vusion/vue-cli-plugin-vusion/issues"
   },
-  "homepage": "https://github.com/vusion/vue-cli-plugin-vusion#readme",
+  "homepage": "https://github.com/vusion/vue-cli-plugin-vusion",
   "engines": {
     "node": ">=8"
   },
