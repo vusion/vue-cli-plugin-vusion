@@ -26,6 +26,9 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .loader(autoLoaderPath)
             .options(vusionConfig);
 
+        // @TODO: thread-loader error with md-vue-loader
+        config.module.rule('js').uses.delete('thread-loader');
+
         // @TODO: Cache loader
         config.module.rule('markdown')
             .test(/\.md$/)

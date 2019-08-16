@@ -17,11 +17,9 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         };
 
         const cssModuleOptions = Object.assign({
-            modules: {
-                mode: 'local',
-                getLocalIdent,
-                localIdentName: '[name]_[local]_[hash:base64:8]',
-            },
+            modules: true,
+            getLocalIdent,
+            localIdentName: '[name]_[local]_[hash:base64:8]',
         }, cssOptions);
 
         oneOf.use('css-loader')
@@ -73,6 +71,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         .use(IconFontPlugin, [{
             fontName: vusionConfig.name ? vusionConfig.name + '-icon' : 'vusion-icon',
             filename: '[name].[hash:16].[ext]',
+            output: './fonts',
             mergeDuplicates: mode === 'production',
         }]);
 
