@@ -4,7 +4,7 @@ module.exports = function registerDoc(api, vueConfig, vusionConfig) {
     const serveCommand = api.service.commands.serve;
 
     api.registerCommand('doc', {
-        description: 'Run documents server',
+        description: 'Run documentation server',
         usage: 'vue-cli-service doc',
         options: serveCommand.opts.options,
     }, (args) => {

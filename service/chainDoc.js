@@ -15,11 +15,6 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.entry('docs')
             .add(require.resolve('@vusion/doc-loader/views/index.js'));
 
-        config.output.delete('library')
-            .delete('libraryTarget')
-            .delete('umdNamedDefine');
-        config.externals(undefined);
-
         config.module.rule('entry')
             .test(/@vusion\/doc-loader\/views\/empty\.js$/)
             .use('auto-loader')
@@ -29,14 +24,17 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         // @TODO: thread-loader error with md-vue-loader
         config.module.rule('js').uses.delete('thread-loader');
 
+        // @TODO: Eslint applied to markdown error
         // @TODO: Cache loader
         config.module.rule('markdown')
             .test(/\.md$/)
+            // .use('cache-loader')
+            // .loader('cache-loader')
+            // .options(config.module.rule('vue').use('cache-loader').get('options'))
+            // .end()
             .use('vue-loader')
             .loader('vue-loader')
-            .options({
-                preserveWhitespace: false,
-            })
+            .options(config.module.rule('vue').use('vue-loader').get('options'))
             .end()
             .use('@vusion/md-vue-loader')
             .loader('@vusion/md-vue-loader')
@@ -69,7 +67,7 @@ file-path="${relativePath}">
                 .use(HTMLPlugin, [{
                     filename: 'index.html',
                     template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../index.html'),
-                    chunks: ['docs'],
+                    chunks: 'all',
                     hash: true,
                 }]);
             // For history mode 404 on GitHub
@@ -77,7 +75,7 @@ file-path="${relativePath}">
                 .use(HTMLPlugin, [{
                     filename: '404.html',
                     template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../index.html'),
-                    chunks: ['docs'],
+                    chunks: 'all',
                     hash: true,
                 }]);
         } else {
@@ -85,14 +83,14 @@ file-path="${relativePath}">
                 .use(HTMLPlugin, [{
                     filename: 'index.html',
                     template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../theme.html'),
-                    chunks: ['docs'],
+                    chunks: 'all',
                     inject: false,
                 }]);
             config.plugin('html-404')
                 .use(HTMLPlugin, [{
                     filename: '404.html',
                     template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../theme.html'),
-                    chunks: ['docs'],
+                    chunks: 'all',
                     inject: false,
                 }]);
         }

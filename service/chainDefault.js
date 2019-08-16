@@ -48,28 +48,5 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
                 return args;
             });
         }
-
-        if (vusionConfig.type === 'library') {
-            config.entryPoints.clear();
-            config.entry('index').add('./index.js');
-
-            config.output.library(vusionConfig.CamelName || 'Library')
-                .libraryTarget('umd')
-                .umdNamedDefine(true);
-
-            config.externals({
-                vue: {
-                    root: 'Vue',
-                    commonjs: 'vue',
-                    commonjs2: 'vue',
-                    amd: 'vue',
-                },
-            });
-
-            // @TODO:
-            // console.log(config.toConfig().optimization);
-            // config.plugins.delete('html');
-            // console.log(config.toConfig().plugins);
-        }
     });
 };
