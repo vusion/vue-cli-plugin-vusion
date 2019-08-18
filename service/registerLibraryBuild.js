@@ -1,7 +1,5 @@
 const path = require('path');
 
-const rawCSS = require('../webpack/rawCSS');
-
 module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
     vueConfig.outputDir = 'dist';
     const buildCommand = api.service.commands.build;
@@ -10,23 +8,20 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
         description: 'Run documents server',
         usage: 'vue-cli-service library-build',
         options: Object.assign({
-            '--raw': 'Remove babel-loader, icon-font-loader, css-sprite-loader, svg-classic-sprite-loader',
+            '--theme': 'Which theme',
+            '--mode': 'If is "raw", remove babel-loader, icon-font-loader, css-sprite-loader, svg-classic-sprite-loader',
             '--base-css': 'Base CSS path',
             '--global-css': 'Global CSS path',
         }, buildCommand.opts.options),
     }, (args) => {
-        /* Merge args */
-        if (args['base-css'])
-            vusionConfig.globalCSSPath = path.resolve(process.cwd(), args['base-css']);
-        if (args['global-css'])
-            vusionConfig.globalCSSPath = path.resolve(process.cwd(), args['global-css']);
-
         api.chainWebpack((config) => {
             /**
              * Default Mode for Library
              */
             config.entryPoints.clear();
-            config.entry('index').add('./index.js');
+            config.entry('index')
+                .add(vusionConfig.baseCSSPath)
+                .add('./index.js');
 
             config.output.filename('[name].js')
                 .chunkFilename('[name].[contenthash:8].js')
@@ -60,19 +55,6 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                     hash: true,
                     inject: 'head',
                 })]);
-
-            /**
-             * Raw Mode
-             */
-            if (args.raw) {
-                config.resolve.alias
-                    .set('globalCSS', vusionConfig.globalCSSPath)
-                    .set('baseCSS', vusionConfig.baseCSSPath);
-
-                config.module.rules.delete('js');
-
-                rawCSS(config, vueConfig, vusionConfig);
-            }
         });
 
         return buildCommand.fn(args);

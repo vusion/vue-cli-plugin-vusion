@@ -16,6 +16,9 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
             sourceMap: vueConfig.css.sourceMap,
         };
 
+        if (vusionConfig.mode === 'raw')
+            cssOptions.importLoaders = 2;
+
         const cssModuleOptions = Object.assign({
             modules: true,
             getLocalIdent,
@@ -26,20 +29,21 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
             .options(modules ? cssModuleOptions : cssOptions)
             .end();
 
-        if (mode === 'production') {
-            oneOf.use('css-sprite-loader')
+        if (vusionConfig.mode !== 'raw') {
+            mode === 'production' && oneOf.use('css-sprite-loader')
                 .loader('css-sprite-loader')
                 .end()
                 .use('svg-classic-sprite-loader')
                 .loader('svg-classic-sprite-loader')
                 .options({ filter: 'query' })
                 .end();
+
+            oneOf.use('icon-font-loader')
+                .loader('icon-font-loader')
+                .end();
         }
 
-        oneOf.use('icon-font-loader')
-            .loader('icon-font-loader')
-            .end()
-            .use('postcss-loader')
+        oneOf.use('postcss-loader')
             .loader('postcss-loader')
             .options({ plugins: () => postcssPlugins })
             .end()
@@ -67,16 +71,16 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         .options({ plugins: () => postcssPlugins })
         .end();
 
-    config.plugin('icon-font-plugin')
-        .use(IconFontPlugin, [{
-            fontName: vusionConfig.name ? vusionConfig.name + '-icon' : 'vusion-icon',
-            filename: '[name].[hash:16].[ext]',
-            output: './fonts',
-            mergeDuplicates: mode === 'production',
-        }]);
+    if (vusionConfig.mode !== 'raw') {
+        config.plugin('icon-font-plugin')
+            .use(IconFontPlugin, [{
+                fontName: vusionConfig.name ? vusionConfig.name + '-icon' : 'vusion-icon',
+                filename: '[name].[hash:16].[ext]',
+                output: './fonts',
+                mergeDuplicates: mode === 'production',
+            }]);
 
-    if (mode === 'production') {
-        config.plugin('css-sprite-plugin')
+        mode === 'production' && config.plugin('css-sprite-plugin')
             .use(CSSSpritePlugin, [{
                 imageSetFallback: true,
                 plugins: postcssPlugins,

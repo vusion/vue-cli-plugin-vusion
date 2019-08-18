@@ -36,6 +36,7 @@
     "icon-font-loader": "^2.1.0",
     "loader-utils": "^1.2.3",
     "markdown-it-for-inline": "^0.1.1",
+    "minimist": "^1.2.0",
     "postcss-calc": "^7.0.1",
     "postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.2.3",

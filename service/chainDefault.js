@@ -9,6 +9,9 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     api.chainWebpack((config) => {
         const mode = config.get('mode');
 
+        /**
+         * Default Mode
+         */
         config.resolve.alias
         // vue$, use default
             .set('@', vusionConfig.srcPath)
@@ -48,5 +51,11 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
                 return args;
             });
         }
+
+        /**
+         * Raw Mode
+         */
+        if (vusionConfig.mode === 'raw')
+            config.module.rules.delete('js');
     });
 };
