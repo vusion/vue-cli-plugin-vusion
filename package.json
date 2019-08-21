@@ -28,7 +28,7 @@
   "dependencies": {
     "@babel/core": "^7.5.4",
     "@babel/preset-env": "^7.5.4",
-    "@vusion/doc-loader": "^0.11.1",
+    "@vusion/doc-loader": "^0.11.2",
     "@vusion/md-vue-loader": "^1.0.2",
     "babel-loader": "^8.0.6",
     "css-sprite-loader": "^0.3.1",
@@ -46,7 +46,7 @@
     "svg-classic-sprite-loader": "^0.2.5",
     "vue-component-analyzer": "^0.2.0",
     "vue-multifile-loader": "^15.0.1",
-    "vusion-api": "^0.2.1",
+    "vusion-api": "^0.2.2",
     "webpack": "^4.35.3"
   }
 }

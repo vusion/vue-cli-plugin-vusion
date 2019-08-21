@@ -9,6 +9,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
     vueConfig.publicPath = vusionConfig.docs ? vusionConfig.docs.base : '/public/';
     vueConfig.outputDir = 'public';
     vueConfig.runtimeCompiler = true;
+    vueConfig.productionSourceMap = false;
 
     api.chainWebpack((config) => {
         config.entryPoints.clear();
@@ -62,6 +63,9 @@ file-path="${relativePath}">
                 },
             });
 
+        // 嫌麻烦，先关了！
+        config.optimization.splitChunks(undefined);
+
         if (!vusionConfig.theme) {
             config.plugin('html')
                 .use(HTMLPlugin, [{
@@ -94,6 +98,14 @@ file-path="${relativePath}">
                     inject: false,
                 }]);
         }
+
+        config.plugin('extract-css')
+            .tap(([options]) => {
+            // if (String(Object.keys(webpackConfig.entry)) === 'index')
+            // filename = filename.replace(/\[name\]/g, 'theme-' + config.theme);
+                options.filename = vusionConfig.theme ? `css/[name]-theme-${vusionConfig.theme}.css` : 'css/[name].css';
+                return [options];
+            });
 
         const docsPath = path.resolve(process.cwd(), 'docs');
         const docsComponentsPath = path.resolve(docsPath, 'components');

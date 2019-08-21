@@ -15,9 +15,6 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
         }, buildCommand.opts.options),
     }, (args) => {
         api.chainWebpack((config) => {
-            /**
-             * Default Mode for Library
-             */
             config.entryPoints.clear();
             config.entry('index')
                 .add(vusionConfig.baseCSSPath)
@@ -40,7 +37,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
 
             config.plugin('extract-css')
                 .tap(([options]) => {
-                    options.filename = '[name].css';
+                    options.filename = vusionConfig.theme ? `[name]-theme-${vusionConfig.theme}.css` : '[name].css';
                     options.chunkFilename = options.chunkFilename.replace(/^css\//, '');
                     return [options];
                 });
