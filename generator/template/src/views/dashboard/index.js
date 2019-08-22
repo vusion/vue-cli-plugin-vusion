@@ -5,6 +5,7 @@ Vue.use(VueRouter);
 import { install } from 'vusion-utils';
 import * as Components from '@/components';
 install(Vue, Components);
+import 'baseCSS';
 
 import routes from './routes';
 

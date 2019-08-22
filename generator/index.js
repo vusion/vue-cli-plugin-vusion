@@ -2,17 +2,22 @@ const webpack = require('webpack');
 const path = require('path');
 module.exports = (api) => {
     api.extendPackage({
+        // scripts: dll
         dependencies: {
-            'proto-ui.vusion': '~0.4.0-alpha.4',
+            'proto-ui.vusion': '^0.4.12',
             'vue-router': '^3.0.1',
-            'vue-template-compiler': '^2.6.10',
-            'vusion-utils': '^0.3.0',
+            'vusion-utils': '^0.4.4',
         },
         devDependencies: {
-            'add-asset-html-webpack-plugin': '^2.1.3',
-            '@babel/polyfill': '^7.4.4',
-            'whatwg-fetch': '^3.0.0',
+            // 'vue-cli-plugin-vusion': '^0.5.6',
+            // '@vue/cli-plugin-eslint': undefined,
+            // 'babel-eslint': undefined,
+            // 'eslint-plugin-vue': undefined,
+            eslint: '^5.15.3',
+            'eslint-config-vusion': '^3.0.1',
         },
+        // eslintConfig: undefined,
+        // postcss: undefined,
     });
     // 渲染的模板？
     api.render('./template');
@@ -21,7 +26,7 @@ module.exports = (api) => {
         const webpackDll = require(path.resolve(process.cwd(), 'webpack.dll.config.js'));
         webpack(webpackDll(process.env), (err) => {
             if (err)
-                console.log(err);
+                console.error(err);
         });
     });
 };
