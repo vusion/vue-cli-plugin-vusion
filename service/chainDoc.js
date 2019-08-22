@@ -17,7 +17,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .add(require.resolve('@vusion/doc-loader/views/index.js'));
 
         config.module.rule('entry')
-            .test(/@vusion\/doc-loader\/views\/empty\.js$/)
+            .test(/@vusion[\\/]doc-loader[\\/]views[\\/]empty\.js$/)
             .use('auto-loader')
             .loader(autoLoaderPath)
             .options(vusionConfig);
