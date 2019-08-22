@@ -1,4 +1,3 @@
-const path = require('path');
 const vusion = require('vusion-api');
 
 const chainDefault = require('./service/chainDefault');

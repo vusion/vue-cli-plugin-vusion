@@ -1,21 +1,28 @@
 {
   "name": "vue-cli-plugin-vusion",
+  "description": "Vue CLI Plugin for Vusion Projects",
   "version": "0.5.5",
   "author": "wt911122 <452663934@qq.com>",
-  "description": "Vue CLI Plugin for Vusion Projects",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vusion/vue-cli-plugin-vusion.git"
-  },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/vusion/vue-cli-plugin-vusion/issues"
-  },
+  "repository": "vusion/vue-cli-plugin-vusion",
   "homepage": "https://github.com/vusion/vue-cli-plugin-vusion",
+  "bugs": "https://github.com/vusion/vue-cli-plugin-vusion/issues",
+  "keywords": [
+    "vue",
+    "cli",
+    "plugin",
+    "vusion"
+  ],
+  "tags": [
+    "vue",
+    "cli",
+    "plugin",
+    "vusion"
+  ],
   "engines": {
     "node": ">=8"
   },

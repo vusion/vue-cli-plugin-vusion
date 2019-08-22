@@ -99,10 +99,8 @@ file-path="${relativePath}">
                 }]);
         }
 
-        config.plugin('extract-css')
+        config.plugins.has('extract-css') && config.plugin('extract-css')
             .tap(([options]) => {
-            // if (String(Object.keys(webpackConfig.entry)) === 'index')
-            // filename = filename.replace(/\[name\]/g, 'theme-' + config.theme);
                 options.filename = vusionConfig.theme ? `css/[name]-theme-${vusionConfig.theme}.css` : 'css/[name].css';
                 return [options];
             });
