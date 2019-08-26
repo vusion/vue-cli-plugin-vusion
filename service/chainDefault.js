@@ -1,14 +1,23 @@
 const fs = require('fs');
 const path = require('path');
 const chainCSS = require('../webpack/chainCSS');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     vueConfig.publicPath = vusionConfig.publicPath;
     vueConfig.outputDir = vusionConfig.outputPath;
+    if (vusionConfig.webpack && vusionConfig.webpack.output) {
+        vueConfig.outputDir = vusionConfig.webpack.output.path;
+        vueConfig.publicPath = vusionConfig.webpack.output.publicPath;
+        delete vusionConfig.webpack.output.path;
+        delete vusionConfig.webpack.output.publicPath;
+    }
 
     api.chainWebpack((config) => {
-        const mode = config.get('mode');
-
+        // const mode = config.get('mode');
+        config.resolveLoader.modules.add(path.resolve(__dirname, '../node_modules/'));
+        config.entryPoints.clear();
         /**
          * Default Mode
          */
@@ -46,10 +55,9 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         if (!fs.existsSync(staticPath))
             config.plugins.delete('copy');
         else {
-            config.plugin('copy').tap((args) => {
-                args[0][0].from = staticPath;
-                return args;
-            });
+            config.plugin('copy').use(CopyWebpackPlugin, [
+                [{ from: staticPath, to: vueConfig.outputDir, ignore: ['.*'] }],
+            ]);
         }
 
         /**
@@ -58,4 +66,21 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         if (vusionConfig.mode === 'raw')
             config.module.rules.delete('js');
     });
+    api.configureWebpack(() =>
+        vusionConfig.webpack);
+
+    if (vusionConfig.webpackDevServer) {
+        const proxys = vusionConfig.webpackDevServer.proxy;
+        api.configureDevServer((app) => {
+            proxys.forEach((p) => {
+                // console.log(p);
+                app.use(proxy(p.context, p));
+            });
+        });
+        delete vusionConfig.webpackDevServer.proxy;
+        vueConfig.devServer = vusionConfig.webpackDevServer;
+    }
+    // 仅为调试
+    // const config = api.resolveWebpackConfig();
+    // console.log(config);
 };

@@ -1,6 +1,9 @@
 const webpack = require('webpack');
 const path = require('path');
-module.exports = (api) => {
+module.exports = (api, options) => {
+    if (options.existProject) {
+        return;
+    }
     api.extendPackage({
         // scripts: dll
         dependencies: {
