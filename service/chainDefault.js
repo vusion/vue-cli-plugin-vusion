@@ -5,8 +5,10 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
-    vueConfig.publicPath = vusionConfig.publicPath;
-    vueConfig.outputDir = vusionConfig.outputPath;
+    if (vusionConfig.publicPath)
+        vueConfig.publicPath = vusionConfig.publicPath;
+    // if (vusionConfig.outputPath)
+    //     vueConfig.outputDir = vusionConfig.outputPath; // outputPath与outputDir冲突
     if (vusionConfig.webpack && vusionConfig.webpack.output) {
         vueConfig.outputDir = vusionConfig.webpack.output.path;
         vueConfig.publicPath = vusionConfig.webpack.output.publicPath;
@@ -48,8 +50,8 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         config.module.rules.delete('sass');
         config.module.rules.delete('less');
         config.module.rules.delete('stylus');
-
-        chainCSS(config, vueConfig, vusionConfig);
+        if (!vueConfig.pluginOptions.postcssReGen)
+            chainCSS(config, vueConfig, vusionConfig);
 
         const staticPath = path.resolve(process.cwd(), vusionConfig.staticPath || './static');
         if (!fs.existsSync(staticPath))
@@ -69,16 +71,14 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     api.configureWebpack(() =>
         vusionConfig.webpack);
 
-    if (vusionConfig.webpackDevServer) {
-        const proxys = vusionConfig.webpackDevServer.proxy;
+    if (vueConfig.pluginOptions.proxy) {
+        const proxys = vueConfig.pluginOptions.proxy;
         api.configureDevServer((app) => {
             proxys.forEach((p) => {
                 // console.log(p);
                 app.use(proxy(p.context, p));
             });
         });
-        delete vusionConfig.webpackDevServer.proxy;
-        vueConfig.devServer = vusionConfig.webpackDevServer;
     }
     // 仅为调试
     // const config = api.resolveWebpackConfig();

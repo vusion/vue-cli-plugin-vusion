@@ -5,8 +5,13 @@ const postcssVariablesPath = require.resolve('./loaders/postcss-variables');
 
 const getLocalIdent = require('./getLocalIdent');
 const getPostcssPlugins = require('./getPostcssPlugins');
-
-module.exports = function chainCSS(config, vueConfig, vusionConfig) {
+function reConfigPostcss(vueConfig, vusionConfig) {
+    // config.module.rules.delete('css');
+    return function (config) {
+        chainCSS(config, vueConfig, vusionConfig);
+    };
+}
+function chainCSS(config, vueConfig, vusionConfig) {
     const mode = config.get('mode');
     const postcssPlugins = getPostcssPlugins(config, vueConfig, vusionConfig);
 
@@ -86,4 +91,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
                 plugins: postcssPlugins,
             }]);
     }
-};
+}
+
+module.exports = chainCSS;
+module.exports.reConfigPostcss = reConfigPostcss;
