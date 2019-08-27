@@ -7,8 +7,8 @@ const proxy = require('http-proxy-middleware');
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     if (vusionConfig.publicPath)
         vueConfig.publicPath = vusionConfig.publicPath;
-    // if (vusionConfig.outputPath)
-    //     vueConfig.outputDir = vusionConfig.outputPath; // outputPath与outputDir冲突
+    if (vusionConfig.outputPath)
+        vueConfig.outputDir = vusionConfig.outputPath; // outputPath与outputDir冲突
     if (vusionConfig.webpack && vusionConfig.webpack.output) {
         vueConfig.outputDir = vusionConfig.webpack.output.path;
         vueConfig.publicPath = vusionConfig.webpack.output.publicPath;

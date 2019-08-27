@@ -12,6 +12,7 @@ module.exports = function (api, vueConfig) {
     if (vusionConfig.type === 'app') {
         chainDefault(api, vueConfig, vusionConfig);
     } else {
+        chainDefault(api, vueConfig, vusionConfig);
         registerLibraryBuild(api, vueConfig, vusionConfig);
         registerDoc(api, vueConfig, vusionConfig);
         registerDocBuild(api, vueConfig, vusionConfig);
