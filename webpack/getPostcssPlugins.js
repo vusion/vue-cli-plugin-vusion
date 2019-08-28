@@ -10,8 +10,10 @@ const map2obj = ((aMap) => {
 });
 
 module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
-    const userAlias = (vusionConfig.webpack && vusionConfig.webpack.resolve && vusionConfig.webpack.resolve.alias) || {};
-    const alias = Object.assign({}, map2obj(config.resolve.alias.store), userAlias);
+    const alias = map2obj(config.resolve.alias.store);
+    // @review
+    // const userAlias = (vusionConfig.webpack && vusionConfig.webpack.resolve && vusionConfig.webpack.resolve.alias) || {};
+    // const alias = Object.assign({}, map2obj(config.resolve.alias.store), userAlias);
 
     const postcssExtendMark = postcssVusionExtendMark({
         resolve: postcssImportResolver({
