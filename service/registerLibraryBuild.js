@@ -1,4 +1,5 @@
 const path = require('path');
+const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 
 module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
     vueConfig.outputDir = 'dist';
@@ -35,9 +36,16 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 },
             });
 
+            chainCSSOneOfs(config, (oneOf, modules) => {
+                oneOf.use('extract-css-loader').tap((options) => {
+                    options.publicPath = '';
+                    return options;
+                });
+            });
+
             config.plugin('extract-css')
                 .tap(([options]) => {
-                    options.filename = vusionConfig.theme ? `[name]-theme-${vusionConfig.theme}.css` : '[name].css';
+                    options.filename = vusionConfig.theme ? `theme-${vusionConfig.theme}.css` : '[name].css';
                     options.chunkFilename = options.chunkFilename.replace(/^css\//, '');
                     return [options];
                 });
