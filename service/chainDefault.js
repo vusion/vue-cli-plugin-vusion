@@ -45,8 +45,6 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         config.module.rules.delete('less');
         config.module.rules.delete('stylus');
 
-        // @review
-        // if (!vueConfig.pluginOptions.postcssReGen)
         chainCSS(config, vueConfig, vusionConfig);
 
         const staticPath = path.resolve(process.cwd(), vusionConfig.staticPath || './static');

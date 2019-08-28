@@ -5,9 +5,6 @@ const registerLibraryBuild = require('./service/registerLibraryBuild');
 const registerDoc = require('./service/registerDoc');
 const registerDocBuild = require('./service/registerDocBuild');
 
-// @review
-// const { reConfigPostcss } = require('./webpack/chainCSS');
-
 module.exports = function (api, vueConfig) {
     // 需要提前知晓 theme, mode 等信息
     const args = require('minimist')(process.argv.slice(2));
@@ -17,8 +14,6 @@ module.exports = function (api, vueConfig) {
     registerLibraryBuild(api, vueConfig, vusionConfig);
     registerDoc(api, vueConfig, vusionConfig);
     registerDocBuild(api, vueConfig, vusionConfig);
-
-    // global.reConfigPostcss = reConfigPostcss(vueConfig, vusionConfig);
 };
 
 module.exports.defaultModes = {
@@ -26,5 +21,3 @@ module.exports.defaultModes = {
     doc: 'development',
     'doc-build': 'production',
 };
-
-// module.exports.reConfigPostcss = reConfigPostcss;

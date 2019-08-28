@@ -1,8 +1,8 @@
 module.exports = [
     {
         type: 'confirm',
-        name: 'existProject',
-        message: 'The project already exists.',
+        name: 'overwriteProject',
+        message: 'The project already exists. Do you want to overwrite it?',
         default: true,
     },
     // ...

@@ -5,17 +5,13 @@ const postcssVariablesPath = require.resolve('./loaders/postcss-variables');
 
 const getLocalIdent = require('./getLocalIdent');
 const getPostcssPlugins = require('./getPostcssPlugins');
-function reConfigPostcss(vueConfig, vusionConfig) {
-    // config.module.rules.delete('css');
-    return function (config) {
-        chainCSS(config, vueConfig, vusionConfig);
-    };
-}
-function chainCSS(config, vueConfig, vusionConfig) {
+const chainCSSOneOfs = require('./chainCSSOneOfs');
+
+module.exports = function chainCSS(config, vueConfig, vusionConfig) {
     const mode = config.get('mode');
     const postcssPlugins = getPostcssPlugins(config, vueConfig, vusionConfig);
 
-    function chainOneOf(oneOf, modules) {
+    chainCSSOneOfs(config, (oneOf, modules) => {
         const cssOptions = {
             importLoaders: mode === 'production' ? 5 : 3,
             sourceMap: vueConfig.css.sourceMap,
@@ -58,15 +54,9 @@ function chainCSS(config, vueConfig, vusionConfig) {
                 globalCSSPath: vusionConfig.globalCSSPath,
                 theme: vusionConfig.theme,
             });
-    }
+    });
 
-    const ruleCSS = config.module.rule('css');
-    chainOneOf(ruleCSS.oneOf('vue-modules'), true);
-    chainOneOf(ruleCSS.oneOf('vue'), false);
-    chainOneOf(ruleCSS.oneOf('normal-modules'), true);
-    chainOneOf(ruleCSS.oneOf('normal'), false);
-
-    ruleCSS.oneOf('variables')
+    config.module.rule('css').oneOf('variables')
         .resourceQuery(/variables/)
         .use('postcss-variables')
         .loader(postcssVariablesPath)
@@ -91,7 +81,4 @@ function chainCSS(config, vueConfig, vusionConfig) {
                 plugins: postcssPlugins,
             }]);
     }
-}
-
-module.exports = chainCSS;
-module.exports.reConfigPostcss = reConfigPostcss;
+};
