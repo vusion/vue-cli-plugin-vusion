@@ -44,3 +44,5 @@ coverage
 # Test
 test/cases/*/dest
 test-reports/
+test/tmp/**
+!test/tmp/.gitkeep

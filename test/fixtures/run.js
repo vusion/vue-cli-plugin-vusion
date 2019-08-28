@@ -1,0 +1,47 @@
+const fs = require('fs');
+const path = require('path');
+const shell = require('shelljs');
+
+const spawnSync = require('child_process').spawnSync;
+const exec = (command, onError) => {
+    const argv = command.split(/\s+/);
+    const result = spawnSync(argv[0], argv.slice(1), { shell: true, stdio: 'inherit' });
+    if (result.status) {
+        onError && onError();
+        process.exit(1);
+    }
+};
+
+function run(gitPath, commands) {
+    if (!Array.isArray(commands))
+        commands = [commands];
+
+    const tmpPath = path.resolve(__dirname, '../tmp');
+    shell.cd(tmpPath);
+
+    const name = path.basename(gitPath, '.git') + '-' + new Date().toJSON().slice(0, -5).replace(/:/g, '-');
+    exec(`git clone ${gitPath} --depth 1 --branch master ` + name);
+    shell.rm('-rf', '.git');
+    shell.cd(name);
+
+    let packageJSON = fs.readFileSync('package.json', 'utf8');
+    packageJSON = packageJSON.replace(/"vue-cli-plugin-vusion":.+,/, '"vue-cli-plugin-vusion": "../../../",');
+    fs.writeFileSync('package.json', packageJSON, 'utf8');
+    // shell.cd('node_modules');
+    // shell.rm('-rf', 'vue-cli-plugin-vusion');
+    // shell.ln('-s', '../../../../', 'vue-cli-plugin-vusion');
+    // shell.cd('../');
+
+    const final = () => {
+        shell.cd('../');
+        shell.rm('-rf', name);
+    };
+
+    exec('npm i', final);
+    commands.forEach((command) => exec(command, final));
+
+    final();
+}
+
+module.exports = run;
+module.exports.exec = exec;
