@@ -12,15 +12,18 @@ const exec = (command, onError) => {
     }
 };
 
-function run(gitPath, commands) {
+function run(gitPath, commands, options) {
     if (!Array.isArray(commands))
         commands = [commands];
+    options = Object.assign({
+        branch: 'master',
+    }, options);
 
     const tmpPath = path.resolve(__dirname, '../tmp');
     shell.cd(tmpPath);
 
     const name = path.basename(gitPath, '.git') + '-' + new Date().toJSON().slice(0, -5).replace(/:/g, '-');
-    exec(`git clone ${gitPath} --depth 1 --branch master ` + name);
+    exec(`git clone ${gitPath} --depth 1 --branch ${options.branch} ` + name);
     shell.rm('-rf', '.git');
     shell.cd(name);
 
