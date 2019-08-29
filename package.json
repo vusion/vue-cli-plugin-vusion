@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test:service",
-    "test:service": "mocha test/service/*.spec.js --timeout 60000"
+    "test:service": "mocha test/service/*.spec.js --timeout 90000"
   },
   "license": "MIT",
   "repository": "vusion/vue-cli-plugin-vusion",
