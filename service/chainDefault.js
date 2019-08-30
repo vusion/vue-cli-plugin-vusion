@@ -5,8 +5,10 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
-    vueConfig.publicPath = vusionConfig.publicPath;
-    vueConfig.outputDir = vusionConfig.outputPath;
+    if (vusionConfig.overwrite) {
+        vueConfig.publicPath = vusionConfig.publicPath;
+        vueConfig.outputDir = vusionConfig.outputPath;
+    }
 
     api.chainWebpack((config) => {
         const mode = config.get('mode');
