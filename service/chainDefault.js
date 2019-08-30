@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const chainCSS = require('../webpack/chainCSS');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-// const proxy = require('http-proxy-middleware');
+const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     vueConfig.publicPath = vusionConfig.publicPath;
@@ -14,17 +14,21 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         // 添加 vue-cli-plugin-vusion context 下的模块路径，防止有些包找不到
         config.resolveLoader.modules.add(path.resolve(__dirname, '../node_modules'));
 
+        // vue$, use default
+        const alias = Object.assign({
+            '@': vusionConfig.srcPath,
+            '@@': vusionConfig.libraryPath,
+            library: vusionConfig.libraryPath,
+            '~': process.cwd(),
+            globalCSS: vusionConfig.globalCSSPath,
+            baseCSS: vusionConfig.baseCSSPath,
+        }, vusionConfig.alias);
+
         /**
          * Default Mode
          */
-        config.resolve.alias
-        // vue$, use default
-            .set('@', vusionConfig.srcPath)
-            .set('@@', vusionConfig.libraryPath)
-            .set('library', vusionConfig.libraryPath)
-            .set('~', process.cwd())
-            .set('globalCSS', vusionConfig.globalCSSPath)
-            .set('baseCSS', vusionConfig.baseCSSPath);
+        const resolveAlias = config.resolve.alias;
+        Object.keys(alias).forEach((key) => resolveAlias.set(key, alias[key]));
 
         config.module.rule('vue-multifile')
             .test(/\.vue[\\/]index\.js$/)
@@ -64,20 +68,13 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             config.module.rules.delete('js');
     });
 
-    // @review
-    // api.configureWebpack(() =>
-    //     vusionConfig.webpack);
-
-    // if (vueConfig.pluginOptions.proxy) {
-    //     const proxys = vueConfig.pluginOptions.proxy;
-    //     api.configureDevServer((app) => {
-    //         proxys.forEach((p) => {
-    //             // console.log(p);
-    //             app.use(proxy(p.context, p));
-    //         });
-    //     });
-    // }
-    // 仅为调试
-    // const config = api.resolveWebpackConfig();
-    // console.log(config);
+    // Hack for devServer options
+    if (vueConfig.pluginOptions.proxy) {
+        const proxys = vueConfig.pluginOptions.proxy;
+        api.configureDevServer((app) => {
+            proxys.forEach((p) => {
+                app.use(proxy(p.context, p));
+            });
+        });
+    }
 };

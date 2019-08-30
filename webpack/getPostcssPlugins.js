@@ -3,17 +3,14 @@ const postcssImportResolver = require('postcss-import-resolver');
 const postcssVusionExtendMark = require('./postcss/extend-mark');
 const postcssVusionExtendMerge = require('./postcss/extend-merge');
 
-const map2obj = ((aMap) => {
+const map2obj = ((map) => {
     const obj = {};
-    aMap.forEach((v, k) => { obj[k] = v; });
+    map.forEach((value, key) => { obj[key] = value; });
     return obj;
 });
 
 module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
     const alias = map2obj(config.resolve.alias.store);
-    // @review
-    // const userAlias = (vusionConfig.webpack && vusionConfig.webpack.resolve && vusionConfig.webpack.resolve.alias) || {};
-    // const alias = Object.assign({}, map2obj(config.resolve.alias.store), userAlias);
 
     const postcssExtendMark = postcssVusionExtendMark({
         resolve: postcssImportResolver({
@@ -62,5 +59,5 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
         // precss removed
         require('postcss-calc'),
         postcssVusionExtendMerge,
-    ];
+    ].concat(vusionConfig.postcss || []);
 };

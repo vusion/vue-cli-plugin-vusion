@@ -2,7 +2,6 @@ const path = require('path');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 
 module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
-    vueConfig.outputDir = 'dist';
     const buildCommand = api.service.commands.build;
 
     api.registerCommand('library-build', {
@@ -15,6 +14,8 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
             '--global-css': 'Global CSS path',
         }, buildCommand.opts.options),
     }, (args) => {
+        vueConfig.outputDir = 'dist';
+
         api.chainWebpack((config) => {
             config.entryPoints.clear();
             config.entry('index')
