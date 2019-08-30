@@ -69,7 +69,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     });
 
     // Hack for devServer options
-    if (vueConfig.pluginOptions.proxy) {
+    if (vueConfig.pluginOptions && vueConfig.pluginOptions.proxy) {
         const proxys = vueConfig.pluginOptions.proxy;
         api.configureDevServer((app) => {
             proxys.forEach((p) => {
