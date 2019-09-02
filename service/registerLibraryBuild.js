@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 
@@ -9,12 +10,37 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
         usage: 'vue-cli-service library-build',
         options: Object.assign({
             '--theme': 'Which theme',
-            '--mode': 'If is "raw", remove babel-loader, icon-font-loader, css-sprite-loader, svg-classic-sprite-loader',
+            '--vusion-mode': 'If is "raw", remove babel-loader, icon-font-loader, css-sprite-loader, svg-classic-sprite-loader',
             '--base-css': 'Base CSS path',
             '--global-css': 'Global CSS path',
+            '--cache': 'Cache',
+            '--output-path': 'Output path',
+            '--public-path': 'Public path',
+            '--src-path': 'Src path',
+            '--library-path': 'Library path',
         }, buildCommand.opts.options),
-    }, (args) => {
-        vueConfig.outputDir = 'dist';
+    }, async (args) => {
+        let cachePath;
+        let versions;
+        if (args.cache) {
+            let cached = false;
+            const cwd = process.cwd();
+            const libraryPkg = require(path.join(cwd, 'package.json'));
+            const vusionDeps = Object.keys(libraryPkg.dependencies).filter((key) => key.endsWith('.vusion'));
+            versions = [libraryPkg.name + '@' + libraryPkg.version].concat(vusionDeps.map((name) => {
+                const pkg = require(path.join(cwd, `../${name}/package.json`));
+                return pkg.name + '@' + pkg.version;
+            })).join('\n') + '\n';
+
+            cachePath = path.resolve(vusionConfig.outputPath, '.version');
+            if (fs.existsSync(cachePath))
+                cached = fs.readFileSync(cachePath).toString() === versions;
+
+            if (cached) {
+                console.info('done.(from cache)');
+                return;
+            }
+        }
 
         api.chainWebpack((config) => {
             config.entryPoints.clear();
@@ -63,6 +89,9 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 })]);
         });
 
-        return buildCommand.fn(args);
+        await buildCommand.fn(args);
+
+        if (args.cache)
+            fs.writeFileSync(cachePath, versions);
     });
 };

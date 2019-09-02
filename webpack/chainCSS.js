@@ -81,4 +81,24 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
                 plugins: postcssPlugins,
             }]);
     }
+
+    // 为了处理二次打包，添加两次 hash 的情况
+    if (vusionConfig.mode === 'raw') {
+        config.module.rule('images').use('url-loader').tap((options) => {
+            options.fallback.options.name = 'img/[hash:8]/[name].[ext]';
+            return options;
+        });
+        config.module.rule('svg').use('file-loader').tap((options) => {
+            options.name = 'img/[hash:8]/[name].[ext]';
+            return options;
+        });
+        config.module.rule('media').use('url-loader').tap((options) => {
+            options.fallback.options.name = 'media/[hash:8]/[name].[ext]';
+            return options;
+        });
+        config.module.rule('fonts').use('url-loader').tap((options) => {
+            options.fallback.options.name = 'fonts/[hash:8]/[name].[ext]';
+            return options;
+        });
+    }
 };

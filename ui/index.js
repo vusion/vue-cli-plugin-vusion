@@ -88,7 +88,7 @@ module.exports = (api) => {
     });
 
     api.describeTask({
-        match: /vue-cli-service library-build.+?--mode raw/,
+        match: /vue-cli-service library-build.+?--vusion-mode raw/,
         description: '构建库（原生模式，不处理 babel、font、sprite 等）',
         icon: 'archive',
         // link:

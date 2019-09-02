@@ -7,7 +7,11 @@ const registerDocBuild = require('./service/registerDocBuild');
 
 module.exports = function (api, vueConfig) {
     // 需要提前知晓 theme, mode 等信息
-    const args = require('minimist')(process.argv.slice(2));
+    const args = require('minimist')(process.argv.slice(2), {
+        alias: {
+            o: 'output-path',
+        },
+    });
     const vusionConfig = vusion.config.resolve(process.cwd(), undefined, args);
 
     chainDefault(api, vueConfig, vusionConfig);

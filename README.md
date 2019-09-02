@@ -39,7 +39,7 @@ Vue CLI Plugin for Vusion Projects
 
 专门针对库进行构建。
 
-### library-build --mode raw
+### library-build --vusion-mode raw
 
 专门针对库进行构建（原生模式，不处理 babel、font、sprite 等）
 
