@@ -76,7 +76,12 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                     options.chunkFilename = options.chunkFilename.replace(/^css\//, '');
                     return [options];
                 });
-
+            config.plugin('optimize-css').tap(([options]) => {
+                if (!options.cssnanoOptions.preset[1])
+                    options.cssnanoOptions.preset[1] = {};
+                options.cssnanoOptions.preset[1].normalizeUrl = false;
+                return [options];
+            });
             config.optimization.splitChunks(undefined);
 
             config.plugin('html')
