@@ -65,7 +65,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
 
             chainCSSOneOfs(config, (oneOf, modules) => {
                 oneOf.use('extract-css-loader').tap((options) => {
-                    options.publicPath = '';
+                    options.publicPath = './';
                     return options;
                 });
             });

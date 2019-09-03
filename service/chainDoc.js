@@ -22,17 +22,16 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .loader(autoLoaderPath)
             .options(vusionConfig);
 
-        // @TODO: thread-loader error with md-vue-loader
+        // 很多 loader 与 Plugin 有结合，所以 thread-loader 不能开启
         config.module.rule('js').uses.delete('thread-loader');
 
-        // @TODO: Eslint applied to markdown error
-        // @TODO: Cache loader
+        // Eslint 需要删除 @vue/cli-plugin-eslint
         config.module.rule('markdown')
             .test(/\.md$/)
-            // .use('cache-loader')
-            // .loader('cache-loader')
-            // .options(config.module.rule('vue').use('cache-loader').get('options'))
-            // .end()
+            .use('cache-loader')
+            .loader('cache-loader')
+            .options(config.module.rule('vue').use('cache-loader').get('options'))
+            .end()
             .use('vue-loader')
             .loader('vue-loader')
             .options(config.module.rule('vue').use('vue-loader').get('options'))
