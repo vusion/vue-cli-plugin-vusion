@@ -76,6 +76,8 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                     options.chunkFilename = options.chunkFilename.replace(/^css\//, '');
                     return [options];
                 });
+
+            // 关掉 url(./img/xxx) -> url(img/xxx) 的处理
             config.plugin('optimize-css').tap(([options]) => {
                 if (!options.cssnanoOptions.preset[1])
                     options.cssnanoOptions.preset[1] = {};
