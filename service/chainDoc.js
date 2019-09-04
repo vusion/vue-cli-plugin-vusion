@@ -16,6 +16,11 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.entry('docs')
             .add(require.resolve('@vusion/doc-loader/views/index.js'));
 
+        // Make sure vue & vue-router unique
+        config.resolve.alias
+            .set('vue$', path.resolve(process.cwd(), 'node_modules/vue/dist/vue.esm.js'))
+            .set('vue-router$', path.resolve(process.cwd(), 'node_modules/vue-router/dist/vue-router.esm.js'));
+
         config.module.rule('entry')
             .test(/@vusion[\\/]doc-loader[\\/]views[\\/]empty\.js$/)
             .use('auto-loader')
