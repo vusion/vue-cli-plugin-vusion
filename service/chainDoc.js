@@ -1,9 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
-const iterator = require('markdown-it-for-inline');
-const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
 const HTMLPlugin = require('html-webpack-plugin');
+
+// markdown-it
+const iterator = require('markdown-it-for-inline');
+const uslug = require('uslug');
+const uslugify = (s) => uslug(s);
 
 module.exports = function chainDoc(api, vueConfig, vusionConfig) {
     vueConfig.publicPath = vusionConfig.docs ? vusionConfig.docs.base : '/public/';
@@ -24,7 +27,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.module.rule('entry')
             .test(/@vusion[\\/]doc-loader[\\/]views[\\/]empty\.js$/)
             .use('auto-loader')
-            .loader(autoLoaderPath)
+            .loader('@vusion/doc-loader')
             .options(vusionConfig);
 
         // 很多 loader 与 Plugin 有结合，所以 thread-loader 不能开启
@@ -46,6 +49,17 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .options({
                 wrapper: 'u-article',
                 plugins: [
+                    require('markdown-it-ins'),
+                    require('markdown-it-mark'),
+                    require('markdown-it-abbr'),
+                    require('markdown-it-deflist'),
+                    [require('markdown-it-anchor'), {
+                        slugify: uslugify,
+                        permalink: true,
+                        permalinkClass: 'heading-anchor',
+                        permalinkSymbol: '#',
+                    }],
+                    // require('markdown-it-container'),
                     [iterator, 'link_converter', 'link_open', (tokens, idx) => tokens[idx].tag = 'u-link'],
                     [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
                 ],
