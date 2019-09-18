@@ -1,9 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
-const iterator = require('markdown-it-for-inline');
-const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
 const HTMLPlugin = require('html-webpack-plugin');
+const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
+const entryLoaderPath = require.resolve('@vusion/doc-loader/lib/entry-loader');
+
+// markdown-it
+const iterator = require('markdown-it-for-inline');
+const uslug = require('uslug');
+const uslugify = (s) => uslug(s);
 
 module.exports = function chainDoc(api, vueConfig, vusionConfig) {
     vueConfig.publicPath = vusionConfig.docs ? vusionConfig.docs.base : '/public/';
@@ -21,11 +26,29 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .set('vue$', path.resolve(process.cwd(), 'node_modules/vue/dist/vue.esm.js'))
             .set('vue-router$', path.resolve(process.cwd(), 'node_modules/vue-router/dist/vue-router.esm.js'));
 
-        config.module.rule('entry')
+        config.module.rule('doc-config')
             .test(/@vusion[\\/]doc-loader[\\/]views[\\/]empty\.js$/)
             .use('auto-loader')
             .loader(autoLoaderPath)
             .options(vusionConfig);
+
+        const docsPath = path.resolve(process.cwd(), 'docs');
+        const docsComponentsPath = path.resolve(docsPath, 'components');
+        const docsViewsPath = path.resolve(docsPath, 'views');
+        const docsImportsPath = path.resolve(docsPath, 'imports.js');
+
+        const defineOptions = {
+            DOCS_PATH: fs.existsSync(docsPath) ? JSON.stringify(docsPath) : undefined,
+            DOCS_COMPONENTS_PATH: fs.existsSync(docsComponentsPath) ? JSON.stringify(docsComponentsPath) : undefined,
+            DOCS_VIEWS_PATH: fs.existsSync(docsViewsPath) ? JSON.stringify(docsViewsPath) : undefined,
+            DOCS_IMPORTS_PATH: fs.existsSync(docsImportsPath) ? JSON.stringify(docsImportsPath) : undefined,
+        };
+
+        config.module.rule('doc-entry')
+            .test(/@vusion[\\/]doc-loader[\\/]views[\\/]index\.js$/)
+            .use('entry-loader')
+            .loader(entryLoaderPath)
+            .options(defineOptions);
 
         // 很多 loader 与 Plugin 有结合，所以 thread-loader 不能开启
         config.module.rule('js').uses.delete('thread-loader');
@@ -46,6 +69,17 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .options({
                 wrapper: 'u-article',
                 plugins: [
+                    require('markdown-it-ins'),
+                    require('markdown-it-mark'),
+                    require('markdown-it-abbr'),
+                    require('markdown-it-deflist'),
+                    [require('markdown-it-anchor'), {
+                        slugify: uslugify,
+                        permalink: true,
+                        permalinkClass: 'heading-anchor',
+                        permalinkSymbol: '#',
+                    }],
+                    // require('markdown-it-container'),
                     [iterator, 'link_converter', 'link_open', (tokens, idx) => tokens[idx].tag = 'u-link'],
                     [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
                 ],
@@ -109,17 +143,7 @@ file-path="${relativePath}">
                 return [options];
             });
 
-        const docsPath = path.resolve(process.cwd(), 'docs');
-        const docsComponentsPath = path.resolve(docsPath, 'components');
-        const docsViewsPath = path.resolve(docsPath, 'views');
-        const docsImportsPath = path.resolve(docsPath, 'imports.js');
-
         config.plugin('define-docs')
-            .use(webpack.DefinePlugin, [{
-                DOCS_PATH: fs.existsSync(docsPath) ? JSON.stringify(docsPath) : undefined,
-                DOCS_COMPONENTS_PATH: fs.existsSync(docsComponentsPath) ? JSON.stringify(docsComponentsPath) : undefined,
-                DOCS_VIEWS_PATH: fs.existsSync(docsViewsPath) ? JSON.stringify(docsViewsPath) : undefined,
-                DOCS_IMPORTS_PATH: fs.existsSync(docsImportsPath) ? JSON.stringify(docsImportsPath) : undefined,
-            }]);
+            .use(webpack.DefinePlugin, [defineOptions]);
     });
 };

@@ -17,7 +17,7 @@ describe('vue-cli-service library-build', () => {
 
     it('cloud-ui', () => {
         run('https://github.com/vusion/cloud-ui.git', [
-            'npm run build-all',
+            'npm run build',
             // 'npm run doc-build-all',
         ], { branch: 'next' });
     });
