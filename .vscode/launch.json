@@ -7,11 +7,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "webpack",
-            "program": "/Users/moujintao/workspace/cloud-ui/node_modules/.bin/vue-cli-service",
-            "protocol": "inspector",
-            "args":["library-build", "--no-clean", "--theme", "dark,seagreen"],
-            "cwd": "/Users/moujintao/workspace/cloud-ui"
-        },
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/index.js"
+        }
     ]
 }
