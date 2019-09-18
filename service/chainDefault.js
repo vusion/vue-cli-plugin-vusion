@@ -22,7 +22,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             '@@': vusionConfig.libraryPath,
             library: vusionConfig.libraryPath,
             '~': process.cwd(),
-            globalCSS: vusionConfig.globalCSSPath,
+            globalCSS: typeof vusionConfig.globalCSSPath === 'string' ? vusionConfig.globalCSSPath : vusionConfig.globalCSSPath.default,
             baseCSS: vusionConfig.baseCSSPath,
         }, vusionConfig.alias);
 

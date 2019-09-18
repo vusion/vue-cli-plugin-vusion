@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
+const vusionMiniCssPlugin = require('@vusion/mini-css-extract-plugin');
 
 module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
     const buildCommand = api.service.commands.build;
@@ -64,18 +65,21 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
             });
 
             chainCSSOneOfs(config, (oneOf, modules) => {
-                oneOf.use('extract-css-loader').tap((options) => {
-                    options.publicPath = './';
-                    return options;
-                });
+                oneOf.use('extract-css-loader')
+                    .loader(vusionMiniCssPlugin.loader)
+                    .options({
+                        rules: {
+                            publicPath: './',
+                            hmr: false,
+                        },
+                    });
             });
-
             config.plugin('extract-css')
-                .tap(([options]) => {
-                    options.filename = vusionConfig.theme ? `theme-${vusionConfig.theme}.css` : '[name].css';
-                    options.chunkFilename = options.chunkFilename.replace(/^css\//, '');
-                    return [options];
-                });
+                .use(vusionMiniCssPlugin, [{
+                    filename: '[name].css',
+                    chunkFilename: 'name].[contenthash:8].css',
+                    themes: vusionConfig.theme || [],
+                }]);
 
             // 关掉 url(./img/xxx) -> url(img/xxx) 的处理
             config.plugin('optimize-css').tap(([options]) => {

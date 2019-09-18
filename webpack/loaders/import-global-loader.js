@@ -7,9 +7,13 @@ module.exports = function (content) {
 
     const outputs = [content];
     const config = loaderUtils.getOptions(this);
-
+    const theme = this.theme || 'default';
+    const globalCSSPathMap = typeof config.globalCSSPath === 'string' ? {
+        default: config.globalCSSPath,
+    } : config.globalCSSPath;
+    const globalCSSPath = globalCSSPathMap[theme];
     // Import global.css
-    const globalPath = path.resolve(process.cwd(), config.globalCSSPath);
+    const globalPath = path.resolve(process.cwd(), globalCSSPath);
     let relativePath = path.relative(path.dirname(this.resourcePath), globalPath);
     if (!path.isAbsolute(relativePath))
         relativePath = './' + relativePath;
@@ -18,10 +22,10 @@ module.exports = function (content) {
         outputs.unshift(`@import '${relativePath}';`);
 
     // Import theme css
-    if (config.theme) {
+    if (this.theme) {
         const srcIndex = this.resourcePath.lastIndexOf('/src/');
         if (~srcIndex) {
-            const themePath = this.resourcePath.slice(0, srcIndex) + `/theme-${config.theme}/` + this.resourcePath.slice(srcIndex + 5);
+            const themePath = this.resourcePath.slice(0, srcIndex) + `/theme-${this.theme}/` + this.resourcePath.slice(srcIndex + 5);
             if (fs.existsSync(themePath)) {
                 this.addDependency(themePath);
                 // @TODO: postcss-import follow spec: `@import` statements must precede all other statements

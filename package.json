@@ -62,6 +62,7 @@
     "vue-multifile-loader": "^15.0.1",
     "vue-style-loader": "^4.1.2",
     "vusion-api": "^0.2.4",
-    "webpack": "^4.35.3"
+    "webpack": "^4.35.3",
+    "@vusion/mini-css-extract-plugin": "^0.1.0"
   }
 }
