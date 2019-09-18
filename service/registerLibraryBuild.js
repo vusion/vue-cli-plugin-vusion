@@ -77,7 +77,8 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
             config.plugin('extract-css')
                 .use(vusionMiniCssPlugin, [{
                     filename: '[name].css',
-                    chunkFilename: 'name].[contenthash:8].css',
+                    themeFilename: 'theme-[theme].css',
+                    chunkFilename: '[name].[contenthash:8].css',
                     themes: vusionConfig.theme || [],
                 }]);
 

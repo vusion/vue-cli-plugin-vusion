@@ -4,6 +4,8 @@ const webpack = require('webpack');
 const HTMLPlugin = require('html-webpack-plugin');
 const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
 const entryLoaderPath = require.resolve('@vusion/doc-loader/lib/entry-loader');
+const vusionMiniCssPlugin = require('@vusion/mini-css-extract-plugin');
+const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 
 // markdown-it
 const iterator = require('markdown-it-for-inline');
@@ -137,11 +139,23 @@ file-path="${relativePath}">
                 }]);
         }
 
-        config.plugins.has('extract-css') && config.plugin('extract-css')
-            .tap(([options]) => {
-                options.filename = vusionConfig.theme ? `css/[name]-theme-${vusionConfig.theme}.css` : 'css/[name].css';
-                return [options];
+        if (config.plugins.has('extract-css')) {
+            chainCSSOneOfs(config, (oneOf, modules) => {
+                oneOf.use('extract-css-loader')
+                    .loader(vusionMiniCssPlugin.loader)
+                    .options({
+                        rules: {
+                            publicPath: './',
+                            hmr: false,
+                        },
+                    });
             });
+            config.plugin('extract-css').use(vusionMiniCssPlugin, [{
+                filename: 'css/[name].css',
+                themeFilename: 'css/[name]-theme-[theme].css',
+                themes: vusionConfig.theme || [],
+            }]);
+        }
 
         config.plugin('define-docs')
             .use(webpack.DefinePlugin, [defineOptions]);
