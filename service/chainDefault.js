@@ -68,6 +68,8 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
          */
         if (vusionConfig.mode === 'raw')
             config.module.rules.delete('js');
+
+        config.plugins.delete('case-sensitive-paths');
     });
 
     // Hack for devServer options
