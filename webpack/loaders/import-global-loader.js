@@ -30,9 +30,7 @@ module.exports = function (content) {
             const themePath = this.resourcePath.slice(0, srcIndex) + `/theme-${this.theme}/` + this.resourcePath.slice(srcIndex + 5);
             if (fs.existsSync(themePath)) {
                 this.addDependency(themePath);
-                // @TODO: postcss-import follow spec: `@import` statements must precede all other statements
-                // outputs.push(`@import '${themePath}';`);
-                outputs.push(fs.readFileSync(themePath, 'utf8').replace(/@import .+?\n/, ''));
+                outputs.push(`@import '${themePath}';`);
             }
         }
     }
