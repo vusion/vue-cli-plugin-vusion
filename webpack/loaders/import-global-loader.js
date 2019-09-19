@@ -7,11 +7,13 @@ module.exports = function (content) {
 
     const outputs = [content];
     const config = loaderUtils.getOptions(this);
+
     const theme = this.theme || 'default';
     const globalCSSPathMap = typeof config.globalCSSPath === 'string' ? {
         default: config.globalCSSPath,
     } : config.globalCSSPath;
     const globalCSSPath = globalCSSPathMap[theme];
+
     // Import global.css
     const globalPath = path.resolve(process.cwd(), globalCSSPath);
     let relativePath = path.relative(path.dirname(this.resourcePath), globalPath);

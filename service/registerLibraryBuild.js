@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
-const vusionMiniCssPlugin = require('@vusion/mini-css-extract-plugin');
+const MiniCSSExtractPlugin = require('@vusion/mini-css-extract-plugin');
 
 module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
     const buildCommand = api.service.commands.build;
@@ -66,7 +66,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
 
             chainCSSOneOfs(config, (oneOf, modules) => {
                 oneOf.use('extract-css-loader')
-                    .loader(vusionMiniCssPlugin.loader)
+                    .loader(MiniCSSExtractPlugin.loader)
                     .options({
                         rules: {
                             publicPath: './',
@@ -75,11 +75,11 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                     });
             });
             config.plugin('extract-css')
-                .use(vusionMiniCssPlugin, [{
+                .use(MiniCSSExtractPlugin, [{
                     filename: '[name].css',
                     themeFilename: 'theme-[theme].css',
                     chunkFilename: '[name].[contenthash:8].css',
-                    themes: vusionConfig.theme || [],
+                    themes: vusionConfig.themes || [],
                 }]);
 
             // 关掉 url(./img/xxx) -> url(img/xxx) 的处理

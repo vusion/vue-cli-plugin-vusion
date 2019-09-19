@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const HTMLPlugin = require('html-webpack-plugin');
 const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
 const entryLoaderPath = require.resolve('@vusion/doc-loader/lib/entry-loader');
-const vusionMiniCssPlugin = require('@vusion/mini-css-extract-plugin');
+const MiniCSSExtractPlugin = require('@vusion/mini-css-extract-plugin');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 
 // markdown-it
@@ -106,7 +106,7 @@ file-path="${relativePath}">
         // 嫌麻烦，先关了！
         config.optimization.splitChunks(undefined);
 
-        if (!vusionConfig.theme) {
+        if (!vusionConfig.themes) {
             config.plugin('html')
                 .use(HTMLPlugin, [{
                     filename: 'index.html',
@@ -139,21 +139,21 @@ file-path="${relativePath}">
                 }]);
         }
 
-        if (config.plugins.has('extract-css')) {
+        if (config.plugins.has('extract-css')) { // Build mode
             chainCSSOneOfs(config, (oneOf, modules) => {
                 oneOf.use('extract-css-loader')
-                    .loader(vusionMiniCssPlugin.loader)
+                    .loader(MiniCSSExtractPlugin.loader)
                     .options({
                         rules: {
-                            publicPath: './',
+                            publicPath: '../',
                             hmr: false,
                         },
                     });
             });
-            config.plugin('extract-css').use(vusionMiniCssPlugin, [{
+            config.plugin('extract-css').use(MiniCSSExtractPlugin, [{
                 filename: 'css/[name].css',
                 themeFilename: 'css/[name]-theme-[theme].css',
-                themes: vusionConfig.theme || [],
+                themes: vusionConfig.themes || [],
             }]);
         }
 
