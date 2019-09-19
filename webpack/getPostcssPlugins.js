@@ -22,7 +22,7 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
     // Postcss plugins
     return [
         postcssExtendMark,
-        require('postcss-import')({
+        require('@vusion/postcss-import')({
             resolve: postcssImportResolver({
                 alias,
             }),
