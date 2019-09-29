@@ -10,7 +10,6 @@ module.exports = postcss.plugin('add-class-plugin', ({ loaderContext, classList 
                 rule.selector = rule.selector.replace(new RegExp(`.${name}(?![-_a-zA-Z0-9])`, 'g'), (n) => {
                     return n + afterFixed;
                 });
-                console.log(rule.selector);
             }
         });
     });
