@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const postcss = require('postcss');
-const addClassPlugin = require('../postcss/add-class-plugin.js');
+const addClassPlugin = require('../postcss/add-class.js');
 const loaderUtils = require('loader-utils');
 const getCssList = require('./get-css-handle-list.js');
 
