@@ -64,7 +64,8 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         .use('postcss-loader')
         .loader('postcss-loader')
         .options({ plugins: () => postcssPlugins })
-        .end();
+        .end()
+        .__before = 'normal';
 
     if (vusionConfig.mode !== 'raw') {
         config.plugin('icon-font-plugin')
