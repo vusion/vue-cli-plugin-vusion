@@ -104,7 +104,12 @@ file-path="${relativePath}">
             });
 
         // 嫌麻烦，先关了！
-        config.optimization.splitChunks(undefined);
+        config.optimization.splitChunks({
+            cacheGroups: {
+                vendors: false,
+                default: false,
+            },
+        });
 
         if (!vusionConfig.themes) {
             config.plugin('html')

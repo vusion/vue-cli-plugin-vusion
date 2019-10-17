@@ -89,7 +89,12 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 options.cssnanoOptions.preset[1].normalizeUrl = false;
                 return [options];
             });
-            config.optimization.splitChunks(undefined);
+            config.optimization.splitChunks({
+                cacheGroups: {
+                    vendors: false,
+                    default: false,
+                },
+            });
 
             config.plugin('html')
                 .tap(([options]) => [Object.assign(options, {
