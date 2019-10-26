@@ -51,6 +51,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
             .end()
             .use('module-class-priority-loader')
             .loader(moduleClassPriorityLoaderPath)
+            .end()
             .use('import-global-loader')
             .loader(importGlobalLoaderPath)
             .options({
