@@ -1,13 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const postcss = require('postcss');
-const addClassPlugin = require('../postcss/add-class.js');
 const loaderUtils = require('loader-utils');
-const getCssList = require('./get-css-handle-list.js');
 
-module.exports = function (content, meta) {
-    this.cacheable();
-    const callback = this.async();
+module.exports = function (content) {
     const outputs = [content];
     const config = loaderUtils.getOptions(this);
 
@@ -37,28 +32,6 @@ module.exports = function (content, meta) {
             }
         }
     }
-    getCssList(this.context).then((content) => {
-        if (content && content.length !== 0) {
-            const options = {
-                to: this.resourcePath,
-                from: this.resourcePath,
-            };
-            if (meta && meta.sourceRoot && meta.mappings) {
-                options.map = {
-                    prev: meta,
-                    inline: false,
-                    annotation: false,
-                };
-            }
-            const pluginList = [addClassPlugin].map((plugin) => plugin({ loaderContext: this, classList: content }));
-            postcss(pluginList).process(outputs.join('\n'), options).then((result) => {
-                const map = result.map && result.map.toJSON();
-                callback(null, result.css, map);
-            }).catch((error) => {
-                callback(error);
-            });
-        } else
-            callback(null, outputs.join('\n'), meta);
-    });
-    
+
+    return outputs.join('\n');
 };

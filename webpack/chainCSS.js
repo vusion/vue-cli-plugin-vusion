@@ -1,6 +1,7 @@
 const IconFontPlugin = require('icon-font-loader').Plugin;
 const CSSSpritePlugin = require('css-sprite-loader').Plugin;
 const importGlobalLoaderPath = require.resolve('./loaders/import-global-loader');
+const moduleClassPriorityLoaderPath = require.resolve('./loaders/module-class-priority-loader');
 const postcssVariablesPath = require.resolve('./loaders/postcss-variables');
 
 const getLocalIdent = require('./getLocalIdent');
@@ -48,6 +49,8 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
             .loader('postcss-loader')
             .options({ plugins: () => postcssPlugins })
             .end()
+            .use('module-class-priority-loader')
+            .loader(moduleClassPriorityLoaderPath)
             .use('import-global-loader')
             .loader(importGlobalLoaderPath)
             .options({
