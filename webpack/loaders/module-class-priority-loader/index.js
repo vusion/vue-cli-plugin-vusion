@@ -1,6 +1,6 @@
 const postcss = require('postcss');
 const fixPriorityPlugin = require('./fix-priority-plugin');
-const getBindingClasses = require('./getBindingClasses');
+const { getBindingClasses } = require('./getBindingClasses');
 
 module.exports = function (content, meta) {
     const callback = this.async();
