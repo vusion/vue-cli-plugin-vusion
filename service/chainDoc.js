@@ -13,7 +13,7 @@ const uslug = require('uslug');
 const uslugify = (s) => uslug(s);
 
 module.exports = function chainDoc(api, vueConfig, vusionConfig) {
-    vueConfig.publicPath = vusionConfig.docs ? vusionConfig.docs.base : '/public/';
+    vueConfig.publicPath = vusionConfig.docs && vusionConfig.docs.base ? vusionConfig.docs.base : '/public/';
     vueConfig.outputDir = 'public';
     vueConfig.runtimeCompiler = true;
     vueConfig.productionSourceMap = false;
@@ -40,6 +40,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         const docsImportsPath = path.resolve(docsPath, 'imports.js');
 
         const defineOptions = {
+            type: vusionConfig.type,
             DOCS_PATH: fs.existsSync(docsPath) ? JSON.stringify(docsPath) : undefined,
             DOCS_COMPONENTS_PATH: fs.existsSync(docsComponentsPath) ? JSON.stringify(docsComponentsPath) : undefined,
             DOCS_VIEWS_PATH: fs.existsSync(docsViewsPath) ? JSON.stringify(docsViewsPath) : undefined,

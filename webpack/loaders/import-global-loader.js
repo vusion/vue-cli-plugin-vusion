@@ -3,8 +3,6 @@ const path = require('path');
 const loaderUtils = require('loader-utils');
 
 module.exports = function (content) {
-    this.cacheable();
-
     const outputs = [content];
     const config = loaderUtils.getOptions(this);
 

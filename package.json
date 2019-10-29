@@ -5,8 +5,9 @@
   "author": "wt911122 <452663934@qq.com>",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test:service",
-    "test:service": "mocha test/service/*.spec.js --timeout 360000"
+    "test": "npm run test:service && npm run test:case",
+    "test:service": "mocha test/service/*.spec.js --timeout 360000",
+    "test:unit": "mocha test/unit/**/*.spec.js --timeout 360000"
   },
   "license": "MIT",
   "repository": "vusion/vue-cli-plugin-vusion",
@@ -56,6 +57,7 @@
     "markdown-it-ins": "^2.0.0",
     "markdown-it-mark": "^2.0.0",
     "minimist": "^1.2.0",
+    "postcss": "^7.0.18",
     "postcss-calc": "^7.0.1",
     "@vusion/postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.2.3",
