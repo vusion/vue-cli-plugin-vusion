@@ -5,7 +5,7 @@
   "author": "wt911122 <452663934@qq.com>",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test:service && npm run test:case",
+    "test": "npm run test:service && npm run test:unit",
     "test:service": "mocha test/service/*.spec.js --timeout 360000",
     "test:unit": "mocha test/unit/**/*.spec.js --timeout 360000"
   },
@@ -69,7 +69,7 @@
     "vue-component-analyzer": "^0.2.0",
     "vue-multifile-loader": "^15.0.1",
     "vue-style-loader": "^4.1.2",
-    "vusion-api": "^0.4.3",
+    "vusion-api": "^0.4.5",
     "webpack": "^4.35.3",
     "@vusion/mini-css-extract-plugin": "^0.8.5"
   }

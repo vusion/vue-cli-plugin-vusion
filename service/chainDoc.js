@@ -13,7 +13,7 @@ const uslug = require('uslug');
 const uslugify = (s) => uslug(s);
 
 module.exports = function chainDoc(api, vueConfig, vusionConfig) {
-    vueConfig.publicPath = vusionConfig.docs && vusionConfig.docs.base ? vusionConfig.docs.base : '/public/';
+    vueConfig.publicPath = vusionConfig.docs && vusionConfig.docs.base ? vusionConfig.docs.base : '';
     vueConfig.outputDir = 'public';
     vueConfig.runtimeCompiler = true;
     vueConfig.productionSourceMap = false;
