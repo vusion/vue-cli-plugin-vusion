@@ -7,7 +7,7 @@
   "scripts": {
     "test": "npm run test:service && npm run test:case",
     "test:service": "mocha test/service/*.spec.js --timeout 360000",
-    "test:case": "mocha test/fixtures/**/*.spec.js --timeout 360000"
+    "test:unit": "mocha test/unit/**/*.spec.js --timeout 360000"
   },
   "license": "MIT",
   "repository": "vusion/vue-cli-plugin-vusion",

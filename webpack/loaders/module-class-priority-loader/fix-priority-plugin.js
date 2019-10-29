@@ -1,5 +1,5 @@
 const postcss = require('postcss');
-const { replaceSelector } = require('./getBindingClasses');
+const { replaceSelector } = require('./utils');
 module.exports = postcss.plugin('fix-priority-plugin', ({ loaderContext, classList }) => (styles, result) => Promise.resolve().then(() => {
     // - 组件库加 :not(html)
     // - 业务中加 [class]
