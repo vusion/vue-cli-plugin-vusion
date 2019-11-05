@@ -16,13 +16,21 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         // 添加 vue-cli-plugin-vusion context 下的模块路径，防止有些包找不到
         config.resolveLoader.modules.add(path.resolve(__dirname, '../node_modules'));
 
+        let globalCSS = vusionConfig.globalCSSPath;
+        if (typeof globalCSS === 'object') {
+            if (globalCSS.default)
+                globalCSS = globalCSS.default;
+            else
+                globalCSS = globalCSS[Object.keys(globalCSS)[0]];
+        }
+
         // vue$, use default
         const alias = Object.assign({
             '@': vusionConfig.srcPath,
             '@@': vusionConfig.libraryPath,
             library: vusionConfig.libraryPath,
             '~': process.cwd(),
-            globalCSS: typeof vusionConfig.globalCSSPath === 'string' ? vusionConfig.globalCSSPath : vusionConfig.globalCSSPath.default,
+            globalCSS,
             baseCSS: vusionConfig.baseCSSPath,
         }, vusionConfig.alias);
 

@@ -68,10 +68,8 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 oneOf.use('extract-css-loader')
                     .loader(MiniCSSExtractPlugin.loader)
                     .options({
-                        rules: {
-                            publicPath: './',
-                            hmr: false,
-                        },
+                        publicPath: './',
+                        hmr: false,
                     });
             });
             config.plugin('extract-css')
