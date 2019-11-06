@@ -5,8 +5,12 @@ const { getBindingClasses } = require('./utils');
 module.exports = function (content, meta) {
     const callback = this.async();
 
+    // xxx.vue/module.css ->
+    // xxx.vue ->
+    // style.css x
+
     // Handle CSS Modules priority
-    getBindingClasses(this.context).then((classList) => {
+    getBindingClasses(/\.css$/g.test(this.resourcePath) ? this.context : this.resourcePath).then((classList) => {
         if (classList && classList.length) {
             const options = {
                 to: this.resourcePath,

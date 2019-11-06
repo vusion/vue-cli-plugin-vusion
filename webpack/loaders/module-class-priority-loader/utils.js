@@ -18,51 +18,50 @@ exports.getClassName = function getClassName(styleStr) {
 
 exports.replaceSelector = function replaceSelector(selector, classList, suffix = ':not(html)') {
     const classListStr = classList.join('|');
-    return selector.replace(new RegExp(`.(${classListStr})(?![-_a-zA-Z0-9])`, 'g'), (n) => n + suffix);
+    return selector.replace(new RegExp(`.(${classListStr})(?![-_a-zA-Z0-9]|\[class\])`, 'g'), (n) => n + suffix);
 };
 
 exports.getBindingClasses = function getBindingClasses(filePath) {
     return new Promise((res, rej) => {
-        if (/\.vue$/g.test(filePath)) {
-            const existing = fs.existsSync(filePath) && fs.statSync(filePath).isFile();
-            if (!existing) {
-                filePath = path.join(filePath, 'index.html');
-                if (!fs.existsSync(filePath))
-                    return res();
-            }
+        if (!/\.vue$/g.test(filePath))
+            return res();
 
-            fs.readFile(filePath, (err, data) => {
-                if (err)
-                    return rej(err);
-                if (!data)
-                    return res();
-
-                const classSet = new Set();
-                const content = String(data);
-
-                const pushClass = (styleStr) => {
-                    const className = exports.getClassName(styleStr);
-                    if (className)
-                        classSet.add(className);
-                };
-                content.replace(/<([^>\s]+)?\s.*:class="([^"]+)"/g, (m, $1, $2) => {
-                    if (!DOM_LIST.includes($1) && $1 !== '!--') {
-                        const className = $2;
-                        if (/^\[.*\]$/g.test(className)) {
-                            const result = /^\[(.*)\]$/g.exec(className);
-                            const contents = result[1].split(',').filter((item) => item).map((item) => item.trim());
-                            for (const item of contents) {
-                                pushClass(item);
-                            }
-                        } else
-                            pushClass(className);
-                    }
-                    return m;
-                });
-                res(Array.from(classSet));
-            });
-        } else {
-            res();
+        const existing = fs.existsSync(filePath) && fs.statSync(filePath).isFile();
+        if (!existing) {
+            filePath = path.join(filePath, 'index.html');
+            if (!fs.existsSync(filePath))
+                return res();
         }
+
+        fs.readFile(filePath, (err, data) => {
+            if (err)
+                return rej(err);
+            if (!data)
+                return res();
+
+            const classSet = new Set();
+            const content = String(data);
+
+            const pushClass = (styleStr) => {
+                const className = exports.getClassName(styleStr);
+                if (className)
+                    classSet.add(className);
+            };
+            content.replace(/<([^>\s]+)?\s.*:class="([^"]+)"/g, (m, $1, $2) => {
+                if (!DOM_LIST.includes($1) && $1 !== '!--') {
+                    const className = $2;
+                    if (/^\[.*\]$/g.test(className)) {
+                        const result = /^\[(.*)\]$/g.exec(className);
+                        const contents = result[1].split(',').filter((item) => item).map((item) => item.trim());
+                        for (const item of contents) {
+                            pushClass(item);
+                        }
+                    } else
+                        pushClass(className);
+                }
+                return m;
+            });
+            res(Array.from(classSet));
+        });
     });
 };
