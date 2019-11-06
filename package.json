@@ -1,7 +1,7 @@
 {
   "name": "vue-cli-plugin-vusion",
   "description": "Vue CLI Plugin for Vusion Projects",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "author": "wt911122 <452663934@qq.com>",
   "main": "index.js",
   "scripts": {
