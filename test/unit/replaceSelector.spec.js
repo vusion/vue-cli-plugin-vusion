@@ -30,6 +30,12 @@ const testValues = [{
     value: '.test .test1 .test2',
     result: '.test:not(html) .test1:not(html) .test2',
 }, {
+    value: '.test[test]',
+    result: '.test:not(html)[test]',
+}, {
+    value: '.test[class]',
+    result: '.test[class]',
+}, {
     value: '.testReplace',
     result: '.testReplace',
 }, {

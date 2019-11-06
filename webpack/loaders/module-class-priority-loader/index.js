@@ -1,3 +1,4 @@
+const path = require('path');
 const postcss = require('postcss');
 const fixPriorityPlugin = require('./fix-priority-plugin');
 const { getBindingClasses } = require('./utils');
@@ -8,9 +9,12 @@ module.exports = function (content, meta) {
     // xxx.vue/module.css ->
     // xxx.vue ->
     // style.css x
+    let vuePath = this.resourcePath;
+    if (/\.css$/.test(vuePath))
+        vuePath = path.dirname(vuePath);
 
     // Handle CSS Modules priority
-    getBindingClasses(/\.css$/g.test(this.resourcePath) ? this.context : this.resourcePath).then((classList) => {
+    getBindingClasses(vuePath).then((classList) => {
         if (classList && classList.length) {
             const options = {
                 to: this.resourcePath,

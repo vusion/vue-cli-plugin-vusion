@@ -18,7 +18,7 @@ exports.getClassName = function getClassName(styleStr) {
 
 exports.replaceSelector = function replaceSelector(selector, classList, suffix = ':not(html)') {
     const classListStr = classList.join('|');
-    return selector.replace(new RegExp(`.(${classListStr})(?![-_a-zA-Z0-9]|\[class\])`, 'g'), (n) => n + suffix);
+    return selector.replace(new RegExp(`\\.(${classListStr})(?![-_a-zA-Z0-9]|\\[class\\])`, 'g'), (n) => n + suffix);
 };
 
 exports.getBindingClasses = function getBindingClasses(filePath) {
