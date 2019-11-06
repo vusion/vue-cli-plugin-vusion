@@ -21,7 +21,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             if (globalCSS.default)
                 globalCSS = globalCSS.default;
             else
-                globalCSS = globalCSS[Object.keys(globalCSS)[0]];
+                globalCSS = globalCSS[vusionConfig.themes[0]];
         }
 
         // vue$, use default

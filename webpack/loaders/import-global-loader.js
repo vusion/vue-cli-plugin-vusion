@@ -6,7 +6,7 @@ module.exports = function (content) {
     const outputs = [content];
     const config = loaderUtils.getOptions(this);
 
-    const theme = this.theme || 'default';
+    const theme = this.theme || (config.themes ? config.themes[0] : 'default');
     const globalCSSPathMap = typeof config.globalCSSPath === 'string' ? {
         default: config.globalCSSPath,
     } : config.globalCSSPath;
