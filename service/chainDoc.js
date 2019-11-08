@@ -59,10 +59,11 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         // Eslint 需要删除 @vue/cli-plugin-eslint
         config.module.rule('markdown')
             .test(/\.md$/)
-            .use('cache-loader')
-            .loader('cache-loader')
-            .options(config.module.rule('vue').use('cache-loader').get('options'))
-            .end()
+            // cache-loader 老报错，干脆关了！
+            // .use('cache-loader')
+            // .loader('cache-loader')
+            // .options(config.module.rule('vue').use('cache-loader').get('options'))
+            // .end()
             .use('vue-loader')
             .loader('vue-loader')
             .options(config.module.rule('vue').use('vue-loader').get('options'))
