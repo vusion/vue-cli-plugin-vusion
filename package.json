@@ -1,7 +1,7 @@
 {
   "name": "vue-cli-plugin-vusion",
   "description": "Vue CLI Plugin for Vusion Projects",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "author": "wt911122 <452663934@qq.com>",
   "main": "index.js",
   "scripts": {
@@ -40,7 +40,7 @@
   "dependencies": {
     "@babel/core": "^7.5.4",
     "@babel/preset-env": "^7.5.4",
-    "@vusion/doc-loader": "^0.13.0",
+    "@vusion/doc-loader": "^0.13.1",
     "@vusion/md-vue-loader": "^1.2.4",
     "babel-loader": "^8.0.6",
     "copy-webpack-plugin": "^5.0.4",
@@ -69,7 +69,7 @@
     "vue-component-analyzer": "^0.2.0",
     "vue-multifile-loader": "^15.0.1",
     "vue-style-loader": "^4.1.2",
-    "vusion-api": "^0.5.1",
+    "vusion-api": "^0.5.2",
     "webpack": "^4.35.3",
     "@vusion/mini-css-extract-plugin": "^0.8.5"
   }
