@@ -27,6 +27,9 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.resolve.alias
             .set('vue$', path.resolve(process.cwd(), 'node_modules/vue/dist/vue.esm.js'))
             .set('vue-router$', path.resolve(process.cwd(), 'node_modules/vue-router/dist/vue-router.esm.js'));
+        const isVuePackage = vusionConfig.type === 'component' || vusionConfig.type === 'block';
+        config.resolve.alias
+            .set('proto-ui', isVuePackage ? 'proto-ui.vusion/dist' : 'proto-ui.vusion');
 
         config.module.rule('doc-config')
             .test(/@vusion[\\/]doc-loader[\\/]views[\\/]empty\.js$/)

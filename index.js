@@ -8,6 +8,7 @@ const registerDocBuild = require('./service/registerDocBuild');
 module.exports = function (api, vueConfig) {
     // 需要提前知晓 theme, mode 等信息
     const args = require('minimist')(process.argv.slice(2), {
+        boolean: ['apply-theme'],
         alias: {
             o: 'output-path',
         },

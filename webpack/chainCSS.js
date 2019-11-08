@@ -58,7 +58,8 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
                 .loader(importGlobalLoaderPath)
                 .options({
                     theme: vusionConfig.theme,
-                });
+                })
+                .end();
         }
     });
 

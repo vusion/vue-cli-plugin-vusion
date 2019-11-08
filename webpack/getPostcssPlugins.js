@@ -51,6 +51,7 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
         require('postcss-preset-env')({
             stage: 0,
             browsers: config.browsers,
+            preserve: false,
             features: {
                 'custom-properties': vusionConfig.applyTheme,
                 'image-set-function': false, // handle by css-sprite-loader
