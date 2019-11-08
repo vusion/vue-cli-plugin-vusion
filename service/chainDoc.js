@@ -113,7 +113,7 @@ file-path="${relativePath}">
             },
         });
 
-        if (!vusionConfig.themes) {
+        if (!Object.keys(vusionConfig.theme).length <= 1) {
             config.plugin('html')
                 .use(HTMLPlugin, [{
                     filename: 'index.html',
@@ -160,7 +160,7 @@ file-path="${relativePath}">
             config.plugin('extract-css').use(MiniCSSExtractPlugin, [{
                 filename: 'css/[name].css',
                 themeFilename: 'css/[name]-theme-[theme].css',
-                themes: vusionConfig.themes || [],
+                themes: Object.keys(vusionConfig.theme),
             }]);
         }
 

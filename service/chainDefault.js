@@ -16,13 +16,9 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         // 添加 vue-cli-plugin-vusion context 下的模块路径，防止有些包找不到
         config.resolveLoader.modules.add(path.resolve(__dirname, '../node_modules'));
 
-        let globalCSS = vusionConfig.globalCSSPath;
-        if (typeof globalCSS === 'object') {
-            if (globalCSS.default)
-                globalCSS = globalCSS.default;
-            else
-                globalCSS = globalCSS[vusionConfig.themes[0]];
-        }
+        let themeCSS = vusionConfig.theme.default;
+        if (!themeCSS)
+            themeCSS = vusionConfig.theme[Object.keys(vusionConfig.theme)[0]];
 
         // vue$, use default
         const alias = Object.assign({
@@ -30,8 +26,8 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             '@@': vusionConfig.libraryPath,
             library: vusionConfig.libraryPath,
             '~': process.cwd(),
-            globalCSS,
             baseCSS: vusionConfig.baseCSSPath,
+            themeCSS,
         }, vusionConfig.alias);
 
         /**

@@ -45,19 +45,21 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
                 .end();
         }
 
-        oneOf.use('postcss-loader')
+        const postcssLoader = oneOf.use('postcss-loader')
             .loader('postcss-loader')
             .options({ plugins: () => postcssPlugins })
             .end()
             .use('module-class-priority-loader')
             .loader(moduleClassPriorityLoaderPath)
-            .end()
-            .use('import-global-loader')
-            .loader(importGlobalLoaderPath)
-            .options({
-                globalCSSPath: vusionConfig.globalCSSPath,
-                themes: vusionConfig.themes,
-            });
+            .end();
+
+        if (vusionConfig.applyTheme) {
+            postcssLoader.use('import-global-loader')
+                .loader(importGlobalLoaderPath)
+                .options({
+                    theme: vusionConfig.theme,
+                });
+        }
     });
 
     config.module.rule('css').oneOf('variables')

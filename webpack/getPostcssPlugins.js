@@ -52,6 +52,7 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
             stage: 0,
             browsers: config.browsers,
             features: {
+                'custom-properties': vusionConfig.applyTheme,
                 'image-set-function': false, // handle by css-sprite-loader
                 'color-mod-function': true, // stage is -1, https://github.com/csstools/cssdb/blob/master/cssdb.json
             },

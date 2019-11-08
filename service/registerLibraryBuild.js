@@ -13,7 +13,6 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
             '--theme': 'Which theme',
             '--vusion-mode': 'If is "raw", remove babel-loader, icon-font-loader, css-sprite-loader, svg-classic-sprite-loader',
             '--base-css': 'Base CSS path',
-            '--global-css': 'Global CSS path',
             '--cache': 'Cache',
             '--output-path': 'Output path',
             '--public-path': 'Public path',
@@ -77,7 +76,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                     filename: '[name].css',
                     themeFilename: 'theme-[theme].css',
                     chunkFilename: '[name].[contenthash:8].css',
-                    themes: vusionConfig.themes || [],
+                    themes: Object.keys(vusionConfig.theme),
                 }]);
 
             // 关掉 url(./img/xxx) -> url(img/xxx) 的处理
