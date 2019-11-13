@@ -6,7 +6,7 @@ const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
     // 同步 vusionConfig 和 vueConfig 的信息，尽量以 vueConfig 为基准
-    if (vusionConfig.publicPath)
+    if (vusionConfig.publicPath) // 如果填，用'./'吧
         vueConfig.publicPath = vusionConfig.publicPath;
     else
         vusionConfig.publicPath = vueConfig.publicPath;
