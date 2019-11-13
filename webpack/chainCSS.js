@@ -20,6 +20,8 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
 
         if (vusionConfig.mode === 'raw')
             cssOptions.importLoaders = 2;
+        if (vusionConfig.applyTheme)
+            cssOptions.importLoaders++;
 
         const cssModuleOptions = Object.assign({
             modules: true,
