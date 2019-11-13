@@ -5,10 +5,16 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
+    // 同步 vusionConfig 和 vueConfig 的信息，尽量以 vueConfig 为基准
     if (vusionConfig.publicPath)
         vueConfig.publicPath = vusionConfig.publicPath;
+    else
+        vusionConfig.publicPath = vueConfig.publicPath;
+
     if (vusionConfig.outputPath)
         vueConfig.outputDir = vusionConfig.outputPath;
+    else
+        vusionConfig.outputPath = vueConfig.outputDir;
 
     api.chainWebpack((config) => {
         const mode = config.get('mode');

@@ -42,6 +42,9 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
             }
         }
 
+        vueConfig.publicPath = './';
+        vueConfig.outputDir = 'dist';
+
         api.chainWebpack((config) => {
             config.entryPoints.clear();
             config.entry('index')
