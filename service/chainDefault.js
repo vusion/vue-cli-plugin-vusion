@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const chainCSS = require('../webpack/chainCSS');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const FixMultifileCachePlugin = require('../webpack/plugins/FixMultifileCachePlugin');
 const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
@@ -80,6 +81,8 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             config.module.rules.delete('js');
 
         config.plugins.delete('case-sensitive-paths');
+
+        config.plugin('fix-multifile-cache').use(FixMultifileCachePlugin);
     });
 
     // Hack for devServer options
