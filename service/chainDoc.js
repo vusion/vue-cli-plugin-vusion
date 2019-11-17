@@ -25,8 +25,8 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
 
         // Make sure vue & vue-router unique
         config.resolve.alias
-            .set('vue$', path.resolve(process.cwd(), 'node_modules/vue/dist/vue.esm.js'))
-            .set('vue-router$', path.resolve(process.cwd(), 'node_modules/vue-router/dist/vue-router.esm.js'));
+            .set('vue$', require.resolve('vue/dist/vue.esm.js'))
+            .set('vue-router$', require.resolve('vue-router/dist/vue-router.esm.js'));
         const isVuePackage = vusionConfig.type === 'component' || vusionConfig.type === 'block';
         config.resolve.alias
             .set('proto-ui', isVuePackage ? 'proto-ui.vusion/dist' : 'proto-ui.vusion');
