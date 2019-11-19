@@ -12,12 +12,13 @@ module.exports = class FixMultifileCachePlugin {
                 const cacheEntry = dependencyCache.get(dependencies[0]);
                 if (cacheEntry) {
                     if (invalidFileName.endsWith('.vue') && cacheEntry.resource === invalidFileName) {
-                        //
+                        // 看看能不能进一步缩小范围
                     } else
                         return callback(null, cacheEntry);
                 }
                 const context = data.context || this.context;
                 const resolveOptions = Object.assign(data.resolveOptions || {}, {
+                    // 找不到好方法去 hack 进去
                     unsafeCache: false,
                 });
                 const request = dependencies[0].request;
