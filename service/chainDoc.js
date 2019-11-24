@@ -4,6 +4,7 @@ const webpack = require('webpack');
 const HTMLPlugin = require('html-webpack-plugin');
 const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
 const entryLoaderPath = require.resolve('@vusion/doc-loader/lib/entry-loader');
+const yamlDocLoaderPath = require.resolve('../webpack/loaders/yaml-doc-loader');
 const MiniCSSExtractPlugin = require('@vusion/mini-css-extract-plugin');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 
@@ -11,6 +12,55 @@ const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 const iterator = require('markdown-it-for-inline');
 const uslug = require('uslug');
 const uslugify = (s) => uslug(s);
+
+function chainMarkdown(config, rule) {
+    // cache-loader 老报错，干脆关了！
+    // .use('cache-loader')
+    // .loader('cache-loader')
+    // .options(config.module.rule('vue').use('cache-loader').get('options'))
+    // .end()
+    return rule.use('vue-loader')
+        .loader('vue-loader')
+        .options(config.module.rule('vue').use('vue-loader').get('options'))
+        .end()
+        .use('@vusion/md-vue-loader')
+        .loader('@vusion/md-vue-loader')
+        .options({
+            wrapper: 'u-article',
+            plugins: [
+                require('markdown-it-ins'),
+                require('markdown-it-mark'),
+                require('markdown-it-abbr'),
+                require('markdown-it-deflist'),
+                [require('markdown-it-anchor'), {
+                    slugify: uslugify,
+                    permalink: true,
+                    permalinkClass: 'heading-anchor',
+                    permalinkSymbol: '#',
+                }],
+                // require('markdown-it-container'),
+                [iterator, 'link_converter', 'link_open', (tokens, idx) => tokens[idx].tag = 'u-link'],
+                [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
+            ],
+            showCodeLineCount: 5,
+            codeProcess(live, code, content, lang) {
+                const relativePath = path.relative(process.cwd(), this.loader.resourcePath).replace(/\\/g, '/').replace(/^(\.\.\/)+/, '');
+
+                if (live) {
+                    const lineCount = content.split('\n').length;
+                    return `<u-code-example
+:show-code="${lineCount <= this.options.showCodeLineCount}"
+:show-detail="${lang === 'vue'}"
+file-path="${relativePath}">
+<div>${live}</div>
+<div slot="code">${code}</div>
+</u-code-example>\n\n`;
+                } else
+                    return code;
+            },
+        })
+        .end();
+}
 
 module.exports = function chainDoc(api, vueConfig, vusionConfig) {
     vueConfig.publicPath = vusionConfig.docs && vusionConfig.docs.base ? vusionConfig.docs.base : '';
@@ -60,53 +110,11 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.module.rule('js').uses.delete('thread-loader');
 
         // Eslint 需要删除 @vue/cli-plugin-eslint
-        config.module.rule('markdown')
-            .test(/\.md$/)
-            // cache-loader 老报错，干脆关了！
-            // .use('cache-loader')
-            // .loader('cache-loader')
-            // .options(config.module.rule('vue').use('cache-loader').get('options'))
-            // .end()
-            .use('vue-loader')
-            .loader('vue-loader')
-            .options(config.module.rule('vue').use('vue-loader').get('options'))
-            .end()
-            .use('@vusion/md-vue-loader')
-            .loader('@vusion/md-vue-loader')
-            .options({
-                wrapper: 'u-article',
-                plugins: [
-                    require('markdown-it-ins'),
-                    require('markdown-it-mark'),
-                    require('markdown-it-abbr'),
-                    require('markdown-it-deflist'),
-                    [require('markdown-it-anchor'), {
-                        slugify: uslugify,
-                        permalink: true,
-                        permalinkClass: 'heading-anchor',
-                        permalinkSymbol: '#',
-                    }],
-                    // require('markdown-it-container'),
-                    [iterator, 'link_converter', 'link_open', (tokens, idx) => tokens[idx].tag = 'u-link'],
-                    [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
-                ],
-                showCodeLineCount: 5,
-                codeProcess(live, code, content, lang) {
-                    const relativePath = path.relative(process.cwd(), this.loader.resourcePath).replace(/\\/g, '/').replace(/^(\.\.\/)+/, '');
+        chainMarkdown(config, config.module.rule('markdown').test(/\.md$/));
 
-                    if (live) {
-                        const lineCount = content.split('\n').length;
-                        return `<u-code-example
-:show-code="${lineCount <= this.options.showCodeLineCount}"
-:show-detail="${lang === 'vue'}"
-file-path="${relativePath}">
-<div>${live}</div>
-<div slot="code">${code}</div>
-</u-code-example>\n\n`;
-                    } else
-                        return code;
-                },
-            });
+        chainMarkdown(config, config.module.rule('yaml-doc').test(/\.vue\/api\.yaml$/))
+            .use('yaml-doc')
+            .loader(yamlDocLoaderPath);
 
         // 嫌麻烦，先关了！
         config.optimization.splitChunks({
