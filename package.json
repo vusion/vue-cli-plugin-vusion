@@ -1,7 +1,7 @@
 {
   "name": "vue-cli-plugin-vusion",
   "description": "Vue CLI Plugin for Vusion Projects",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "author": "wt911122 <452663934@qq.com>",
   "main": "index.js",
   "scripts": {
@@ -48,7 +48,7 @@
     "file-loader": "^4.2.0",
     "html-webpack-plugin": "^3.2.0",
     "http-proxy-middleware": "^0.19.1",
-    "icon-font-loader": "^2.1.0",
+    "icon-font-loader": "^2.2.0",
     "loader-utils": "^1.2.3",
     "markdown-it-abbr": "^1.0.4",
     "markdown-it-anchor": "^5.2.4",
