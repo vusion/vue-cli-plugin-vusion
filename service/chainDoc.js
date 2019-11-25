@@ -162,10 +162,8 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
                 oneOf.use('extract-css-loader')
                     .loader(MiniCSSExtractPlugin.loader)
                     .options({
-                        rules: {
-                            publicPath: '../',
-                            hmr: false,
-                        },
+                        publicPath: '../',
+                        hmr: false,
                     });
             });
             config.plugin('extract-css').use(MiniCSSExtractPlugin, [{
@@ -173,6 +171,14 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
                 themeFilename: 'css/[name]-theme-[theme].css',
                 themes: Object.keys(vusionConfig.theme),
             }]);
+        }
+
+        if (config.plugins.has('icon-font-plugin') && !vueConfig.publicPath) {
+            config.plugin('icon-font-plugin')
+                .tap(([options]) => {
+                    options.publicPath = '../fonts'; // @TODO: this option is weird
+                    return [options];
+                });
         }
 
         config.plugin('define-docs')
