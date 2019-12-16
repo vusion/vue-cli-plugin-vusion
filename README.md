@@ -23,19 +23,16 @@ Vue CLI Plugin for Vusion Projects
 ``` js
 {
     type: '', // Vusion 项目类型，如：'app', 'library', 'component', 'block', 'repository'
-    outputPath: '', // 可以覆盖 vue.config.js 的 `outputDir` 属性
-    publicPath: '', // 可以覆盖 vue.config.js 的 `publicPath` 属性
-    staticPath: '', // 设置静态文件目录，用于拷贝到 outputPath 下
-    srcPath: './src', // 设置源文件目录
-    libraryPath: '', // 设置项目库目录
-    baseCSSPath: '', // 设置基础样式目录
-    theme: undefined, // 选择主题
-    applyTheme: false, // 是否应用主题
+    outputPath: '', // 如果设置，vue.config.js 的 `outputDir` 属性
+    publicPath: '', // 如果设置，vue.config.js 的 `publicPath` 属性
+    staticPath: '', // 静态资源目录。构建时，会将该目录中的资源全部原样拷贝到输出目录下。
+    srcPath: './src', // 源文件目录。在项目中会自动注册别名'@'。
+    libraryPath: '', // 项目库目录。默认留空，表示与'srcPath'一致。在项目中会自动注册别名'@@'。
+    baseCSSPath: '', // 基础样式（如 reset 样式）的路径。默认留空，会查找'@/base/base.css'。在项目中会自动注册别名'baseCSS'。
+    theme: undefined, // 选择主题。主题 CSS 所在的路径，主题名称为 CSS 名。也可以为一个对象。
+    applyTheme: false, // 应用主题，将主题变量注入到 CSS 中。如果需要兼容 IE 浏览器，必须开启。
     docs: false, // 文档配置
     alias: { // 用于设置 Webpack 别名
-        vue$: path.resolve(__dirname, 'node_modules/vue/dist/vue.esm.js'),
-        'vue-i18n$': path.resolve(__dirname, 'node_modules/vue-i18n/dist/vue-i18n.esm.js'),
-        'vue-router$': path.resolve(__dirname, 'node_modules/vue-router/dist/vue-router.esm.js'),
         '@': path.resolve(__dirname, 'src'),
         ...
     },
@@ -93,6 +90,10 @@ Vue CLI Plugin for Vusion Projects
 ### doc-build
 
 构建文档。
+
+## Generator
+
+没有 Generator，请使用 [vusion init](https://github.com/vusion/vusion)
 
 ## UI
 

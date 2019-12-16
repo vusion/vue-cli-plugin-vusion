@@ -21,12 +21,36 @@ module.exports = (api) => {
         // other config properties
         onRead: ({ data, cwd }) => ({
             prompts: [{
+                name: 'type',
+                message: '项目类型',
+                type: 'list',
+                default: '',
+                value: data.vusion.type,
+                description: 'Vusion 项目类型。',
+                group: '基础设置',
+                choices: [{
+                    name: 'Web 应用',
+                    value: 'app',
+                }, {
+                    name: '组件库',
+                    value: 'library',
+                }, {
+                    name: '组件',
+                    value: 'component',
+                }, {
+                    name: '区块',
+                    value: 'block',
+                }, {
+                    name: '物料仓库',
+                    value: 'repository',
+                }],
+            }, {
                 name: 'outputPath',
                 message: '输出目录',
                 type: 'input',
-                default: 'public',
+                default: '',
                 value: data.vusion.outputPath,
-                description: '构建产生的文件将会生成在这里。该参数会覆盖 Vue CLI 的配置。',
+                description: '构建产生的文件将会生成在这里。如果设置，会覆盖 Vue CLI 的配置。',
                 group: '基础设置',
             }, {
                 name: 'publicPath',
@@ -34,7 +58,7 @@ module.exports = (api) => {
                 type: 'input',
                 default: '',
                 value: data.vusion.publicPath,
-                description: `应用的部署地址。如'/my-app/'。默认留空，所有资源会使用相对路径。`,
+                description: `应用的部署地址。如'/my-app/'。如果设置，会覆盖 Vue CLI 的配置。`,
                 group: '基础设置',
             }, {
                 name: 'staticPath',
@@ -70,15 +94,19 @@ module.exports = (api) => {
                 group: '基础设置',
             }, {
                 name: 'theme',
-                message: '主题路径',
+                message: '设置主题',
                 type: 'input',
-                default: '',
+                default: undefined,
                 value: data.vusion.theme,
                 description: `主题 CSS 所在的路径，主题名称为 CSS 名。也可以为一个对象。`,
                 group: '基础设置',
             }, {
                 name: 'applyTheme',
-                message: '应用主题，将主题变量注入到 CSS 中。如果需要兼容 IE 浏览器，必须开启。',
+                message: '应用主题',
+                type: 'confirm',
+                default: false,
+                value: data.vusion.applyTheme,
+                description: `将主题变量注入到 CSS 中。如果需要兼容 IE 浏览器，必须开启。`,
                 group: '基础设置',
             }],
         }),
