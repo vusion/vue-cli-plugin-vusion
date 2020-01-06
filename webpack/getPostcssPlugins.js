@@ -59,7 +59,7 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
             },
         }),
         // precss removed
-        require('postcss-calc'),
+        require('@vusion/postcss-calc'),
         postcssVusionExtendMerge,
     ].concat(vusionConfig.postcss || []);
 };

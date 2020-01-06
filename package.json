@@ -40,7 +40,7 @@
   "dependencies": {
     "@babel/core": "^7.5.4",
     "@babel/preset-env": "^7.5.4",
-    "@vusion/doc-loader": "^0.13.5",
+    "@vusion/doc-loader": "^0.13.7",
     "@vusion/md-vue-loader": "^1.2.4",
     "babel-loader": "^8.0.6",
     "copy-webpack-plugin": "^5.0.4",
@@ -58,7 +58,7 @@
     "markdown-it-mark": "^2.0.0",
     "minimist": "^1.2.0",
     "postcss": "^7.0.18",
-    "postcss-calc": "^7.0.1",
+    "@vusion/postcss-calc": "^7.0.2",
     "postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.2.3",
     "postcss-preset-env": "^6.7.0",
