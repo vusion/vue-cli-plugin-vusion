@@ -1,4 +1,5 @@
 const path = require('path');
+const color = require('color');
 const postcssImportResolver = require('postcss-import-resolver');
 const postcssVusionExtendMark = require('./postcss/extend-mark');
 const postcssVusionExtendMerge = require('./postcss/extend-merge');
@@ -19,6 +20,12 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
         }),
     });
 
+    const fixRatio = function (ratio) {
+        if (ratio.endsWith('%')) {
+            return ratio.replace('%', '') / 100;
+        }
+        return ratio;
+    };
     // Postcss plugins
     return [
         postcssExtendMark,
@@ -28,6 +35,36 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
             }),
             skipDuplicates: false,
             plugins: [postcssExtendMark],
+        }),
+        require('postcss-functions')({
+            functions: {
+                // 按比例混合两种颜色
+                mix(c1, c2, ratio = 0.5) {
+                    ratio = fixRatio(ratio);
+                    const mixed = color(c1).mix(color(c2), ratio);
+                    return mixed.alpha() < 1 ? mixed.string() : mixed.hex();
+                },
+                lighten(c, ratio) {
+                    ratio = fixRatio(ratio);
+                    return color(c).lighten(ratio);
+                },
+                darken(c, ratio) {
+                    ratio = fixRatio(ratio);
+                    return color(c).darken(ratio);
+                },
+                saturate(c, ratio) {
+                    ratio = fixRatio(ratio);
+                    return color(c).saturate(ratio);
+                },
+                desaturate(c, ratio) {
+                    ratio = fixRatio(ratio);
+                    return color(c).desaturate(ratio);
+                },
+                // 背景色是深色，用这个函数可以得到一个浅色的 color
+                yiq(c1, dark, light) {
+                    return color(c1).isLight() ? dark : light;
+                },
+            },
         }),
         require('postcss-url')({
         // Rewrite https://github.com/postcss/postcss-url/blob/master/src/type/rebase.js
