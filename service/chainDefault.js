@@ -56,11 +56,11 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             .use('vue-multifile-loader')
             .loader('vue-multifile-loader');
 
-        config.module.rules.delete('postcss');
-        config.module.rules.delete('scss');
-        config.module.rules.delete('sass');
-        config.module.rules.delete('less');
-        config.module.rules.delete('stylus');
+        // config.module.rules.delete('postcss');
+        // config.module.rules.delete('scss');
+        // config.module.rules.delete('sass');
+        // config.module.rules.delete('less');
+        // config.module.rules.delete('stylus');
 
         chainCSS(config, vueConfig, vusionConfig);
 

@@ -65,6 +65,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         }
     });
 
+    // @TODO: 需要支持 var(--xxx)
     config.module.rule('css').oneOf('variables')
         .resourceQuery(/variables/)
         .use('postcss-variables')

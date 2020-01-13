@@ -40,7 +40,7 @@
   "dependencies": {
     "@babel/core": "^7.5.4",
     "@babel/preset-env": "^7.5.4",
-    "@vusion/doc-loader": "^0.13.7",
+    "@vusion/doc-loader": "^0.13.8",
     "@vusion/md-vue-loader": "^1.2.4",
     "babel-loader": "^8.0.6",
     "color": "^3.1.2",
@@ -71,7 +71,7 @@
     "vue-component-analyzer": "^0.2.0",
     "vue-multifile-loader": "^15.0.1",
     "vue-style-loader": "^4.1.2",
-    "vusion-api": "^0.5.8",
+    "vusion-api": "^0.5.18",
     "webpack": "^4.35.3",
     "@vusion/mini-css-extract-plugin": "^0.8.5"
   }

@@ -112,7 +112,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         // Eslint 需要删除 @vue/cli-plugin-eslint
         chainMarkdown(config, config.module.rule('markdown').test(/\.md$/));
 
-        chainMarkdown(config, config.module.rule('yaml-doc').test(/\.vue[\\/]api\.yaml$/))
+        chainMarkdown(config, config.module.rule('yaml-doc').test(/[\\/]api\.yaml$/))
             .use('yaml-doc')
             .loader(yamlDocLoaderPath);
 
