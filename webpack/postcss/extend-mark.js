@@ -40,7 +40,7 @@ module.exports = postcss.plugin('postcss-vusion-extend-mark', ({ resolve }) => (
     let hasAutoExtend = false;
 
     styles.walkAtRules((rule) => {
-        if (rule.name === 'extend') {
+        if (rule.name === 'extends') { // 与 sass 区分
             addMark(styles, rule, EXTEND_START, EXTEND_END);
             rule.name = 'import';
             if (!rule.params)
