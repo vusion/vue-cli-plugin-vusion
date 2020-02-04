@@ -14,7 +14,7 @@ const uslug = require('uslug');
 const uslugify = (s) => uslug(s);
 
 function chainMarkdown(config, rule) {
-    // cache-loader 老报错，干脆关了！
+    // cache-loader 经常报错，暂时无法解决问题，先关了
     // .use('cache-loader')
     // .loader('cache-loader')
     // .options(config.module.rule('vue').use('cache-loader').get('options'))
@@ -116,7 +116,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .use('yaml-doc')
             .loader(yamlDocLoaderPath);
 
-        // 嫌麻烦，先关了！
+        // 不需要，先关了
         config.optimization.splitChunks({
             cacheGroups: {
                 vendors: false,
