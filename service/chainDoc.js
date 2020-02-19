@@ -77,9 +77,14 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.resolve.alias
             .set('vue$', require.resolve('vue/dist/vue.esm.js'))
             .set('vue-router$', require.resolve('vue-router/dist/vue-router.esm.js'));
-        const isVuePackage = vusionConfig.type === 'component' || vusionConfig.type === 'block';
+
+        let cloudUIAlias = 'cloud-ui.vusion';
+        if (vusionConfig.type === 'component' || vusionConfig.type === 'block')
+            cloudUIAlias = 'cloud-ui.vusion/dist';
+        else if (vusionConfig.type === 'library')
+            cloudUIAlias = path.dirname(vusionConfig.libraryPath);
         config.resolve.alias
-            .set('proto-ui', isVuePackage ? 'proto-ui.vusion/dist' : 'proto-ui.vusion');
+            .set('cloud-ui', cloudUIAlias);
 
         config.module.rule('doc-config')
             .test(/@vusion[\\/]doc-loader[\\/]views[\\/]empty\.js$/)
