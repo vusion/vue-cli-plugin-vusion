@@ -5,6 +5,7 @@ const autoLoaderPath = require.resolve('../scenes/designer/auto-loader');
 
 module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
     if (args._[0] === 'designer') {
+        process.env.DESIGNER = true;
         vueConfig.pages = {
             designer: {
                 entry: require.resolve('../scenes/designer/views/index.js'),
@@ -74,6 +75,15 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                     vendors: false,
                     default: false,
                 },
+            });
+
+            config.module.rule('vue').use('vue-loader').tap((options) => {
+                options.compilerOptions.modules = [require('../scenes/designer/transform')];
+                return options;
+            });
+            config.module.rule('vue-multifile').use('vue-loader').tap((options) => {
+                options.compilerOptions.modules = [require('../scenes/designer/transform')];
+                return options;
             });
 
             // console.log(config.toString());

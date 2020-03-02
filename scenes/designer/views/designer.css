@@ -1,0 +1,9 @@
+.vusion-designer-slot {
+    height: 4px;
+    background: #cfcfef;
+    transition: height 0.6s;
+}
+
+.vusion-designer-slot:hover {
+    height: 40px;
+}

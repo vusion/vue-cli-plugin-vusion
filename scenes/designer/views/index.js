@@ -3,6 +3,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
+import './designer.css';
 import '@/global/styles/theme.css';
 import '@/global/page';
 import '@/views/dashboard/library'; // @TODO
