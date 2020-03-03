@@ -84,6 +84,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 if (!options.cssnanoOptions.preset[1])
                     options.cssnanoOptions.preset[1] = {};
                 options.cssnanoOptions.preset[1].normalizeUrl = false;
+                options.cssnanoOptions.preset[1].calc = false;
                 return [options];
             });
             config.optimization.splitChunks({
