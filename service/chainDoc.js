@@ -43,7 +43,7 @@ function chainMarkdown(config, rule) {
                 [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
             ],
             showCodeLineCount: 5,
-            codeProcess(live, code, content, lang) {
+            codeProcess(live, code, content, lang, modifier) {
                 const relativePath = path.relative(process.cwd(), this.loader.resourcePath).replace(/\\/g, '/').replace(/^(\.\.\/)+/, '');
 
                 if (live) {
@@ -52,7 +52,7 @@ function chainMarkdown(config, rule) {
 :show-code="${lineCount <= this.options.showCodeLineCount}"
 :show-detail="${lang === 'vue'}"
 file-path="${relativePath}">
-<div>${live}</div>
+<div${modifier ? ' style="' + modifier + '"' : ''}>${live}</div>
 <div slot="code">${code}</div>
 </u-code-example>\n\n`;
                 } else
