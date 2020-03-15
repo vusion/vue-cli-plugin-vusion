@@ -20,7 +20,7 @@ module.exports = function (content) {
     const flatRoutes = _.getFlatRoutes(srcViewsPath);
     const routes = Object.keys(flatRoutes).map((key) => {
         const route = flatRoutes[key];
-        route.path = key;
+        route.path = key.replace(/\/views\//, '/');
         return route;
     });
 

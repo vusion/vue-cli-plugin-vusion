@@ -78,11 +78,11 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             });
 
             config.module.rule('vue').use('vue-loader').tap((options) => {
-                options.compilerOptions.modules = [require('../scenes/designer/transform')];
+                options.compilerOptions.plugins = [require('../scenes/designer/transform')];
                 return options;
             });
             config.module.rule('vue-multifile').use('vue-loader').tap((options) => {
-                options.compilerOptions.modules = [require('../scenes/designer/transform')];
+                options.compilerOptions.plugins = [require('../scenes/designer/transform')];
                 return options;
             });
 
