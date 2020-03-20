@@ -8,6 +8,8 @@ const getLocalIdent = require('./getLocalIdent');
 const getPostcssPlugins = require('./getPostcssPlugins');
 const chainCSSOneOfs = require('./chainCSSOneOfs');
 
+const semver = require('semver');
+
 module.exports = function chainCSS(config, vueConfig, vusionConfig) {
     const mode = config.get('mode');
     const postcssPlugins = getPostcssPlugins(config, vueConfig, vusionConfig);
@@ -23,14 +25,23 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         if (vusionConfig.applyTheme)
             cssOptions.importLoaders++;
 
-        const cssModuleOptions = Object.assign({
-            modules: true,
+        const isNewCSSLoader = semver.satisfies(require('css-loader/package.json').version, '>=3.0.0');
+        const cssOptionsModules = {
             getLocalIdent,
             localIdentName: '[name]_[local]_[hash:base64:8]',
-        }, cssOptions);
+        };
+
+        if (modules) {
+            if (isNewCSSLoader) {
+                cssOptions.modules = cssOptionsModules;
+            } else {
+                cssOptions.modules = true;
+                Object.assign(cssOptions, cssOptionsModules);
+            }
+        }
 
         oneOf.use('css-loader')
-            .options(modules ? cssModuleOptions : cssOptions)
+            .options(cssOptions)
             .end();
 
         if (vusionConfig.mode !== 'raw') {
