@@ -24,17 +24,17 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
             cssOptions.importLoaders = 2;
 
         const isNewCSSLoader = semver.satisfies(require('css-loader/package.json').version, '>=3.0.0');
-        const cssModulesOptions = {
+        const cssOptionsModules = {
             getLocalIdent,
             localIdentName: '[name]_[local]_[hash:base64:8]',
         };
 
         if (modules) {
             if (isNewCSSLoader) {
-                cssOptions.modules = cssModulesOptions;
+                cssOptions.modules = cssOptionsModules;
             } else {
                 cssOptions.modules = true;
-                Object.assign(cssOptions, cssModulesOptions);
+                Object.assign(cssOptions, cssOptionsModules);
             }
         }
 
