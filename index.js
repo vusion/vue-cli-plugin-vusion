@@ -12,7 +12,9 @@ module.exports = function (api, vueConfig) {
             o: 'output-path',
         },
     });
-    const vusionConfig = vusion.config.resolve(process.cwd(), undefined, args);
+
+    const configPath = args['vusion-config'] || process.env.VUSION_CONFIG_PATH;
+    const vusionConfig = vusion.config.resolve(process.cwd(), configPath, args);
 
     chainDefault(api, vueConfig, vusionConfig);
     registerLibraryBuild(api, vueConfig, vusionConfig);
