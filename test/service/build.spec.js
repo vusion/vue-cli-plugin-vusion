@@ -1,7 +1,7 @@
-const run = require('../fixtures/run');
+const cloneAndRun = require('../fixtures/cloneAndRun');
 
 describe('vue-cli-service build', () => {
-    it('web-app', () => {
-        run('https://github.com/vusion-templates/web-app.git', 'npm run build');
+    it('cloud-admin-lite', () => {
+        cloneAndRun('https://github.com/vusion-templates/cloud-admin-lite.git', 'npm run build');
     });
 });

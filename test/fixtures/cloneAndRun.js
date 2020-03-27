@@ -12,7 +12,13 @@ const exec = (command, onError) => {
     }
 };
 
-function run(gitPath, commands, options) {
+/**
+ * git clone and run commands
+ * @param {string} gitPath - Git Path
+ * @param {Array<string>} commands - Commands to run
+ * @param {string} options.branch - Which git branch
+ */
+function cloneAndRun(gitPath, commands, options) {
     if (!Array.isArray(commands))
         commands = [commands];
     options = Object.assign({
@@ -46,5 +52,5 @@ function run(gitPath, commands, options) {
     final();
 }
 
-module.exports = run;
+module.exports = cloneAndRun;
 module.exports.exec = exec;
