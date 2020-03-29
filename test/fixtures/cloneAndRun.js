@@ -3,11 +3,14 @@ const path = require('path');
 const shell = require('shelljs');
 
 const spawnSync = require('child_process').spawnSync;
+/**
+ * 使用 spawn inherit，直接打印 stdio
+ */
 const exec = (command, onError) => {
     const argv = command.split(/\s+/);
     const result = spawnSync(argv[0], argv.slice(1), { shell: true, stdio: 'inherit' });
     if (result.status) {
-        onError && onError();
+        onError && onError(result);
         process.exit(1);
     }
 };
