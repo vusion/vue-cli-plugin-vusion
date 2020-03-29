@@ -1,0 +1,69 @@
+@extends 'cloud-ui.vusion/src/components/u-tabs.vue/module.css';
+
+.root {}
+
+.head {
+    height: auto;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 50px;
+    margin-right: -25px;
+    margin-left: -25px;
+    padding: 0 25px;
+}
+
+.nav {
+    height: 47px;
+    margin-left: -25px;
+}
+
+.item {
+    position: relative;
+    height: 46px;
+    line-height: 46px;
+    padding: 0 25px;
+    padding-bottom: 1px;
+    /* min-width: 72px; */
+    /* text-align: center; */
+    border-radius: 2px 2px 0 0;
+    margin-right: 15px;
+    color: #a7afbb;
+    border: none;
+    transition: color var(--transition-duration-base);
+}
+
+.item::after {
+    display: block;
+    content: '';
+    position: absolute;
+    height: 2px;
+    bottom: 0;
+    background: var(--brand-primary);
+    width: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width var(--transition-duration-base);
+}
+
+.item:hover {
+    background: none;
+    color: var(--color-base);
+}
+
+.item[selected] {
+    color: var(--brand-primary);
+    border: none;
+    background: none;
+}
+
+.item[selected]::after {
+    width: 100%;
+}
+
+.body {
+    margin: 0;
+}
+
+.root + p > article > h2:first-of-type {
+    margin-top: 20px;
+}

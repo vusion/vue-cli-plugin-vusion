@@ -1,0 +1,52 @@
+<div :class="$style.root">
+    <div :class="$style.demo"><u-code-example-demo><slot></slot></u-code-example-demo></div>
+    <f-collapse-transition>
+        <div :class="$style.body" v-show="currentShowDetail">
+            <div :class="$style.data">
+                <u-data-view readonly :class="$style['logs']" :value="anondemoData" :expand-depth="1"></u-data-view>
+            </div>
+            <div ref="log" :class="$style.log">
+                <u-list-view :class="$style['logs']" cancelable>
+                    <u-list-view-item :class="$style['logs-item']" v-for="(log, index) in logs" :key="index">
+                        <div>
+                            <span :class="$style['logs-tag']">&lt;{{ log.sender }}&gt;</span>
+                            <span :class="$style['logs-description']"> $emit: </span>
+                            <span :class="$style['logs-event']">{{ log.eventName }} </span>
+                            <span :class="$style['logs-time']">{{ log.time }}</span>
+                        </div>
+                        <div :class="$style['logs-payload-line']">
+                            <span :class="$style['logs-description']">$event: </span>
+                            <span :class="$style['logs-payload']" v-ellipsis-title>{{ log.payload }}</span>
+                        </div>
+                    </u-list-view-item>
+                </u-list-view>
+            </div>
+        </div>
+    </f-collapse-transition>
+    <div :class="$style.head">
+        <!-- <span :class="$style.title">{{ title }}</span> -->
+        <div :class="$style.toolbar">
+            <div :class="$style['toolbar-item']" name="code" v-tooltip.top="currentShowCode ? '隐藏代码' : '显示代码'"
+            :checked="currentShowCode" @click="toggleShowCode"></div>
+            <div :class="$style['toolbar-item']" name="copy" v-tooltip.top="copySucceeded ? '复制成功' : '复制代码'" @click="copyCode"></div>
+            <!-- <div :class="$style['toolbar-item']" name="data" v-tooltip.top="showData ? '隐藏数据' : '显示数据'"
+                :checked="showData" @click="showData = !showData"></div> -->
+            <div :class="$style['toolbar-divider']"></div>
+            <div :class="$style['toolbar-item']" name="log" v-tooltip.top="currentShowDetail ? '隐藏实时信息' : '显示实时信息'"
+                :checked="currentShowDetail" @click="toggleShowDetail"></div>
+            <div :class="$style['toolbar-item']" name="clear" v-tooltip.top="'清空日志'" @click="clearLogs"></div>
+            <div :class="$style['toolbar-divider']"></div>
+            <a v-if="githubLink" :class="$style['toolbar-item']" name="github" v-tooltip.top="'在 GitHub 中打开'"
+                :href="githubLink" target="_blank"></a>
+            <!-- <div :class="$style['toolbar-item']" name="edit"></div>
+            <div :class="$style['toolbar-item']" name="codepen"></div>
+            <div :class="$style['toolbar-item']" name="jsfiddle"></div>
+            <div :class="$style['toolbar-item']" name="share"></div> -->
+        </div>
+    </div>
+    <f-collapse-transition>
+        <div ref="code" :class="$style.code" v-show="currentShowCode">
+            <slot name="code"></slot>
+        </div>
+    </f-collapse-transition>
+</div>

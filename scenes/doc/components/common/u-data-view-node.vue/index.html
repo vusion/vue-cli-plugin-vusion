@@ -1,0 +1,28 @@
+<div :class="$style.root">
+    <div :class="$style.item" :disabled="disabled">
+        <div :class="$style.expander" v-if="keys"
+            :expanded="currentExpanded" @click="toggle()"></div>
+        <span :class="$style.property" v-if="property" @click="toggle()">{{ property }}</span>
+        <span :class="$style.colon" v-if="property" @click="toggle()">: </span>
+        <span :class="$style.value">
+            <span :class="$style.text" :type="valueType" :editing="editing" @dblclick="edit()">{{ formattedValue }}</span>
+            <textarea ref="textarea" :class="$style.textarea" v-if="editing" v-model="editingValue" :style="textareaStyle"
+                autofocus @click.stop
+                @input="resizeTextarea($event.target)"
+                @blur="change()"
+                @keydown.enter="change()"
+            ></textarea>
+        </span>
+    </div>
+    <div :class="$style.list" v-if="currentExpanded && keys && keys.length < 1000">
+        <u-data-view-node
+            v-for="subKey in keys"
+            :key="subKey"
+            :property="subKey"
+            v-model="currentValue[subKey]"
+            :readonly="readonly"
+            :disabled="disabled"
+        ></u-data-view-node>
+    </div>
+    <slot></slot>
+</div>

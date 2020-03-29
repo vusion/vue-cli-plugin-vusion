@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const HTMLPlugin = require('html-webpack-plugin');
-const autoLoaderPath = require.resolve('../scenes/designer/auto-loader');
+const autoLoaderPath = require.resolve('../scenes/designer/loaders/auto-loader');
 
 module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
     if (args._[0] === 'designer') {
@@ -10,7 +10,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             designer: {
                 entry: require.resolve('../scenes/designer/views/index.js'),
                 filename: 'index.html',
-                template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../index.html'),
+                template: path.resolve(require.resolve('../scenes/designer/views/index.js'), '../index.html'),
                 chunks: 'all',
                 hash: true,
             },

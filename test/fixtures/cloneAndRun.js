@@ -33,6 +33,7 @@ function cloneAndRun(gitPath, commands, options) {
     shell.rm('-rf', '.git');
     shell.cd(name);
 
+    // 由于 vue-cli-plugin-vusion 在外面，所以
     let packageJSON = fs.readFileSync('package.json', 'utf8');
     packageJSON = packageJSON.replace(/"vue-cli-plugin-vusion":.+,/, '"vue-cli-plugin-vusion": "../../../",');
     fs.writeFileSync('package.json', packageJSON, 'utf8');

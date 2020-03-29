@@ -1,0 +1,11 @@
+<div :class="$style.root">
+    <u-data-view-node v-if="keys"
+        v-for="subKey in keys"
+        :key="subKey"
+        :property="subKey"
+        v-model="value[subKey]"
+        :readonly="readonly"
+        :disabled="disabled"
+    ></u-data-view-node>
+    <slot></slot>
+</div>

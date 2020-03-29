@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const HTMLPlugin = require('html-webpack-plugin');
-const autoLoaderPath = require.resolve('@vusion/doc-loader/lib/auto-loader');
-const entryLoaderPath = require.resolve('@vusion/doc-loader/lib/entry-loader');
+const autoLoaderPath = require.resolve('../scenes/doc/loaders/auto-loader');
+const entryLoaderPath = require.resolve('../scenes/doc/loaders/entry-loader');
 const yamlDocLoaderPath = require.resolve('../webpack/loaders/yaml-doc-loader');
 const MiniCSSExtractPlugin = require('@vusion/mini-css-extract-plugin');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
@@ -71,7 +71,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
     api.chainWebpack((config) => {
         config.entryPoints.clear();
         config.entry('docs')
-            .add(require.resolve('@vusion/doc-loader/views/index.js'));
+            .add(require.resolve('../scenes/doc/views/index.js'));
 
         // Make sure vue & vue-router unique
         config.resolve.alias
@@ -133,7 +133,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             config.plugin('html')
                 .use(HTMLPlugin, [{
                     filename: 'index.html',
-                    template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../index.html'),
+                    template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
                     chunks: 'all',
                     hash: true,
                 }]);
@@ -141,7 +141,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             config.plugin('html-404')
                 .use(HTMLPlugin, [{
                     filename: '404.html',
-                    template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../index.html'),
+                    template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
                     chunks: 'all',
                     hash: true,
                 }]);
@@ -149,14 +149,14 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             config.plugin('html')
                 .use(HTMLPlugin, [{
                     filename: 'index.html',
-                    template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../theme.html'),
+                    template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
                     chunks: 'all',
                     inject: false,
                 }]);
             config.plugin('html-404')
                 .use(HTMLPlugin, [{
                     filename: '404.html',
-                    template: path.resolve(require.resolve('@vusion/doc-loader/views/index.js'), '../theme.html'),
+                    template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
                     chunks: 'all',
                     inject: false,
                 }]);
