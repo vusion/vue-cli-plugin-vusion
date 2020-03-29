@@ -17,7 +17,6 @@ module.exports = function (api, vueConfig) {
 
     const configPath = args['vusion-config'] || process.env.VUSION_CONFIG_PATH;
     const vusionConfig = vusion.config.resolve(process.cwd(), configPath, args);
-    console.log(configPath, vusionConfig);
 
     chainDefault(api, vueConfig, vusionConfig);
     registerLibraryBuild(api, vueConfig, vusionConfig);
