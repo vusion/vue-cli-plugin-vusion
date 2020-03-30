@@ -1,11 +1,10 @@
-const cloneAndRun = require('../helpers/cloneAndRun');
+const gitClone = require('../helpers/gitClone');
 
 describe('vue-cli-service library-build', () => {
     it('cloud-ui', () => {
-        cloneAndRun('https://github.com/vusion/cloud-ui.git', [
-            'npm run build',
-            'npm run build:raw',
-            'npm run build:docs',
-        ]);
+        const project = gitClone('https://github.com/vusion/cloud-ui.git');
+        project.exec('npm run build');
+        project.exec('npm run build:raw');
+        project.exec('npm run build:docs');
     });
 });

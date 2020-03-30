@@ -6,8 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test:service && npm run test:unit",
-    "test:service": "mocha test/service/*.spec.js --timeout 1000000",
-    "test:unit": "mocha test/unit/**/*.spec.js --timeout 1000000"
+    "test:service": "mocha --timeout 1000000 test/service/*.spec.js",
+    "test:unit": "mocha --timeout 60000 test/unit/**/*.spec.js"
   },
   "license": "MIT",
   "repository": "vusion/vue-cli-plugin-vusion",
@@ -71,11 +71,13 @@
     "vusion-utils": "^0.4.7"
   },
   "devDependencies": {
+    "@vue/cli-test-utils": "^4.2.3",
     "chai": "^4.2.0",
     "cloud-ui.vusion": ">=0.6.10",
     "css-loader": "*",
     "eslint": "^6.0.0",
     "eslint-config-vusion": "^3.0.2",
+    "execa": "^4.0.0",
     "husky": "^3.0.0",
     "mocha": "^6.2.0",
     "shelljs": "^0.8.3",
