@@ -1,4 +1,4 @@
-const cloneAndRun = require('../fixtures/cloneAndRun');
+const cloneAndRun = require('../helpers/cloneAndRun');
 
 describe('vue-cli-service library-build', () => {
     it('cloud-ui', () => {
