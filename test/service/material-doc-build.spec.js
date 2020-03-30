@@ -9,11 +9,11 @@ describe('vue-cli-service doc-build', () => {
     it('cloud-ui-materials', async () => {
         const project = gitClone('https://github.com/vusion/cloud-ui-materials.git');
         shell.cd('src/components/u-chip.vue');
-        // project.exec('npm run build:doc');
+        project.exec('npm run build:doc');
 
         await serve({
             root: path.join(process.cwd(), 'public'),
-            url: '/index.html',
+            url: '/',
         }, async ({ page, helpers }) => {
             expect((await helpers.getText('h1')).trim()).that.includes('UChip');
             expect((await helpers.getText('[class^="u-chip"]')).trim()).to.equal('Chip');
