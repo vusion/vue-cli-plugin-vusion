@@ -24,15 +24,13 @@ const exec = (command, onError) => {
 function cloneAndRun(gitPath, commands, options) {
     if (!Array.isArray(commands))
         commands = [commands];
-    options = Object.assign({
-        branch: 'master',
-    }, options);
+    options = Object.assign({}, options);
 
     const tmpPath = path.resolve(__dirname, '../tmp');
     shell.cd(tmpPath);
 
     const name = path.basename(gitPath, '.git') + '-' + new Date().toJSON().slice(0, -5).replace(/:/g, '-');
-    exec(`git clone ${gitPath} --depth 1 --branch ${options.branch} ` + name);
+    exec(`git clone ${gitPath} --depth 1${options.branch ? ' --branch ' + options.branch : ''} ` + name);
     shell.rm('-rf', '.git');
     shell.cd(name);
 
@@ -51,6 +49,8 @@ function cloneAndRun(gitPath, commands, options) {
     };
 
     exec('npm i', final);
+    if (options.cwd)
+        shell.cd(options.cwd);
     commands.forEach((command) => exec(command, final));
 
     final();
