@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test:service && npm run test:unit",
-    "test:service": "mocha --timeout 1000000 test/service/*.spec.js",
+    "test:service": "mocha --no-timeout test/service/*.spec.js",
     "test:unit": "mocha --timeout 60000 test/unit/**/*.spec.js"
   },
   "license": "MIT",

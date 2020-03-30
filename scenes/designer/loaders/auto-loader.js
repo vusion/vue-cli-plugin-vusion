@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const loaderUtils = require('loader-utils');
 
-const _ = require('../common/utils');
+const _ = require('../../common/utils');
 
 // 生成routes，通过字符串拼接的形式
 module.exports = function (content) {

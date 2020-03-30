@@ -86,7 +86,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .set('cloud-ui', cloudUIAlias);
 
         config.module.rule('doc-config')
-            .test(/@vusion[\\/]doc-loader[\\/]views[\\/]empty\.js$/)
+            .test(/[\\/]scenes[\\/]doc[\\/]views[\\/]empty\.js$/)
             .use('auto-loader')
             .loader(autoLoaderPath)
             .options(vusionConfig);
@@ -105,7 +105,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         };
 
         config.module.rule('doc-entry')
-            .test(/@vusion[\\/]doc-loader[\\/]views[\\/]index\.js$/)
+            .test(/[\\/]scenes[\\/]doc[\\/]views[\\/]index\.js$/)
             .use('entry-loader')
             .loader(entryLoaderPath)
             .options(defineOptions);

@@ -1,7 +1,7 @@
 const createServer = require('./createServer');
 const launchPuppeteer = require('@vue/cli-test-utils/launchPuppeteer');
 const portfinder = require('portfinder');
-const sleep = require('./sleep');
+// const sleep = require('./sleep');
 
 module.exports = async function staticServerPuppeteer(options, test) {
     const port = await portfinder.getPortPromise();
@@ -10,11 +10,13 @@ module.exports = async function staticServerPuppeteer(options, test) {
         port,
     });
 
-    const launched = await launchPuppeteer(`http://localhost:${port}${options.url || ''}`)
+    const url = `http://localhost:${port}${options.url || ''}`;
+    console.info('Puppeteer url:', url);
+    const launched = await launchPuppeteer(url)
     browser = launched.browser
     page = launched.page;
 
-    await sleep(1000);
+    // await sleep(1000);
     await page.screenshot({ path: 'test.png' });
     const helpers = createHelpers(page);
 
@@ -25,7 +27,6 @@ module.exports = async function staticServerPuppeteer(options, test) {
 function createHelpers (page) {
     return {
       getText: selector => page.evaluate(selector => {
-          console.log(selector)
         return document.querySelector(selector).textContent
       }, selector),
 

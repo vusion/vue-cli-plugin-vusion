@@ -1,9 +1,7 @@
-const path = require('path');
-const { expect } = require('chai');
-
 const gitClone = require('../helpers/gitClone');
 const serve = require('../helpers/staticServerPuppeteer');
 const sleep = require('../helpers/sleep');
+const { expect } = require('chai');
 
 describe('vue-cli-service build', () => {
     it('cloud-admin-lite', async () => {

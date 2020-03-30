@@ -4,7 +4,7 @@ const vusion = require('vusion-api');
 const loaderUtils = require('loader-utils');
 
 const defaults = require('./defaults');
-const _ = require('./utils');
+const _ = require('../../common/utils');
 
 // 生成routes，通过字符串拼接的形式
 module.exports = function (content) {
