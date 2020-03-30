@@ -32,7 +32,7 @@
     "@babel/core": "^7.5.4",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
     "@babel/preset-env": "^7.5.5",
-    "@vusion/md-vue-loader": "^1.3.0",
+    "@vusion/md-vue-loader": "^1.4.0",
     "@vusion/mini-css-extract-plugin": "^0.8.5",
     "@vusion/postcss-calc": "^7.0.3",
     "babel-loader": "^8.0.6",

@@ -14,12 +14,11 @@ const uslug = require('uslug');
 const uslugify = (s) => uslug(s);
 
 function chainMarkdown(config, rule) {
-    // cache-loader 经常报错，暂时无法解决问题，先关了
-    // .use('cache-loader')
-    // .loader('cache-loader')
-    // .options(config.module.rule('vue').use('cache-loader').get('options'))
-    // .end()
-    return rule.use('vue-loader')
+    return rule.use('cache-loader')
+        .loader('cache-loader')
+        .options(config.module.rule('vue').use('cache-loader').get('options'))
+        .end()
+        .use('vue-loader')
         .loader('vue-loader')
         .options(config.module.rule('vue').use('vue-loader').get('options'))
         .end()
