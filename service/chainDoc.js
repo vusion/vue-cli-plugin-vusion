@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const HTMLPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const autoLoaderPath = require.resolve('../scenes/doc/loaders/auto-loader');
 const entryLoaderPath = require.resolve('../scenes/doc/loaders/entry-loader');
 const yamlDocLoaderPath = require.resolve('../webpack/loaders/yaml-doc-loader');
@@ -126,6 +127,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             chunks: 'all',
             hash: true,
             title: vusionConfig.docs && vusionConfig.docs.title || 'Vusion 组件库',
+            favicon: path.resolve(require.resolve('../index.js'), '../logo.png'),
         };
 
         if (vusionConfig.type === 'component' || vusionConfig.type === 'block') {
@@ -135,25 +137,25 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
 
         if (!Object.keys(vusionConfig.theme).length <= 1) {
             config.plugin('html')
-                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
+                .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
                     filename: 'index.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
                 })]);
             // For history mode 404 on GitHub
             config.plugin('html-404')
-                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
+                .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
                     filename: '404.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
                 })]);
         } else {
             config.plugin('html')
-                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
+                .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
                     filename: 'index.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
                     inject: false,
                 })]);
             config.plugin('html-404')
-                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
+                .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
                     filename: '404.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
                     inject: false,
