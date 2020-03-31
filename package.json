@@ -80,7 +80,9 @@
     "execa": "^4.0.0",
     "husky": "^3.0.0",
     "mocha": "^6.2.0",
+    "portfinder": "^1.0.25",
     "shelljs": "^0.8.3",
+    "strip-ansi": "^6.0.0",
     "vusion-hooks": "^0.3.0",
     "webpack": "^4.35.3"
   },
