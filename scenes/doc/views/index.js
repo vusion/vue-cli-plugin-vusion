@@ -26,7 +26,7 @@ if (process.env.NODE_ENV === 'development')
 import 'themeCSS';
 /* DEFAULT_PROJECT start */
 import 'baseCSS';
-import * as Library from '@@';
+import * as Library from 'cloud-ui.vusion';
 if ($docs.install === 'option-name') {
     Object.keys(Library).forEach((key) => {
         const Component = Library[key];
@@ -38,7 +38,7 @@ if ($docs.install === 'option-name') {
 /* DEFAULT_PROJECT end */
 /* MATERIAL_LIBRARY start */
 // import 'baseCSS';
-// import * as Library from '@@';
+// import * as Library from 'cloud-ui.vusion';
 // // install(Vue, CloudUI);
 // if ($docs.install === 'option-name') {
 //     Object.keys(Library).forEach((key) => {
@@ -50,9 +50,9 @@ if ($docs.install === 'option-name') {
 //     install(Vue, Library);
 /* MATERIAL_LIBRARY end */
 /* COMPONENT_PACKAGE start */
-import '@@/../dist/index.css';
+import 'cloud-ui.vusion/../dist/index.css';
 import '../styles/vue-package.css';
-import * as CLibraryDist from '@@/../dist';
+import * as CLibraryDist from 'cloud-ui.vusion/../dist';
 install(Vue, CLibraryDist);
 import * as Components from '@';
 if (Object.keys(Components).length > 1)
@@ -68,9 +68,9 @@ $docs.routes[0] = $docs.routes[0].children[1].children[1];
 $docs.routes[0].path = '/';
 /* COMPONENT_PACKAGE end */
 /* BLOCK_PACKAGE start */
-import '@@/../dist/index.css';
+import 'cloud-ui.vusion/../dist/index.css';
 import '../styles/vue-package.css';
-import * as BLibraryDist from '@@/../dist';
+import * as BLibraryDist from 'cloud-ui.vusion/../dist';
 install(Vue, BLibraryDist);
 import * as Blocks from '@';
 if (Object.keys(Blocks).length > 1)

@@ -74,7 +74,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         else {
             // 有的时候找不到原来的 CopyPlugin，不知道为什么
             config.plugin('copy').use(CopyPlugin, [
-                [{ from: staticPath, to: vusionConfig.outputPath, ignore: ['.*'] }],
+                [{ from: staticPath, to: '', ignore: ['.*'] }],
             ]);
         }
 
