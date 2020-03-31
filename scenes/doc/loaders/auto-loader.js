@@ -50,12 +50,16 @@ module.exports = function (content) {
         flatRoutesList[0]['/components'] && _.setChildren(flatRoutesList[0]['/components'], components);
 
         const blocksPath = path.join(srcPath, 'blocks');
-        blocks = _.getMaterials(blocksPath, config.docs && config.docs.blocks, 'blocks');
-        flatRoutesList[0]['/blocks'] && _.setChildren(flatRoutesList[0]['/blocks'], blocks);
+        if (fs.existsSync(blocksPath)) {
+            blocks = _.getMaterials(blocksPath, config.docs && config.docs.blocks, 'blocks');
+            flatRoutesList[0]['/blocks'] && _.setChildren(flatRoutesList[0]['/blocks'], blocks);
+        }
 
         const vendorsPath = path.resolve(process.cwd(), 'packages');
-        vendors = _.getMaterials(vendorsPath, config.docs && config.docs.vendors, 'vendors');
-        flatRoutesList[0]['/vendors'] && _.setChildren(flatRoutesList[0]['/vendors'], vendors);
+        if (fs.existsSync(vendorsPath)) {
+            vendors = _.getMaterials(vendorsPath, config.docs && config.docs.vendors, 'vendors');
+            flatRoutesList[0]['/vendors'] && _.setChildren(flatRoutesList[0]['/vendors'], vendors);
+        }
 
         const directivesPath = path.join(srcPath, 'directives');
         directives = _.getMaterials(directivesPath, config.docs && config.docs.directives, 'directives');

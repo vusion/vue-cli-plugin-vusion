@@ -1,5 +1,5 @@
 const gitClone = require('../helpers/gitClone');
-const serve = require('@vue/cli-test-utils/serveWithPuppeteer');
+const serve = require('../helpers/serveWithPuppeteer');
 const { expect } = require('chai');
 const sleep = require('../helpers/sleep');
 

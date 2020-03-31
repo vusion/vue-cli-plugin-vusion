@@ -6,15 +6,11 @@ const sleep = require('../helpers/sleep');
 
 describe('vue-cli-service doc', () => {
     it('cloud-ui-materials', async () => {
-        const project = gitClone('https://github.com/vusion-templates/cloud-ui-materials.git');
+        const project = gitClone('https://github.com/vusion/cloud-ui-materials.git');
         shell.cd('src/components/u-chip.vue');
 
         await serve(
-            () => {
-                const child = project.execa('npm run dev')
-                // child.stdout.pipe(process.stdout);
-                return child;
-            },
+            () => project.execa('npm run dev'),
             async ({ page, nextUpdate, helpers }) => {
                 console.log('puppeteer')
                 expect((await helpers.getText('h1')).trim()).that.includes('UChip');

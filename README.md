@@ -57,7 +57,7 @@ Vue CLI Plugin for Vusion Projects
 
 #### --vusion-mode raw
 
-原生模式，不处理 babel、font、sprite 等。
+原生模式，一般在打包组件库时使用，不处理 babel、icon-font、css-sprite。
 
 #### --base-css
 

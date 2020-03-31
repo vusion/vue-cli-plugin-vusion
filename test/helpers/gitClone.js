@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const shell = require('shelljs');
 const exec = require('./exec');
@@ -32,13 +32,30 @@ module.exports = function gitClone(gitPath, name, options) {
     const files = fs.readdirSync('../../../').filter((file) => file[0] !== '.' && file !== 'test' && file !== 'node_modules');
     files.forEach((file) => shell.cp('-r', `../../../${file}`, 'node_modules/vue-cli-plugin-vusion'));
 
+    const projectRoot = path.join(tmpPath, name);
+
     return {
         name,
-        dir: path.join(tmpPath, name),
+        dir: projectRoot,
         exec,
         execa: (command, args) => {
             [command, ...args] = command.split(/\s+/);
             return execa(command, args);
+        },
+        has(file) {
+            return fs.existsSync(path.resolve(projectRoot, file));
+        },
+        read(file) {
+            console.log(file)
+            return fs.readFile(path.resolve(projectRoot, file), 'utf8');
+        },
+        write(file, content) {
+            const targetPath = path.resolve(projectRoot, file)
+            const dir = path.dirname(targetPath)
+            return fs.ensureDir(dir).then(() => fs.writeFile(targetPath, content))
+        },
+        rm(file) {
+            return fs.remove(path.resolve(projectRoot, file))
         },
     };
 };

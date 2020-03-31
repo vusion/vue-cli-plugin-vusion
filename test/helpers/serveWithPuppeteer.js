@@ -29,12 +29,13 @@ module.exports = async function serveWithPuppeteer (serve, test, noPuppeteer) {
 
     let isFirstMatch = true
     child.stdout.on('data', async (data) => {
-      data = data.toString()
+      data = data.toString();
       try {
-        const urlMatch = data.match(/http:\/\/[^/]+\s/)
+        const urlMatch = data.match(/http:\/\/[^/\s]+/)
         if (urlMatch && isFirstMatch) {
           isFirstMatch = false
           let url = urlMatch[0].trim()
+          console.log('Catch url:', url);
 
           // fix "Protocol error (Page.navigate): Cannot navigate to invalid URL undefined" error
           // when running test in vscode terminal(zsh)
