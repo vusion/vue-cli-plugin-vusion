@@ -1,8 +1,8 @@
 {
   "extends": "vusion",
   "env": {
-      "browser": true,
-      "node": true,
-      "mocha": true
+    "browser": true,
+    "node": true,
+    "mocha": true
   }
 }

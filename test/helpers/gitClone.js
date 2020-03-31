@@ -46,16 +46,15 @@ module.exports = function gitClone(gitPath, name, options) {
             return fs.existsSync(path.resolve(projectRoot, file));
         },
         read(file) {
-            console.log(file)
             return fs.readFile(path.resolve(projectRoot, file), 'utf8');
         },
         write(file, content) {
-            const targetPath = path.resolve(projectRoot, file)
-            const dir = path.dirname(targetPath)
-            return fs.ensureDir(dir).then(() => fs.writeFile(targetPath, content))
+            const targetPath = path.resolve(projectRoot, file);
+            const dir = path.dirname(targetPath);
+            return fs.ensureDir(dir).then(() => fs.writeFile(targetPath, content));
         },
         rm(file) {
-            return fs.remove(path.resolve(projectRoot, file))
+            return fs.remove(path.resolve(projectRoot, file));
         },
     };
 };

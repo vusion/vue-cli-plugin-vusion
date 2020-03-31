@@ -1,109 +1,106 @@
-const stripAnsi = require('strip-ansi')
-const launchPuppeteer = require('@vue/cli-test-utils/launchPuppeteer')
+/* eslint-disable require-atomic-updates */
+const stripAnsi = require('strip-ansi');
+const launchPuppeteer = require('@vue/cli-test-utils/launchPuppeteer');
 
-module.exports = async function serveWithPuppeteer (serve, test, noPuppeteer) {
-  let activeBrowser
-  let activeChild
+module.exports = async function serveWithPuppeteer(serve, test, noPuppeteer) {
+    let activeBrowser;
+    let activeChild;
 
-  let notifyUpdate
-  const nextUpdate = () => {
-    return new Promise(resolve => {
-      notifyUpdate = resolve
-    })
-  }
+    let notifyUpdate;
+    const nextUpdate = () => new Promise((resolve) => {
+        notifyUpdate = resolve;
+    });
 
-  await new Promise((resolve, reject) => {
-    const child = activeChild = serve()
+    await new Promise((resolve, reject) => {
+        const child = activeChild = serve();
 
-    const exit = async (err) => {
-      if (activeBrowser) {
-        await activeBrowser.close()
-        activeBrowser = null
-      }
-      if (activeChild) {
-        activeChild.stdin.write('close')
-        activeBrowser = null
-      }
-      reject(err)
-    }
+        const exit = async (err) => {
+            if (activeBrowser) {
+                await activeBrowser.close();
+                activeBrowser = null;
+            }
+            if (activeChild) {
+                activeChild.stdin.write('close');
+                child.kill();
+                activeBrowser = null;
+            }
+            reject(err);
+        };
 
-    let isFirstMatch = true
-    child.stdout.on('data', async (data) => {
-      data = data.toString();
-      try {
-        const urlMatch = data.match(/http:\/\/[^/\s]+/)
-        if (urlMatch && isFirstMatch) {
-          isFirstMatch = false
-          let url = urlMatch[0].trim()
-          console.log('Catch url:', url);
+        let isFirstMatch = true;
+        child.stdout.on('data', async (data) => {
+            data = data.toString();
+            try {
+                const urlMatch = data.match(/http:\/\/[^/\s]+/);
+                if (urlMatch && isFirstMatch) {
+                    isFirstMatch = false;
+                    let url = urlMatch[0].trim();
+                    console.info('Catch url:', url);
 
-          // fix "Protocol error (Page.navigate): Cannot navigate to invalid URL undefined" error
-          // when running test in vscode terminal(zsh)
-          url = stripAnsi(url)
+                    // fix "Protocol error (Page.navigate): Cannot navigate to invalid URL undefined" error
+                    // when running test in vscode terminal(zsh)
+                    url = stripAnsi(url);
 
-          if (noPuppeteer) {
-            await test({ url })
-          } else {
-            // start browser
-            const { page, browser, requestUrls } = await launchPuppeteer(url)
-            activeBrowser = browser
+                    if (noPuppeteer) {
+                        await test({ url });
+                    } else {
+                        // start browser
+                        const { page, browser, requestUrls } = await launchPuppeteer(url);
+                        activeBrowser = browser;
 
-            const helpers = createHelpers(page)
+                        const helpers = createHelpers(page);
 
-            await test({
-              browser,
-              page,
-              url,
-              nextUpdate,
-              helpers,
-              requestUrls
-            })
+                        await test({
+                            browser,
+                            page,
+                            url,
+                            nextUpdate,
+                            helpers,
+                            requestUrls,
+                        });
 
-            await browser.close()
-            activeBrowser = null
-          }
+                        await browser.close();
+                        activeBrowser = null;
+                    }
 
-          // on appveyor, the spawned server process doesn't exit
-          // and causes the build to hang.
-          child.stdin.write('close')
-          activeChild = null
-          resolve()
-        } else if (data.match(/App updated/)) {
-          if (notifyUpdate) {
-            notifyUpdate(data)
-          }
-        } else if (data.match(/Failed to compile/)) {
-          exit(data)
-        }
-      } catch (err) {
-        exit(err)
-      }
-    })
+                    // on appveyor, the spawned server process doesn't exit
+                    // and causes the build to hang.
+                    child.stdin.write('close');
+                    child.kill();
+                    activeChild = null;
+                    resolve();
+                } else if (data.match(/App updated/)) {
+                    if (notifyUpdate) {
+                        notifyUpdate(data);
+                    }
+                } else if (data.match(/Failed to compile/)) {
+                    exit(data);
+                }
+            } catch (err) {
+                exit(err);
+            }
+        });
 
-    child.on('exit', code => {
-      activeChild = null
-      if (code !== 0) {
-        exit(`serve exited with code ${code}`)
-      }
-    })
-  })
-}
+        child.on('exit', (code) => {
+            activeChild = null;
+            if (code !== 0) {
+                exit(`serve exited with code ${code}`);
+            }
+        });
+    });
+};
 
 /* eslint-disable no-shadow */
-function createHelpers (page) {
-  return {
-    getText: selector => page.evaluate(selector => {
-      return document.querySelector(selector).textContent
-    }, selector),
+function createHelpers(page) {
+    return {
+        getText: (selector) => page.evaluate((selector) => document.querySelector(selector).textContent, selector),
 
-    hasElement: selector => page.evaluate(selector => {
-      return !!document.querySelector(selector)
-    }, selector),
+        hasElement: (selector) => page.evaluate((selector) => !!document.querySelector(selector), selector),
 
-    hasClass: (selector, cls) => page.evaluate((selector, cls) => {
-      const el = document.querySelector(selector)
-      return el && el.classList.contains(cls)
-    }, selector, cls)
-  }
+        hasClass: (selector, cls) => page.evaluate((selector, cls) => {
+            const el = document.querySelector(selector);
+            return el && el.classList.contains(cls);
+        }, selector, cls),
+    };
 }
 /* eslint-enable no-shadow */
