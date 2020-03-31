@@ -7,6 +7,7 @@ const entryLoaderPath = require.resolve('../scenes/doc/loaders/entry-loader');
 const yamlDocLoaderPath = require.resolve('../webpack/loaders/yaml-doc-loader');
 const MiniCSSExtractPlugin = require('@vusion/mini-css-extract-plugin');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
+const vusion = require('vusion-api');
 
 // markdown-it
 const iterator = require('markdown-it-for-inline');
@@ -66,6 +67,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
     vueConfig.outputDir = 'public';
     vueConfig.runtimeCompiler = true;
     vueConfig.productionSourceMap = false;
+    const pkg = require(vusionConfig.packagePath);
 
     api.chainWebpack((config) => {
         config.entryPoints.clear();
@@ -76,14 +78,6 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.resolve.alias
             .set('vue$', require.resolve('vue/dist/vue.esm.js'))
             .set('vue-router$', require.resolve('vue-router/dist/vue-router.esm.js'));
-
-        let cloudUIAlias = 'cloud-ui.vusion';
-        if (vusionConfig.type === 'component' || vusionConfig.type === 'block')
-            cloudUIAlias = 'cloud-ui.vusion/dist';
-        else if (vusionConfig.type === 'library')
-            cloudUIAlias = path.dirname(vusionConfig.libraryPath);
-        config.resolve.alias
-            .set('cloud-ui', cloudUIAlias);
 
         config.module.rule('doc-config')
             .test(/[\\/]scenes[\\/]doc[\\/]views[\\/]empty\.js$/)
@@ -128,37 +122,42 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             },
         });
 
+        const htmlCommonOptions = {
+            chunks: 'all',
+            hash: true,
+            title: vusionConfig.docs && vusionConfig.docs.title || 'Vusion 组件库',
+        };
+
+        if (vusionConfig.type === 'component' || vusionConfig.type === 'block') {
+            const componentName = vusion.utils.kebab2Camel(path.basename(pkg.name, '.vue'));
+            htmlCommonOptions.title = componentName + (vusionConfig.title ? ' ' + vusionConfig.title : '') + ' - Vusion 物料平台';
+        }
+
         if (!Object.keys(vusionConfig.theme).length <= 1) {
             config.plugin('html')
-                .use(HTMLPlugin, [{
+                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
                     filename: 'index.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
-                    chunks: 'all',
-                    hash: true,
-                }]);
+                })]);
             // For history mode 404 on GitHub
             config.plugin('html-404')
-                .use(HTMLPlugin, [{
+                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
                     filename: '404.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
-                    chunks: 'all',
-                    hash: true,
-                }]);
+                })]);
         } else {
             config.plugin('html')
-                .use(HTMLPlugin, [{
+                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
                     filename: 'index.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
-                    chunks: 'all',
                     inject: false,
-                }]);
+                })]);
             config.plugin('html-404')
-                .use(HTMLPlugin, [{
+                .use(HTMLPlugin, [Object.assign(htmlCommonOptions, {
                     filename: '404.html',
                     template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
-                    chunks: 'all',
                     inject: false,
-                }]);
+                })]);
         }
 
         if (config.plugins.has('extract-css')) { // Build mode

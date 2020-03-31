@@ -72,7 +72,11 @@ exports.nestRoutes = function (flatRoutes) {
         let parent = flatRoutes[route.parentPath];
         if (!parent) {
             parent = createRoute(route.parentPath, flatRoutes);
-            parent.fullPath = parent.filePath = require.resolve('cloud-ui.vusion/src/layouts/l-wrapper.vue/index.js').replace(/\\/g, '/');
+            try {
+                parent.fullPath = parent.filePath = require.resolve('cloud-ui.vusion/src/layouts/l-wrapper.vue/index.js').replace(/\\/g, '/');
+            } catch(e) {
+                parent.fullPath = parent.filePath = require.resolve(path.resolve(process.cwd(), './src/layouts/l-wrapper.vue/index.js')).replace(/\\/g, '/');
+            }
             parse(parent);
         }
 

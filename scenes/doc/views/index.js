@@ -102,8 +102,6 @@ const imports = require(DOCS_IMPORTS_PATH);
 install(Vue, imports);
 /* DOCS_IMPORTS_PATH end */
 
-document.title = $docs.title || 'Vusion 组件库';
-
 new Vue({
     router: new VueRouter({
         mode: $docs.mode,

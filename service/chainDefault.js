@@ -28,14 +28,26 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             themeCSS = vusionConfig.theme[Object.keys(vusionConfig.theme)[0]];
 
         // vue$, use default
-        const alias = Object.assign({
+        let alias = {
             '@': vusionConfig.srcPath,
             '@@': vusionConfig.libraryPath,
             library: vusionConfig.libraryPath,
             '~': process.cwd(),
             baseCSS: vusionConfig.baseCSSPath,
             themeCSS,
-        }, vusionConfig.alias);
+        };
+
+        let cloudUIAlias = 'cloud-ui.vusion';
+        if (vusionConfig.type === 'component' || vusionConfig.type === 'block')
+            cloudUIAlias = 'cloud-ui.vusion/dist';
+        else if (vusionConfig.type === 'library') {
+            cloudUIAlias = path.dirname(vusionConfig.libraryPath);
+            if (vusionConfig.name === 'cloud-ui')
+                alias['cloud-ui.vusion'] = cloudUIAlias;
+        }
+        alias['cloud-ui'] = cloudUIAlias;
+        // User custom
+        alias = Object.assign(alias, vusionConfig.alias);
 
         /**
          * Default Mode
