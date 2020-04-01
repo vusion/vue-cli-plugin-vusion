@@ -1,5 +1,9 @@
 <div :class="$style.root">
     <div :class="$style.demo"><u-code-example-demo><slot></slot></u-code-example-demo></div>
+    <form ref="codesandbox" action="https://codesandbox.io/api/v1/sandboxes/define" method="POST" target="_blank"style="display: none;">
+        <input type="hidden" name="parameters" :value="codesandboxData">
+        <input type="submit" value="submit" />
+    </form>
     <f-collapse-transition>
         <div :class="$style.body" v-show="currentShowDetail">
             <div :class="$style.data">
@@ -38,6 +42,7 @@
             <div :class="$style['toolbar-divider']"></div>
             <a v-if="githubLink" :class="$style['toolbar-item']" name="github" v-tooltip.top="'在 GitHub 中打开'"
                 :href="githubLink" target="_blank"></a>
+            <div :class="$style['toolbar-item']" name="codesandbox" @click="openCodesandbox()" v-tooltip.top="'在 codesandbox 中打开'"></div>
             <!-- <div :class="$style['toolbar-item']" name="edit"></div>
             <div :class="$style['toolbar-item']" name="codepen"></div>
             <div :class="$style['toolbar-item']" name="jsfiddle"></div>

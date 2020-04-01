@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+const shell = require('shelljs');
+
+const target = process.argv[2].replace(/\/$/, '');
+if (!target.endsWith('vue-cli-plugin-vusion'))
+    throw new Error('Please specify a path of vue-cli-plugin-vusion');
+
+const files = fs.readdirSync(path.resolve(__dirname, '../'))
+    .filter((file) => file[0] !== '.' && file !== 'node_modules' && file !== 'test' && !file.startsWith('package'));
+console.log(files);
+
+files.forEach((file) => {
+    shell.rm('-rf', path.join(target, file));
+    shell.cp('-r', file, target);
+});

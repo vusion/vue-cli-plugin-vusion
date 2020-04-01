@@ -36,6 +36,7 @@
     "@vusion/mini-css-extract-plugin": "^0.8.5",
     "@vusion/postcss-calc": "^7.0.3",
     "babel-loader": "^8.0.6",
+    "codesandbox": "^2.1.12",
     "color": "^3.1.2",
     "copy-webpack-plugin": "^5.0.4",
     "css-sprite-loader": "^0.3.4",

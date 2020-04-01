@@ -61,6 +61,7 @@
 .toolbar-item[name="edit"]::before { icon-font: url('./assets/edit.svg'); }
 .toolbar-item[name="github"]::before { icon-font: url('./assets/github.svg'); vertical-align: -1px; font-size: 16px; }
 .toolbar-item[name="codepen"]::before { icon-font: url('./assets/codepen.svg'); vertical-align: -2px; font-size: 18px; }
+.toolbar-item[name="codesandbox"]::before { icon-font: url('./assets/codesandbox.svg'); vertical-align: -1px; font-size: 16px; }
 .toolbar-item[name="jsfiddle"]::before { icon-font: url('./assets/jsfiddle.svg'); vertical-align: -3px; font-size: 19px; }
 .toolbar-item[name="share"]::before { icon-font: url('./assets/share.svg'); }
 
