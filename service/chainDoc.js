@@ -71,8 +71,10 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
 
     api.chainWebpack((config) => {
         config.entryPoints.clear();
-        config.entry('docs')
-            .add(require.resolve('../scenes/doc/views/index.js'));
+        if (vusionConfig.type === 'library')
+            config.entry('docs').add(require.resolve('../scenes/doc/views/library.js'));
+        else if (vusionConfig.type === 'component' || vusionConfig.type === 'block')
+            config.entry('docs').add(require.resolve('../scenes/doc/views/material.js'));
 
         // Make sure vue & vue-router unique
         config.resolve.alias
@@ -99,7 +101,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         };
 
         config.module.rule('doc-entry')
-            .test(/[\\/]scenes[\\/]doc[\\/]views[\\/]index\.js$/)
+            .test(/[\\/]scenes[\\/]doc[\\/]views[\\/]library\.js$/)
             .use('entry-loader')
             .loader(entryLoaderPath)
             .options(defineOptions);
