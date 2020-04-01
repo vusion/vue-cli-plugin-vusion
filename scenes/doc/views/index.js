@@ -101,12 +101,29 @@ requires2.keys().forEach((key) => {
 const imports = require(DOCS_IMPORTS_PATH);
 install(Vue, imports);
 /* DOCS_IMPORTS_PATH end */
-
+const router = new VueRouter({
+    mode: $docs.mode,
+    base: $docs.base,
+    routes: $docs.routes,
+    scrollBehavior: (to, from, savedPosition) => {
+        if (to.hash) {
+            return {
+                selector: decodeURIComponent(to.hash),
+            };
+        }
+        return savedPosition || { x: 0, y: 0 };
+    },
+});
+router.afterEach((to, from) => {
+    if (to.hash) {
+        Vue.nextTick(() => {
+            setTimeout(() => {
+                const ele = document.querySelector(decodeURIComponent(to.hash));
+                ele && ele.scrollIntoView();
+            }, 300); // 延迟时间无法确定，暂时 300ms
+        });
+    }
+});
 new Vue({
-    router: new VueRouter({
-        mode: $docs.mode,
-        base: $docs.base,
-        routes: $docs.routes,
-        scrollBehavior: (to, from, savedPosition) => savedPosition || { x: 0, y: 0 },
-    }),
+    router,
 }).$mount('#app');
