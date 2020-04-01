@@ -40,7 +40,17 @@ function chainMarkdown(config, rule) {
                     permalinkSymbol: '#',
                 }],
                 // require('markdown-it-container'),
-                [iterator, 'link_converter', 'link_open', (tokens, idx) => tokens[idx].tag = 'u-link'],
+                [iterator, 'link_converter', 'link_open', (tokens, idx) => {
+                    tokens[idx].tag = 'u-link';
+                    const aIndex = tokens[idx].attrIndex('href');
+                    if (aIndex >= 0) {
+                        const attr = tokens[idx].attrs[aIndex];
+                        if (attr[1].startsWith('#')) {
+                            tokens[idx].attrPush([':to', `{hash: '${attr[1]}'}`]);
+                            tokens[idx].attrs.splice(aIndex, 1);
+                        }
+                    }
+                }],
                 [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
             ],
             showCodeLineCount: 5,
