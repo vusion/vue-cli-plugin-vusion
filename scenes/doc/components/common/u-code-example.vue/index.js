@@ -1,6 +1,6 @@
 import '../atom-one-light.css';
 import { formatValue } from '../u-data-view-node.vue/utils';
-import { utils } from 'cloud-ui';
+import { utils } from 'cloud-ui.vusion';
 
 export default {
     name: 'u-code-example',

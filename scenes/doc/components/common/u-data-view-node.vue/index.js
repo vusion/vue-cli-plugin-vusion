@@ -1,4 +1,4 @@
-import { MEmitter } from 'cloud-ui';
+import { MEmitter } from 'cloud-ui.vusion';
 import saferEval from 'safer-eval';
 
 const rawTypeRE = /^\[object (\w+)]$/;

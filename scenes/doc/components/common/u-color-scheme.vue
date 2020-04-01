@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import { utils } from 'cloud-ui';
+import { utils } from 'cloud-ui.vusion';
 
 export default {
     name: 'u-color-scheme',

@@ -1,4 +1,4 @@
-import { UTabs } from 'cloud-ui';
+import { UTabs } from 'cloud-ui.vusion';
 
 export const UH2Tabs = {
     name: 'u-h2-tabs',
