@@ -1,4 +1,4 @@
-const docEntry = window.docEntry;
+const docEntry = window['doc-entry'].default;
 
 import $docs from './empty';
 import * as Components from '@';

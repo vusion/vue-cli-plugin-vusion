@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const HTMLPlugin = require('html-webpack-plugin');
+const HTMLTagsPlugin = require('html-webpack-tags-plugin');
 const autoLoaderPath = require.resolve('../scenes/doc/loaders/auto-loader');
 const entryLoaderPath = require.resolve('../scenes/doc/loaders/entry-loader');
 const yamlDocLoaderPath = require.resolve('../webpack/loaders/yaml-doc-loader');
@@ -140,28 +141,55 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         config.plugin('html')
             .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
                 filename: 'index.html',
-                template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
+                template: path.resolve(require.resolve('../scenes/doc/views/library.js'), '../index.html'),
             })]);
         // For history mode 404 on GitHub
         // config.plugin('html-404')
         //     .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
         //         filename: '404.html',
-        //         template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../index.html'),
+        //         template: path.resolve(require.resolve('../scenes/doc/views/library.js'), '../index.html'),
         //     })]);
         // } else {
         //     config.plugin('html')
         //         .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
         //             filename: 'index.html',
-        //             template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
+        //             template: path.resolve(require.resolve('../scenes/doc/views/library.js'), '../theme.html'),
         //             inject: false,
         //         })]);
         //     // config.plugin('html-404')
         //     //     .use(HTMLPlugin, [Object.assign({}, htmlCommonOptions, {
         //     //         filename: '404.html',
-        //     //         template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../theme.html'),
+        //     //         template: path.resolve(require.resolve('../scenes/doc/views/library.js'), '../theme.html'),
         //     //         inject: false,
         //     //     })]);
         // }
+        if (vusionConfig.type === 'component' || vusionConfig.type === 'block') {
+            // 在 dev 模式时便需将 Cloud UI 提取出来
+
+            config.externals({
+                vue: 'Vue',
+                'cloud-ui.vusion': 'CloudUI',
+            });
+
+            const pkg = require(vusionConfig.packagePath);
+            let version = '0.6.0';
+            if (pkg.peerDependencies['cloud-ui.vusion'])
+                version = pkg.peerDependencies['cloud-ui.vusion'];
+            else if (pkg.dependencies['cloud-ui.vusion'])
+                version = pkg.dependencies['cloud-ui.vusion'];
+            version = version.replace(/^[^\d.]+/, '').split('.').slice(0, 2).join('.');
+
+            config.plugin('html-tags').after('html')
+                .use(HTMLTagsPlugin, [
+                    { tags: [
+                        'https://static-vusion.163yun.com/packages/vue@2/dist/vue.min.js',
+                        `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-theme/index.css`,
+                        `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-theme/index.js`,
+                        `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.css`,
+                        `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.js`,
+                    ], append: false, hash: false },
+                ]);
+        }
 
         if (config.plugins.has('extract-css')) { // Build mode
             chainCSSOneOfs(config, (oneOf, modules) => {

@@ -8,6 +8,8 @@ Vue.use(CodeExamplePlugin);
 
 import { install } from 'vusion-utils';
 
+import 'themeCSS';
+import '../styles/vue-package.css';
 import * as CloudUI from 'cloud-ui.vusion';
 install(Vue, CloudUI);
 
@@ -19,8 +21,6 @@ requires.keys().forEach((key) => {
     const name = requires(key).default.name || key.slice(key.lastIndexOf('/') + 1, key.lastIndexOf('.'));
     Vue.component(name, requires(key).default);
 });
-
-import '../styles/vue-package.css';
 
 export default ($docs, Components) => {
     Vue.prototype.$docs = $docs;
