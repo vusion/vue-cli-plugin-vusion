@@ -44,9 +44,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
 
         api.chainWebpack((config) => {
             config.entryPoints.clear();
-            config.entry('index')
-                .add(vusionConfig.baseCSSPath)
-                .add('./index.js');
+            config.entry('index').add('./index.js');
 
             config.output.filename('[name].js')
                 .chunkFilename('[name].[contenthash:8].js')
