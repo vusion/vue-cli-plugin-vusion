@@ -73,22 +73,30 @@ module.exports = function compilerPlugin(ast, options) {
         } else if (el.tag === 'div') {
             const children = el.children = el.children || [];
 
-            const ast = compiler.compile(`<d-slot></d-slot>`).ast;
-            children.push(ast);
+            const tmp = compiler.compile(`<d-slot></d-slot>`).ast;
+            children.push(tmp);
         } else if (el.tag === 'u-linear-layout') {
             const children = el.children = el.children || [];
 
-            const ast = compiler.compile(`
+            const tmp = compiler.compile(`
 <div>
-<d-slot tag="u-linear-layout" ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-slot>
+<d-slot tag="u-linear-layout" ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'} file="${options.vueFile.fullPath}" node-path="${nodePath.route}"></d-slot>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 </div>`).ast;
-            children.push(...ast.children);
+            children.push(...tmp.children);
         }
 
         // if (el.tag === 'slot')
         //     debugger;
     });
+
+    const tmp = compiler.compile(`
+<div>
+<d-loading></d-loading>
+</div>`).ast;
+    if (ast.children) {
+        ast.children.push(...tmp.children);
+    }
 };
 

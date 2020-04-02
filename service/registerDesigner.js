@@ -81,10 +81,6 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 options.compilerOptions.plugins = [require('../scenes/designer/transform')];
                 return options;
             });
-            config.module.rule('vue-multifile').use('vue-loader').tap((options) => {
-                options.compilerOptions.plugins = [require('../scenes/designer/transform')];
-                return options;
-            });
 
             // console.log(config.toString());
             // process.exit(0);
