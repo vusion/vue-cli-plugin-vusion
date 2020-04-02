@@ -77,7 +77,7 @@ export default {
         clearLogs() {
             this.logs = [];
         },
-        openCodesandbox() {
+        openCodeSandbox() {
             const content = this.$refs.code.innerText.trim();
             this.codesandboxData = getParameters({
                 files: {

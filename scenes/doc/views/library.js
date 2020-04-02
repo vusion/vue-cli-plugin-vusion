@@ -50,11 +50,30 @@ const imports = require(DOCS_IMPORTS_PATH);
 install(Vue, imports);
 /* DOCS_IMPORTS_PATH end */
 
+const router = new VueRouter({
+    mode: $docs.mode,
+    base: $docs.base,
+    routes: $docs.routes,
+    scrollBehavior: (to, from, savedPosition) => {
+        if (to.hash) {
+            return {
+                selector: decodeURIComponent(to.hash),
+            };
+        }
+        return savedPosition || { x: 0, y: 0 };
+    },
+});
+router.afterEach((to, from) => {
+    if (to.hash) {
+        setTimeout(() => {
+            const el = document.querySelector(decodeURIComponent(to.hash));
+            // 处理导航栏的高度
+            const navbarEl = document.querySelector('[class^=u-navbar]');
+            document.documentElement.scrollTop = el.offsetTop - (navbarEl ? navbarEl.offsetHeight : 0) - 30;
+        }, 300); // 延迟时间无法确定，暂时 300ms
+    }
+});
+
 new Vue({
-    router: new VueRouter({
-        mode: $docs.mode,
-        base: $docs.base,
-        routes: $docs.routes,
-        scrollBehavior: (to, from, savedPosition) => savedPosition || { x: 0, y: 0 },
-    }),
+    router,
 }).$mount('#app');
