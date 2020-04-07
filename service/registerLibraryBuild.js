@@ -95,7 +95,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
             config.plugin('html')
                 .tap(([options]) => [Object.assign(options, {
                     filename: 'demo.html',
-                    template: path.resolve(require.resolve('../scenes/doc/views/index.js'), '../demo.html'),
+                    template: path.resolve(require.resolve('../scenes/doc/views/library.js'), '../demo.html'),
                     title: vusionConfig.docs && vusionConfig.docs.title,
                     hash: true,
                     inject: 'head',
