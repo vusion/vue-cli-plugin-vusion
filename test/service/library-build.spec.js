@@ -34,6 +34,14 @@ describe('vue-cli-service library-build', () => {
         expect(await project.read('dist-raw/index.css')).that.includes('icon-font:url(');
     });
 
+    it('cloud-ui:theme', async () => {
+        project.exec('npm run build:theme');
+        // expect(project.has('dist/index.js')).to.be.true;
+        // expect(project.has('dist/index.css')).to.be.true;
+        expect((await project.read('dist/index.js')).includes('const ')).to.be.false;
+        expect((await project.read('dist/index.css')).includes('icon-font:url(')).to.be.false;
+    });
+
     it('cloud-ui:docs', () => {
         project.exec('npm run build:docs');
 
