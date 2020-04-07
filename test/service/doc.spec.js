@@ -15,7 +15,7 @@ describe('vue-cli-service doc', () => {
                 expect((await helpers.getText('h1')).trim()).that.includes('Quickstart');
                 expect((await helpers.getText('[class^="u-navbar_item"][selected]')).trim()).to.equal('基础组件');
 
-                page.click('a[href="/cloud-ui/components/u-button"]');
+                page.click('a[href="#/components/u-button"]');
                 await sleep(1000);
                 expect((await helpers.getText('h1')).trim()).that.includes('UButton');
                 expect(await helpers.hasElement('h3#设置形状')).to.be.true;
