@@ -16,7 +16,7 @@ describe('vue-cli-service build', () => {
             expect((await helpers.getText('[class^="s-navbar-right_username"]')).trim()).to.equal('username');
 
             await page.evaluate(() => location = '#/demo/form/basic');
-            await sleep(1000)
+            await sleep(1000);
             expect((await helpers.getText('[class^="u-sidebar_item"][selected]')).trim()).to.equal('基础表单');
             expect((await helpers.getText('[class^="u-radios_radio"]')).trim()).to.equal('包年包月');
         });
