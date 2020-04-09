@@ -46,21 +46,27 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
 
         if (vusionConfig.mode !== 'raw') {
             mode === 'production' && oneOf.use('css-sprite-loader')
+                .before('postcss-loader') // 在 @vue/cli-service@4 中，已经添加了 postcss-loader
                 .loader('css-sprite-loader')
                 .end()
                 .use('svg-classic-sprite-loader')
+                .before('postcss-loader') // 在 @vue/cli-service@4 中，已经添加了 postcss-loader
                 .loader('svg-classic-sprite-loader')
                 .options({ filter: 'query' })
                 .end();
 
             oneOf.use('icon-font-loader')
+                .before('postcss-loader') // 在 @vue/cli-service@4 中，已经添加了 postcss-loader
                 .loader('icon-font-loader')
                 .end();
         }
 
         const postcssLoader = oneOf.use('postcss-loader')
             .loader('postcss-loader')
-            .options({ plugins: () => postcssPlugins })
+            .options({
+                sourceMap: vueConfig.css.sourceMap,
+                plugins: () => postcssPlugins,
+            })
             .end()
             .use('module-class-priority-loader')
             .loader(moduleClassPriorityLoaderPath)
