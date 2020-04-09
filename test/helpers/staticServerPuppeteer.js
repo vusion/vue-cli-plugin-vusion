@@ -5,38 +5,36 @@ const portfinder = require('portfinder');
 
 module.exports = async function staticServerPuppeteer(options, test) {
     const port = await portfinder.getPortPromise();
-    server = await createServer({
+    const server = await createServer({
         root: options.root,
         port,
     });
 
     const url = `http://localhost:${port}${options.url || ''}`;
     console.info('Puppeteer url:', url);
-    const launched = await launchPuppeteer(url)
-    browser = launched.browser
-    page = launched.page;
+    const { page, browser } = await launchPuppeteer(url);
+    let activeBrowser = browser;
 
     // await sleep(1000);
     await page.screenshot({ path: 'test.png' });
     const helpers = createHelpers(page);
 
     await test({ browser, page, helpers });
+    await server.close();
+    await browser.close();
+    activeBrowser = null;
 };
 
 /* eslint-disable no-shadow */
-function createHelpers (page) {
+function createHelpers(page) {
     return {
-      getText: selector => page.evaluate(selector => {
-        return document.querySelector(selector).textContent
-      }, selector),
+        getText: (selector) => page.evaluate((selector) => document.querySelector(selector).textContent, selector),
 
-      hasElement: selector => page.evaluate(selector => {
-        return !!document.querySelector(selector)
-      }, selector),
+        hasElement: (selector) => page.evaluate((selector) => !!document.querySelector(selector), selector),
 
-      hasClass: (selector, cls) => page.evaluate((selector, cls) => {
-        const el = document.querySelector(selector)
-        return el && el.classList.contains(cls)
-      }, selector, cls)
-    }
+        hasClass: (selector, cls) => page.evaluate((selector, cls) => {
+            const el = document.querySelector(selector);
+            return el && el.classList.contains(cls);
+        }, selector, cls),
+    };
 }
