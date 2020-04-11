@@ -16,9 +16,8 @@ module.exports = function (content) {
     const libraryPath = config.libraryPath;
 
     this.cacheable();
-    // 动态监听目录变化，成本太高，最好是能够只监听到目录的变动
+    // 动态监听目录中组件的增加
     // this.addContextDependency(srcPath || libraryPath);
-    // @TODO: 动态监听配置变化
     this.addDependency(config.configPath);
     this.addDependency(config.packagePath);
 
@@ -48,6 +47,11 @@ module.exports = function (content) {
             componentsPath = libraryPath;
         components = _.getMaterials(componentsPath, config.docs && config.docs.components, 'components');
         flatRoutesList[0]['/components'] && _.setChildren(flatRoutesList[0]['/components'], components);
+        components.forEach((component) => {
+            // 监听 docs 目录的变更
+            if (component.path && component.path.endsWith('api.yaml'))
+                this.addContextDependency(path.join(component.path, '../docs'));
+        });
 
         const blocksPath = path.join(srcPath, 'blocks');
         if (fs.existsSync(blocksPath)) {

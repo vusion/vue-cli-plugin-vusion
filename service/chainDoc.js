@@ -192,7 +192,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             config.plugin('html-tags').after('html')
                 .use(HTMLTagsPlugin, [
                     { tags: [
-                        'https://static-vusion.163yun.com/packages/vue@2/dist/vue.min.js',
+                        `https://static-vusion.163yun.com/packages/vue@2/dist/vue${process.env.NODE_ENV === 'development' ? '' : '.min'}.js`,
                         `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-theme/index.css`,
                         `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-theme/index.js`,
                         `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.css`,
