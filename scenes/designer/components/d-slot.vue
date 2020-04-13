@@ -1,10 +1,10 @@
 <template>
-<div :class="$style.root" :selected="!!mode">
+<div :class="$style.root" :selected="dragover || !!mode" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop">
     <div v-if="!focused" :class="$style.init" @click="focused = true"></div>
     <template v-else>
         <div v-if="mode !== 'layout'" :class="$style.mode">
             <div :class="$style.close" @click="close()"></div>
-            <span :class="$style.button" role="add" title="添加物料" @click="onClickAdd()" :color="mode === 'add' ? 'primary' : ''"></span>
+            <span draggable="true" :class="$style.button" role="add" title="添加物料" @click="onClickAdd()" :color="mode === 'add' ? 'primary' : ''"></span>
             <span :class="$style.button" role="layout" title="添加布局" @click="mode = 'layout'"></span>
             <div v-show="mode === 'add'" style="color: var(--brand-primary); margin-top: 10px;">请在右侧选择需要添加的组件或区块 →</div>
         </div>
@@ -89,6 +89,7 @@ export default {
         return {
             focused: false,
             mode: '',
+            dragover: false,
         };
     },
     methods: {
@@ -108,6 +109,19 @@ export default {
         send(message) {
             console.log('[vscode] Send: ' + JSON.stringify(message));
             window.parent.postMessage(message, '*');
+        },
+        onDragOver(e) {
+            this.dragover = true;
+        },
+        onDragLeave(e) {
+            this.dragover = false;
+        },
+        onDrop(e) {
+            this.dragover = false;
+            const dataTransfer = e.dataTransfer;
+            console.log(dataTransfer.items.length);
+            [].forEach.call(dataTransfer.items, (item) => item.getAsString((s) => console.log(item.type, item.kind, s)));
+            console.log('dropeffect', dataTransfer.dropEffect, dataTransfer.effectAllowed);
         },
     },
 };

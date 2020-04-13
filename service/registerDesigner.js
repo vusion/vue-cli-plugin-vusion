@@ -15,6 +15,8 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 hash: true,
             },
         };
+
+        vueConfig.devServer.open = false;
     }
 
     const serveCommand = api.service.commands.serve;
@@ -42,9 +44,6 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             config.resolve.alias
                 .set('vue$', path.resolve(process.cwd(), 'node_modules/vue/dist/vue.esm.js'))
                 .set('vue-router$', path.resolve(process.cwd(), 'node_modules/vue-router/dist/vue-router.esm.js'));
-            //     const isVuePackage = vusionConfig.type === 'component' || vusionConfig.type === 'block';
-            //     config.resolve.alias
-            //         .set('proto-ui', isVuePackage ? 'proto-ui.vusion/dist' : 'proto-ui.vusion');
 
             config.module.rule('designer-config')
                 .test(/vue-cli-plugin-vusion[\\/]scenes[\\/]designer[\\/]views[\\/]empty\.js$/)
@@ -78,9 +77,16 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             });
 
             config.module.rule('vue').use('vue-loader').tap((options) => {
+                options.compiler = require('../scenes/designer/fork/build');
                 options.compilerOptions.plugins = [require('../scenes/designer/transform')];
                 return options;
             });
+
+            const vueLoaderPath = require.resolve('vue-loader');
+            const templateLoaderPath = path.resolve(vueLoaderPath, '../loaders/templateLoader.js');
+            let content = fs.readFileSync(templateLoaderPath, 'utf8');
+            content = content.replace('scopeId: query.scoped ? `data-v-${id}` : null,', 'scopeId: `data-v-${id}`,\n  filename: this.resourcePath,');
+            fs.writeFileSync(templateLoaderPath, content, 'utf8');
 
             // console.log(config.toString());
             // process.exit(0);
