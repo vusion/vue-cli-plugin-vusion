@@ -6,6 +6,7 @@ const postcssVariablesPath = require.resolve('./loaders/postcss-variables');
 
 const getLocalIdent = require('./getLocalIdent');
 const getPostcssPlugins = require('./getPostcssPlugins');
+const getVariablesPostcssPlugins = require('./getVariablesPostcssPlugins');
 const chainCSSOneOfs = require('./chainCSSOneOfs');
 
 const semver = require('semver');
@@ -76,6 +77,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         }
     });
 
+    const cssVariablesSupportedPlugins = getVariablesPostcssPlugins(config);
     // @TODO: 需要支持 var(--xxx)
     config.module.rule('css').oneOf('variables')
         .resourceQuery(/variables/)
@@ -84,7 +86,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         .end()
         .use('postcss-loader')
         .loader('postcss-loader')
-        .options({ plugins: () => postcssPlugins })
+        .options({ plugins: () => cssVariablesSupportedPlugins })
         .end()
         .__before = 'normal';
 
