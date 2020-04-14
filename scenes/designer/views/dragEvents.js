@@ -1,13 +1,15 @@
 const dragKeys = ['isTrusted', 'screenX', 'screenY', 'clientX', 'clientY', 'ctrlKey', 'shiftKey', 'altKey', 'metaKey', 'button', 'buttons', 'pageX', 'pageY', 'x', 'y', 'offsetX', 'offsetY', 'movementX', 'movementY', 'layerX', 'layerY', 'detail', 'which', 'type', 'eventPhase', 'bubbles', 'cancelable', 'defaultPrevented', 'composed', 'timeStamp', 'returnValue', 'cancelBubble'];
 function createEvent(type, pe) {
-    const dragEvent = new DragEvent(type);
-    dragKeys.forEach((key) => dragEvent[key] = pe[key]);
     // 懒得伪造了
-    const dataTransfer = dragEvent.dataTransfer = pe.dataTransfer;
-    dataTransfer.getData = function (type) {
-        const item = this.items.find((item) => item.type === type);
-        return item ? item.content : null;
-    };
+    const dataTransfer = new DataTransfer();
+    dataTransfer.dropEffect = pe.dataTransfer.dropEffect;
+    dataTransfer.effectAllowed = pe.dataTransfer.effectAllowed;
+    pe.dataTransfer.items.forEach((item) => dataTransfer.setData(item.type, item.content));
+
+    const dragEvent = new DragEvent(type, {
+        dataTransfer,
+    });
+    dragKeys.forEach((key) => dragEvent[key] = pe[key]);
 
     return dragEvent;
 }
@@ -41,10 +43,11 @@ window.addEventListener('message', (e) => {
         lastTargets = [];
     } else if (e.data.type === 'drop') {
         targets.forEach((target) => {
-            target.dispatchEvent(createEvent('drop', plainEvent));
+            const ev = createEvent('drop', plainEvent);
+
+            console.log(JSON.stringify(plainEvent));
+            target.dispatchEvent(ev);
         });
         lastTargets = [];
-
-        console.log(JSON.stringify(plainEvent));
     }
 });

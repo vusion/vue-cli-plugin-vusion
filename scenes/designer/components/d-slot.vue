@@ -78,10 +78,13 @@
 </template>
 
 <script>
+import manipulator from '../manipulator';
+
 export default {
     name: 'd-slot',
     props: {
         tag: { type: String, default: 'div' },
+        scopeId: String,
         file: String,
         nodePath: String,
     },
@@ -119,9 +122,14 @@ export default {
         onDrop(e) {
             this.dragover = false;
             const dataTransfer = e.dataTransfer;
-            console.log(dataTransfer.items.length);
-            [].forEach.call(dataTransfer.items, (item) => item.getAsString((s) => console.log(item.type, item.kind, s)));
-            console.log('dropeffect', dataTransfer.dropEffect, dataTransfer.effectAllowed);
+            Array.from(dataTransfer.items).forEach((item) => console.log('[drop]', item.type, item.kind, dataTransfer.getData(item.type)));
+
+            const code = dataTransfer.getData('text/plain');
+            if (!code || !code.includes('<template>'))
+                return;
+
+            manipulator.insert(this.scopeId, this.nodePath, code);
+            // this.send({ command: 'addCode', file: this.file, nodePath: this.nodePath, code });
         },
     },
 };
