@@ -1,6 +1,8 @@
 const path = require('path');
+const postcss = require('postcss')
 const postcssImportResolver = require('postcss-import-resolver');
-const properties = require('./postcss/postcss-custom-properties-reader');
+const properties = require('./postcss/custom-properties-reader/index');
+const computedProperties = require('./postcss/custom-properties-reader/get-custom-properties-computed');
 const postcssVusionExtendMark = require('./postcss/extend-mark');
 const postcssVusionExtendMerge = require('./postcss/extend-merge');
 const map2obj = ((map) => {
@@ -28,5 +30,7 @@ module.exports = function getVariablesPostcssPlugins(config) {
         require('postcss-variables'),
         postcssVusionExtendMerge,
         properties,
+        require('@vusion/postcss-calc'),
+        computedProperties
     ];
 };

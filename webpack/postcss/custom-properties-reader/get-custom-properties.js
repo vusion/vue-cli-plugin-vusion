@@ -1,12 +1,4 @@
-const postcss = require('postcss');
 const parse = require('postcss-values-parser').parse;
-
-function isBlockIgnored(ruleOrDeclaration) {
-    const rule = ruleOrDeclaration.selector
-        ? ruleOrDeclaration : ruleOrDeclaration.parent;
-
-    return /(!\s*)?postcss-custom-properties:\s*off\b/i.test(rule.toString());
-}
 
 // return custom selectors from the css root, conditionally removing them
 function getCustomPropertiesFromRoot(root, opts) {
@@ -25,7 +17,7 @@ function getCustomPropertiesFromRoot(root, opts) {
         // for each custom property
         if (customPropertiesObject) {
             rule.nodes.slice().forEach((decl) => {
-                if (isCustomDecl(decl) && !isBlockIgnored(decl)) {
+                if (isCustomDecl(decl)) {
                     const { prop } = decl;
                     
                     // write the parsed value to the custom property
@@ -51,10 +43,4 @@ const isRootRule = (node) => node.type === 'rule' && node.selector.split(',').so
 // whether the node is an custom property
 const isCustomDecl = (node) => node.type === 'decl' && customPropertyRegExp.test(node.prop);
 
-// whether the node is a parent without children
-const isEmptyParent = (node) => Object(node.nodes).length === 0;
-
-module.exports = postcss.plugin('postcss-custom-properties-reader', (opts) => (root) => {
-    const customProperties = getCustomPropertiesFromRoot(root);
-    root.cssProperties = customProperties;
-});
+module.exports = getCustomPropertiesFromRoot;

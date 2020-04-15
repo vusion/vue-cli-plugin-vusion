@@ -1,19 +1,9 @@
 const postcss = require('postcss');
-const parse = require('postcss-values-parser').parse;
 
-function isBlockIgnored(ruleOrDeclaration) {
-    const rule = ruleOrDeclaration.selector
-        ? ruleOrDeclaration : ruleOrDeclaration.parent;
-
-    return /(!\s*)?postcss-custom-properties:\s*off\b/i.test(rule.toString());
-}
-
-// return custom selectors from the css root, conditionally removing them
 function getCustomPropertiesFromRoot(root, opts) {
     // initialize custom selectors
     const customPropertiesFromHtmlElement = {};
     const customPropertiesFromRootPseudo = {};
-
     // for each html or :root rule
     root.nodes.slice().forEach((rule) => {
         const customPropertiesObject = isHtmlRule(rule)
@@ -25,11 +15,12 @@ function getCustomPropertiesFromRoot(root, opts) {
         // for each custom property
         if (customPropertiesObject) {
             rule.nodes.slice().forEach((decl) => {
-                if (isCustomDecl(decl) && !isBlockIgnored(decl)) {
+                if (isCustomDecl(decl)) {
+                    console.log(decl.prop)
                     const { prop } = decl;
                     
                     // write the parsed value to the custom property
-                    customPropertiesObject[prop] = parse(decl.value).nodes;
+                    customPropertiesObject[prop] = decl.value;
                 }
             });
         }
@@ -38,6 +29,11 @@ function getCustomPropertiesFromRoot(root, opts) {
     // return all custom properties, preferring :root properties over html properties
     return { ...customPropertiesFromHtmlElement, ...customPropertiesFromRootPseudo };
 }
+
+module.exports = postcss.plugin('properies-reader', (opts) => (root) => {
+    const customProperties = getCustomPropertiesFromRoot(root);
+    root.cssProperties = customProperties;
+});
 
 // match html and :root rules
 const htmlSelectorRegExp = /^html$/i;
@@ -53,8 +49,3 @@ const isCustomDecl = (node) => node.type === 'decl' && customPropertyRegExp.test
 
 // whether the node is a parent without children
 const isEmptyParent = (node) => Object(node.nodes).length === 0;
-
-module.exports = postcss.plugin('postcss-custom-properties-reader', (opts) => (root) => {
-    const customProperties = getCustomPropertiesFromRoot(root);
-    root.cssProperties = customProperties;
-});
