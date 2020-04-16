@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-expressions */
 const gitClone = require('../helpers/gitClone');
 const serve = require('../helpers/serveWithPuppeteer');
-const shell = require('shelljs');
+// const shell = require('shelljs');
 const { expect } = require('chai');
 const sleep = require('../helpers/sleep');
 
