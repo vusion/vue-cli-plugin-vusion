@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const sleep = require('../helpers/sleep');
 
 describe('vue-cli-service serve', () => {
-    it('cloud-admin-lite', async () => {
+    it('cloud-admin-lite serve', async () => {
         const project = gitClone('https://github.com/vusion-templates/cloud-admin-lite.git');
         await serve(
             () => project.execa('npm run dev'),
@@ -13,7 +13,7 @@ describe('vue-cli-service serve', () => {
                 expect((await helpers.getText('[class^="s-navbar-right_username"]')).trim()).to.equal('username');
 
                 await page.evaluate(() => location = '#/demo/form/basic');
-                await sleep(1000)
+                await sleep(1000);
                 expect((await helpers.getText('[class^="u-sidebar_item"][selected]')).trim()).to.equal('基础表单');
                 expect((await helpers.getText('[class^="u-radios_radio"]')).trim()).to.equal('包年包月');
             },

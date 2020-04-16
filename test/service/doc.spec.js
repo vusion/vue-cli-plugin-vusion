@@ -6,7 +6,7 @@ const { expect } = require('chai');
 const sleep = require('../helpers/sleep');
 
 describe('vue-cli-service doc', () => {
-    it('cloud-ui', async () => {
+    it('cloud-ui serve', async () => {
         const project = gitClone('https://github.com/vusion/cloud-ui.git');
 
         await serve(
