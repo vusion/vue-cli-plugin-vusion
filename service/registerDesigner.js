@@ -3,6 +3,54 @@ const path = require('path');
 const HTMLPlugin = require('html-webpack-plugin');
 const autoLoaderPath = require.resolve('../scenes/designer/loaders/auto-loader');
 
+// markdown-it
+const iterator = require('markdown-it-for-inline');
+const uslug = require('uslug');
+const uslugify = (s) => uslug(s);
+
+function chainMarkdown(config, rule) {
+    return rule.use('cache-loader')
+        .loader('cache-loader')
+        .options(config.module.rule('vue').use('cache-loader').get('options'))
+        .end()
+        .use('vue-loader')
+        .loader('vue-loader')
+        .options(config.module.rule('vue').use('vue-loader').get('options'))
+        .end()
+        .use('@vusion/md-vue-loader')
+        .loader('@vusion/md-vue-loader')
+        .options({
+            wrapper: 'u-article',
+            plugins: [
+                require('markdown-it-ins'),
+                require('markdown-it-mark'),
+                require('markdown-it-abbr'),
+                require('markdown-it-deflist'),
+                [require('markdown-it-anchor'), {
+                    slugify: uslugify,
+                    permalink: true,
+                    permalinkClass: 'heading-anchor',
+                    permalinkSymbol: '#',
+                }],
+                // require('markdown-it-container'),
+                [iterator, 'link_converter', 'link_open', (tokens, idx) => {
+                    tokens[idx].tag = 'u-link';
+                    const aIndex = tokens[idx].attrIndex('href');
+                    if (aIndex >= 0) {
+                        const attr = tokens[idx].attrs[aIndex];
+                        if (attr[1].startsWith('#')) {
+                            tokens[idx].attrPush([':to', `{hash: '${attr[1]}'}`]);
+                            tokens[idx].attrs.splice(aIndex, 1);
+                        }
+                    }
+                }],
+                [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
+            ],
+            showCodeLineCount: 5,
+        })
+        .end();
+}
+
 function readAndWriteFile(filePath, newRelativePath = '', handler) {
     let content = fs.readFileSync(filePath, 'utf8');
     content = handler(content);
@@ -75,6 +123,9 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
 
             // 很多 loader 与 Plugin 有结合，所以 thread-loader 不能开启
             config.module.rule('js').uses.delete('thread-loader');
+
+            // Eslint 需要删除 @vue/cli-plugin-eslint
+            // chainMarkdown(config, config.module.rule('markdown').test(/\.md$/));
 
             // 嫌麻烦，先关了！
             config.optimization.splitChunks({

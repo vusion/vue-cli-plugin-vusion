@@ -34,7 +34,7 @@ exports.getFlatRoutes = function (basePath) {
     // 这里本可以直接在递归目录时生成每一级路由
     // 但现在采用的是获取所有的扁平化路由，为了方便配置和合并
     const flatRoutes = {};
-    globby.sync(['**/*.{vue,md}'], { cwd: basePath }).forEach((filePath) => {
+    globby.sync(['**/*.{vue,md}', '!**/*.vue/docs/*.md', '!**/*.blocks/**'], { cwd: basePath }).forEach((filePath) => {
         filePath = filePath.replace(/\\/g, '/');
         const routePath = ('/' + filePath).replace(/(\/index)?\.(vue|md)$/, '') || '/';
 
@@ -74,7 +74,7 @@ exports.nestRoutes = function (flatRoutes) {
             parent = createRoute(route.parentPath, flatRoutes);
             try {
                 parent.fullPath = parent.filePath = require.resolve('cloud-ui.vusion/src/layouts/l-wrapper.vue/index.js').replace(/\\/g, '/');
-            } catch(e) {
+            } catch (e) {
                 parent.fullPath = parent.filePath = require.resolve(path.resolve(process.cwd(), './src/layouts/l-wrapper.vue/index.js')).replace(/\\/g, '/');
             }
             parse(parent);

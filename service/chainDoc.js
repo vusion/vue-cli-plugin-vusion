@@ -187,7 +187,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
                 version = pkg.peerDependencies['cloud-ui.vusion'];
             else if (pkg.dependencies['cloud-ui.vusion'])
                 version = pkg.dependencies['cloud-ui.vusion'];
-            version = version.replace(/^[^\d.]+/, '').split('.').slice(0, 2).join('.');
+            version = version.replace(/^[^\d]+/, '').split('.').slice(0, 2).join('.');
 
             config.plugin('html-tags').after('html')
                 .use(HTMLTagsPlugin, [
