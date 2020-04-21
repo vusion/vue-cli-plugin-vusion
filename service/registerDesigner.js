@@ -148,13 +148,13 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 .replace(/(ast = parse\(template\.trim\(\), options\);)\s+(if|optimize)/g, `$1
                     (options.plugins || []).forEach((plugin) => plugin(ast, options, exports));
                 $2`)
-                .replace('exports.compile = compile;\nexports.compileToFunctions', 'exports.compile = compile;\nexports.generate = generate;\nexports.compileToFunctions')
-                .replace('exports.ssrCompile = compile$1;\n  exports.ssrCompileToFunctions', 'exports.compile = compile;\nexports.ssrGenerate = generate$1;\nexports.ssrCompileToFunctions'));
+                .replace('exports.compile = compile;\n  exports.compileToFunctions', 'exports.compile = compile;\n  exports.generate = generate;\n  exports.compileToFunctions')
+                .replace('exports.ssrCompile = compile$1;\n  exports.ssrCompileToFunctions', 'exports.compile = compile;\n  exports.ssrGenerate = generate$1;\n  exports.ssrCompileToFunctions'));
             readAndWriteFile(vueTemplateCompilerBuildPath, '', (content) => content
                 .replace(/(ast = parse\(template\.trim\(\), options\);)\s+(if|optimize)/g, `$1
                 (options.plugins || []).forEach((plugin) => plugin(ast, options, exports));\n$2`)
                 .replace('exports.compile = compile;\nexports.compileToFunctions', 'exports.compile = compile;\nexports.generate = generate;\nexports.compileToFunctions')
-                .replace('exports.ssrCompile = compile$1;\n  exports.ssrCompileToFunctions', 'exports.compile = compile;\nexports.ssrGenerate = generate$1;\nexports.ssrCompileToFunctions')
+                .replace('exports.ssrCompile = compile$1;\nexports.ssrCompileToFunctions', 'exports.compile = compile;\nexports.ssrGenerate = generate$1;\nexports.ssrCompileToFunctions')
                 .replace(/(if \(options\) \{)(\s+if \(process)/, `$1
                 if (options.filename) {
                     if (!options.filename.endsWith('.vue'))

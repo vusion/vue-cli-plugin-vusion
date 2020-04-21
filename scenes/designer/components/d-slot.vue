@@ -152,7 +152,7 @@ export default {
 .root[display="inline"] {
     display: inline-block;
     vertical-align: top;
-    min-width: 300px;
+    min-width: 160px;
 }
 
 .init {

@@ -80,7 +80,10 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         } else if (el.tag === 'div') {
             const children = el.children = el.children || [];
 
-            const tmp = compiler.compile(`<d-slot file="${options.vueFile.fullPath}" node-path="${nodePath.route}"></d-slot>`, subOptions).ast;
+            const tmp = compiler.compile(
+                `<d-slot tag="div" scope-id="${options.scopeId.replace('data-v-', '')}" file="${options.vueFile.fullPath}" node-path="${nodePath.route}"></d-slot>`,
+                subOptions,
+            ).ast;
             children.push(tmp);
         } else if (el.tag === 'u-linear-layout') {
             const children = el.children = el.children || [];
@@ -89,7 +92,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
 <div>
 <d-slot tag="u-linear-layout" ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'} scope-id="${options.scopeId.replace('data-v-', '')}" file="${options.vueFile.fullPath}" node-path="${nodePath.route}"></d-slot>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
-<d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
+<d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'} color="light"></d-skeleton>
 </div>`, subOptions).ast;
             children.push(...tmp.children);
         }
