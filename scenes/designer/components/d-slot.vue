@@ -1,12 +1,12 @@
 <template>
-<div :class="$style.root" :selected="dragover || !!mode" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop">
-    <div v-if="!focused" :class="$style.init" @click="focused = true"></div>
+<div :class="$style.root" :selected="dragover" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop">
+    <div v-if="!focused" :class="$style.init" @click="focused = true, mode = 'add'"></div>
     <template v-else>
         <div v-if="mode !== 'layout'" :class="$style.mode">
             <div :class="$style.close" @click="close()"></div>
-            <span draggable="true" :class="$style.button" role="add" title="添加物料" @click="onClickAdd()" :color="mode === 'add' ? 'primary' : ''"></span>
+            <span draggable="true" :class="$style.button" role="add" title="添加物料" :color="mode === 'add' ? 'primary' : ''"></span>
             <span :class="$style.button" role="layout" title="添加布局" @click="mode = 'layout'"></span>
-            <div v-show="mode === 'add'" style="color: var(--brand-primary); margin-top: 10px;">请在右侧选择需要添加的组件或区块 →</div>
+            <div v-show="mode === 'add'" style="color: var(--brand-primary); margin-top: 10px;">请将需要添加的组件或区块拖拽到这里</div>
         </div>
         <div v-else-if="mode === 'layout'" :class="$style.layouts">
             <div :class="$style.close" @click="close()"></div>
@@ -107,10 +107,9 @@ export default {
         },
         select(type) {
             this.send({ command: 'addLayout', type, file: this.file, nodePath: this.nodePath });
-            this.$loading.show(2000);
         },
         send(message) {
-            console.log('[vscode] Send: ' + JSON.stringify(message));
+            console.info('[vscode] Send: ' + JSON.stringify(message));
             window.parent.postMessage(message, '*');
         },
         onDragOver(e) {
@@ -122,14 +121,16 @@ export default {
         onDrop(e) {
             this.dragover = false;
             const dataTransfer = e.dataTransfer;
-            Array.from(dataTransfer.items).forEach((item) => console.log('[drop]', item.type, item.kind, dataTransfer.getData(item.type)));
+            Array.from(dataTransfer.items).forEach((item) => console.info('[drop]', item.type, item.kind, dataTransfer.getData(item.type)));
 
             const code = dataTransfer.getData('text/plain');
             if (!code || !code.includes('<template>'))
                 return;
 
-            manipulator.insert(this.scopeId, this.nodePath, code);
-            // this.send({ command: 'addCode', file: this.file, nodePath: this.nodePath, code });
+            if (code.includes('<script>') || code.includes('<style>'))
+                this.send({ command: 'addCode', file: this.file, nodePath: this.nodePath, code });
+            else
+                manipulator.insert(this.scopeId, this.nodePath, code);
         },
     },
 };
@@ -137,8 +138,9 @@ export default {
 
 <style module>
 .root {
+    position: relative;
     user-select: none;
-    border: 2px dashed var(--border-color-base);
+    border: 1px dashed var(--border-color-base);
     background-color: hsla(0,0%,100%,.5);
     transition: all 0.2s;
 }

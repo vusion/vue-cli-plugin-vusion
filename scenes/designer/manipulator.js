@@ -6,6 +6,21 @@ import api from 'vue-hot-reload-api';
 
 export { compilerPlugin, flatted };
 
+import Vue from 'vue';
+
+window.addEventListener('message', (e) => {
+    if (!e.data)
+        return;
+    const $loading = Vue.prototype.$loading;
+    if (!$loading)
+        return;
+    if (e.data.type === 'webpackInvalid') {
+        $loading.show();
+    } else if (e.data.type === 'webpackOk') {
+        $loading.hide();
+    }
+});
+
 export default {
     insert(scopeId, route, code) {
         code = code.replace(/^<template>\s+/, '').replace(/\s+<\/template>$/, '');

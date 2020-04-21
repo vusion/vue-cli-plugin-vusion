@@ -86,7 +86,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
 
         config.plugins.delete('case-sensitive-paths');
 
-        config.plugin('fix-multifile-cache').use(FixMultifileCachePlugin);
+        // config.plugin('fix-multifile-cache').use(FixMultifileCachePlugin);
     });
 
     // Hack for devServer options
