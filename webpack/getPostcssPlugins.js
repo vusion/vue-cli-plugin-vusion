@@ -4,9 +4,6 @@ const postcssImportResolver = require('postcss-import-resolver');
 const postcssVusionExtendMark = require('./postcss/extend-mark');
 const postcssVusionExtendMerge = require('./postcss/extend-merge');
 
-const semver = require('semver');
-const isNewCSSLoader = semver.satisfies(require('css-loader/package.json').version, '>=3.0.0');
-
 const map2obj = ((map) => {
     const obj = {};
     map.forEach((value, key) => { obj[key] = value; });
@@ -73,15 +70,8 @@ module.exports = function getPostcssPlugins(config, vueConfig, vusionConfig) {
         // Rewrite https://github.com/postcss/postcss-url/blob/master/src/type/rebase.js
         // 只需将相对路径变基，其它让 Webpack 处理即可
             url(asset, dir) {
-                if (asset.url[0] !== '.') {
-                    if (isNewCSSLoader) {
-                        if (asset.url.startsWith('http'))
-                            return asset.url;
-                        else
-                            return '~' + asset.url;
-                    } else
-                        return asset.url;
-                }
+                if (asset.url[0] !== '.')
+                    return asset.url;
 
                 let rebasedUrl = path.normalize(path.relative(dir.to, asset.absolutePath));
                 rebasedUrl = path.sep === '\\' ? rebasedUrl.replace(/\\/g, '/') : rebasedUrl;

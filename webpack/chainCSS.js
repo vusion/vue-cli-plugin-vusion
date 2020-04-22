@@ -10,6 +10,13 @@ const chainCSSOneOfs = require('./chainCSSOneOfs');
 
 const semver = require('semver');
 const isNewCSSLoader = semver.satisfies(require('css-loader/package.json').version, '>=3.0.0');
+if (isNewCSSLoader) {
+    const cssLoaderUtils = require('css-loader/dist/utils');
+    cssLoaderUtils.normalizeUrl = function normalizeUrl(url, isStringValue) {
+        isStringValue && (url = url.replace(/\\[\n]/g, ''));
+        return decodeURIComponent(unescape(url)); // Remove loaderUtils.urlToRequest
+    };
+}
 
 module.exports = function chainCSS(config, vueConfig, vusionConfig) {
     const mode = config.get('mode');
@@ -17,14 +24,17 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
 
     chainCSSOneOfs(config, (oneOf, modules) => {
         const cssOptions = {
+            /**
+             * [icon-font-loader(, css-sprite-loader, svg-classic-sprite-loader), postcss-loader, module-class-priority-loader]
+             */
             importLoaders: mode === 'production' ? 5 : 3,
             sourceMap: vueConfig.css.sourceMap,
         };
 
         if (vusionConfig.mode === 'raw')
-            cssOptions.importLoaders = 2;
+            cssOptions.importLoaders = 2; // [postcss-loader, module-class-priority-loader]
         if (vusionConfig.applyTheme)
-            cssOptions.importLoaders++;
+            cssOptions.importLoaders++; // +import-global-loader
 
         const cssOptionsModules = {
             getLocalIdent,
