@@ -69,7 +69,7 @@ router.afterEach((to, from) => {
             const el = document.querySelector(decodeURIComponent(to.hash));
             // 处理导航栏的高度
             const navbarEl = document.querySelector('[class^=u-navbar]');
-            document.documentElement.scrollTop = el.offsetTop - (navbarEl ? navbarEl.offsetHeight : 0) - 30;
+            document.documentElement.scrollTop = (el ? el.offsetTop : 0) - (navbarEl ? navbarEl.offsetHeight : 0) - 30;
         }, 300); // 延迟时间无法确定，暂时 300ms
     }
 });

@@ -46,7 +46,7 @@ function chainMarkdown(config, rule) {
                     if (aIndex >= 0) {
                         const attr = tokens[idx].attrs[aIndex];
                         if (attr[1].startsWith('#')) {
-                            tokens[idx].attrPush([':to', `{hash: '${attr[1]}'}`]);
+                            tokens[idx].attrPush([':to', `{ hash: '${attr[1]}' }`]);
                             tokens[idx].attrs.splice(aIndex, 1);
                         }
                     }
