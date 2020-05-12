@@ -55,6 +55,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         const resolveAlias = config.resolve.alias;
         Object.keys(alias).forEach((key) => resolveAlias.set(key, alias[key]));
 
+        // @TODO: 如果全部去掉多文件 Vue 的话，就不需要这个 loader 了
         config.module.rule('vue')
             .test(/\.vue([\\/]index\.js)?$/)
             .use('vusion-loader')

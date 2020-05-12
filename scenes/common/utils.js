@@ -217,9 +217,9 @@ exports.getMaterials = function (basePath, materials, type) {
 
             // 目录中的组件
             globby.sync(['*.vue'], { cwd: basePath })
-                .forEach((filePath) => {
-                    const vueName = filePath.slice(0, -4);
-                    const markdownPath = path.resolve(basePath, filePath + '/README.md').replace(/\\/g, '/');
+                .forEach((fileName) => {
+                    const vueName = fileName.slice(0, -4);
+                    const markdownPath = path.resolve(basePath, fileName + '/README.md').replace(/\\/g, '/');
                     materialsMap[vueName] = {
                         name: vueName,
                         path: ensureReadmePath(markdownPath),
@@ -243,8 +243,8 @@ exports.getMaterial = function (srcPath, type) {
     const materialsMap = {};
 
     // 目录中的组件
-    const filePath = path.basename(srcPath);
-    const vueName = filePath.replace(/\.vue$/, ''); // @multi: filePath.slice(0, -4);
+    const fileName = path.basename(srcPath);
+    const vueName = fileName.replace(/\.vue$/, ''); // @multi: filePath.slice(0, -4);
     const markdownPath = path.resolve(srcPath + '/README.md').replace(/\\/g, '/');
     materialsMap[vueName] = {
         name: vueName,
