@@ -108,9 +108,9 @@ export default {
         select(type) {
             this.send({ command: 'addLayout', type, file: this.file, nodePath: this.nodePath });
         },
-        send(message) {
-            console.info('[vscode] Send: ' + JSON.stringify(message));
-            window.parent.postMessage(message, '*');
+        send(data) {
+            console.info('[vusion:designer] Send: ' + JSON.stringify(data));
+            window.parent.postMessage({ protocol: 'vusion', sender: 'designer', data }, '*');
         },
         onDragOver(e) {
             this.dragover = true;

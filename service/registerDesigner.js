@@ -149,12 +149,12 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                     (options.plugins || []).forEach((plugin) => plugin(ast, options, exports));
                 $2`)
                 .replace('exports.compile = compile;\n  exports.compileToFunctions', 'exports.compile = compile;\n  exports.generate = generate;\n  exports.compileToFunctions')
-                .replace('exports.ssrCompile = compile$1;\n  exports.ssrCompileToFunctions', 'exports.compile = compile;\n  exports.ssrGenerate = generate$1;\n  exports.ssrCompileToFunctions'));
+                .replace('exports.ssrCompile = compile$1;\n  exports.ssrCompileToFunctions', 'exports.ssrCompile = compile$1;\n  exports.ssrGenerate = generate$1;\n  exports.ssrCompileToFunctions'));
             readAndWriteFile(vueTemplateCompilerBuildPath, '', (content) => content
                 .replace(/(ast = parse\(template\.trim\(\), options\);)\s+(if|optimize)/g, `$1
                 (options.plugins || []).forEach((plugin) => plugin(ast, options, exports));\n$2`)
                 .replace('exports.compile = compile;\nexports.compileToFunctions', 'exports.compile = compile;\nexports.generate = generate;\nexports.compileToFunctions')
-                .replace('exports.ssrCompile = compile$1;\nexports.ssrCompileToFunctions', 'exports.compile = compile;\nexports.ssrGenerate = generate$1;\nexports.ssrCompileToFunctions')
+                .replace('exports.ssrCompile = compile$1;\nexports.ssrCompileToFunctions', 'exports.ssrCompile = compile$1;\nexports.ssrGenerate = generate$1;\nexports.ssrCompileToFunctions')
                 .replace(/(if \(options\) \{)(\s+if \(process)/, `$1
                 if (options.filename) {
                     if (!options.filename.endsWith('.vue'))
@@ -164,20 +164,30 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 }
                 $2`));
 
-            const vueComponentCompilerUtilsPath = require.resolve('@vue/component-compiler-utils');
-            const compileTemplatePath = path.resolve(vueComponentCompilerUtilsPath, '../compileTemplate.js');
-            readAndWriteFile(compileTemplatePath, '', (content) => content
-                // .replace(/\+ `var staticRenderFns/g, ' + (process.env.DESIGNER ? `var ast = ""\n` : "")$0')
-                .replace('render, staticRenderFns', 'render, ast, staticRenderFns')
-                // .replace('(render|staticRenderFns)', '(render|ast|staticRenderFns)')
-                .replace(/(var __staticRenderFns__.+);/g, `$1 +
-(process.env.DESIGNER ? "staticRenderFns.source = \`" + source.replace(/\\\\/g, '\\\\\\\\').replace(/\`/g, "\\\`") + "\`\\n" : '');
-            `));
+            //             const vueComponentCompilerUtilsPath = require.resolve('@vue/component-compiler-utils');
+            //             const compileTemplatePath = path.resolve(vueComponentCompilerUtilsPath, '../compileTemplate.js');
+            //             readAndWriteFile(compileTemplatePath, '', (content) => content
+            //                 // .replace(/\+ `var staticRenderFns/g, ' + (process.env.DESIGNER ? `var ast = ""\n` : "")$0')
+            //                 // .replace('(render|staticRenderFns)', '(render|ast|staticRenderFns)')
+            //                 .replace(/(var __staticRenderFns__.+);/g, `$1 +
+            // (process.env.DESIGNER ? "staticRenderFns.source = \`" + source.replace(/\\\\/g, '\\\\\\\\').replace(/\`/g, "\\\`") + "\`\\n" : '');
+            //             `));
 
             const vueLoaderPath = require.resolve('vue-loader');
             const templateLoaderPath = path.resolve(vueLoaderPath, '../loaders/templateLoader.js');
             readAndWriteFile(templateLoaderPath, '', (content) => content
                 .replace('scopeId: query.scoped ? `data-v-${id}` : null,', 'scopeId: `data-v-${id}`,\n  filename: this.resourcePath,'));
+
+            readAndWriteFile(vueLoaderPath, '', (content) => content
+                .replace(/(code \+= `\\ncomponent\.options\.__file = .+)\n\s+ \} else if/, `
+    $1
+    if (process.env.DESIGNER && !resourcePath.includes('node_modules')) {
+        code += \`\\ncomponent.options.__source = \${JSON.stringify(source)}\`
+        code += \`\\ncomponent.options.__template = \${JSON.stringify({ content: descriptor.template && descriptor.template.content })}\`
+        code += \`\\ncomponent.options.__script = \${JSON.stringify({ content: descriptor.script && descriptor.script.content })}\`
+        code += \`\\ncomponent.options.__style = \${JSON.stringify({ content: descriptor.styles[0] && descriptor.styles[0].content })}\`
+    }
+  } else if`));
 
             // console.log(config.toString());
             // process.exit(0);
