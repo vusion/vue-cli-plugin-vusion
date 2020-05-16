@@ -159,8 +159,10 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 if (options.filename) {
                     if (!options.filename.endsWith('.vue'))
                         options.filename = require('path').dirname(options.filename);
-                    const vusion = require('vusion-api');
-                    options.vueFile = new vusion.VueFile(options.filename);
+                    if (options.filename.endsWith('.vue')) {
+                        const vusion = require('vusion-api');
+                        options.vueFile = new vusion.VueFile(options.filename);
+                    }
                 }
                 $2`));
 

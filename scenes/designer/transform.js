@@ -60,6 +60,8 @@ const TemplateHandler = require('vusion-api/out/fs/TemplateHandler').default;
  * 该方法可以在两端(node, browser)运行
  */
 exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
+    if (!options.vueFile)
+        return;
     if (!options.vueFile.fullPath.includes('test.vue'))
         return;
     if (options.vueFile.tagName.startsWith('d-'))
