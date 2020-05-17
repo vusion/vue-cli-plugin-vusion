@@ -1,3 +1,4 @@
+const path = require('path');
 const IconFontPlugin = require('icon-font-loader').Plugin;
 const CSSSpritePlugin = require('css-sprite-loader').Plugin;
 const importGlobalLoaderPath = require.resolve('./loaders/import-global-loader');
@@ -109,7 +110,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
             .use(IconFontPlugin, [{
                 fontName: vusionConfig.name ? vusionConfig.name + '-icon' : 'vusion-icon',
                 filename: '[name].[hash:16].[ext]',
-                output: './fonts',
+                output: path.join(vueConfig.assetsDir, 'fonts'),
                 mergeDuplicates: mode === 'production',
             }]);
 
