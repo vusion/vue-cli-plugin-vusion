@@ -112,6 +112,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
                 filename: '[name].[hash:16].[ext]',
                 output: path.join(vueConfig.assetsDir, 'fonts'),
                 mergeDuplicates: mode === 'production',
+                smartSelector: true,
             }]);
 
         mode === 'production' && config.plugin('css-sprite-plugin')
