@@ -92,5 +92,10 @@
   "peerDependencies": {
     "webpack": "^4.35.3",
     "cloud-ui.vusion": ">=0.6.10"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "node node_modules/vusion-hooks/pre-commit"
+    }
   }
 }

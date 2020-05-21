@@ -94,7 +94,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         }
     });
 
-    const cssVariablesSupportedPlugins = getVariablesPostcssPlugins(config, vueConfig, vusionConfig);
+    const variablesPostcssPlugins = getVariablesPostcssPlugins(config, vueConfig, vusionConfig);
     config.module.rule('css').oneOf('variables')
         .resourceQuery(/variables/)
         .use('postcss-variables')
@@ -102,7 +102,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         .end()
         .use('postcss-loader')
         .loader('postcss-loader')
-        .options({ plugins: () => cssVariablesSupportedPlugins })
+        .options({ plugins: () => variablesPostcssPlugins })
         .end()
         .use('import-global-loader')
         .loader(importGlobalLoaderPath)
@@ -111,7 +111,6 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         })
         .end()
         .__before = 'normal';
-
 
     if (vusionConfig.mode !== 'raw') {
         config.plugin('icon-font-plugin')
