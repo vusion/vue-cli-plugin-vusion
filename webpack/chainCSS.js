@@ -95,8 +95,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
     });
 
     const cssVariablesSupportedPlugins = getVariablesPostcssPlugins(config, vueConfig, vusionConfig);
-    // @TODO: 需要支持 var(--xxx)
-    const cssVariableRules = config.module.rule('css').oneOf('variables')
+    config.module.rule('css').oneOf('variables')
         .resourceQuery(/variables/)
         .use('postcss-variables')
         .loader(postcssVariablesPath)
@@ -110,7 +109,8 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
         .options({
             theme: vusionConfig.theme,
         })
-        .end().__before = 'normal';
+        .end()
+        .__before = 'normal';
 
 
     if (vusionConfig.mode !== 'raw') {

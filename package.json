@@ -75,7 +75,6 @@
   },
   "devDependencies": {
     "@vue/cli-test-utils": "^4.2.3",
-    "acorn": "^7.1.1",
     "chai": "^4.2.0",
     "cloud-ui.vusion": ">=0.6.10",
     "css-loader": "*",
