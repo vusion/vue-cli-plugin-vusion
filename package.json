@@ -61,6 +61,7 @@
     "postcss-import-resolver": "^1.2.3",
     "postcss-preset-env": "^6.7.0",
     "postcss-url": "^8.0.0",
+    "postcss-values-parser": "^3.1.1",
     "postcss-variables": "^1.1.1",
     "safer-eval": "^1.2.3",
     "semver": "^7.1.3",

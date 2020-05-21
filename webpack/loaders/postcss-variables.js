@@ -1,3 +1,4 @@
 module.exports = function (css, map, meta) {
-    return `module.exports=${JSON.stringify(meta.ast.root.variables)}`;
+    const variables = Object.assign({}, meta.ast.root.variables, meta.ast.root.cssProperties);
+    return `module.exports=${JSON.stringify(variables)}`;
 };
