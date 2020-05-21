@@ -34,7 +34,7 @@ exports.getFlatRoutes = function (basePath) {
     // 这里本可以直接在递归目录时生成每一级路由
     // 但现在采用的是获取所有的扁平化路由，为了方便配置和合并
     const flatRoutes = {};
-    globby.sync(['**/*.{vue,md}'], { cwd: basePath }).forEach((filePath) => {
+    globby.sync(['**/*.{vue,md}', '!**/*.vue/docs/*.md', '!**/*.blocks/**'], { cwd: basePath }).forEach((filePath) => {
         filePath = filePath.replace(/\\/g, '/');
         const routePath = ('/' + filePath).replace(/(\/index)?\.(vue|md)$/, '') || '/';
 
@@ -74,7 +74,7 @@ exports.nestRoutes = function (flatRoutes) {
             parent = createRoute(route.parentPath, flatRoutes);
             try {
                 parent.fullPath = parent.filePath = require.resolve('cloud-ui.vusion/src/layouts/l-wrapper.vue/index.js').replace(/\\/g, '/');
-            } catch(e) {
+            } catch (e) {
                 parent.fullPath = parent.filePath = require.resolve(path.resolve(process.cwd(), './src/layouts/l-wrapper.vue/index.js')).replace(/\\/g, '/');
             }
             parse(parent);
@@ -217,9 +217,9 @@ exports.getMaterials = function (basePath, materials, type) {
 
             // 目录中的组件
             globby.sync(['*.vue'], { cwd: basePath })
-                .forEach((filePath) => {
-                    const vueName = filePath.slice(0, -4);
-                    const markdownPath = path.resolve(basePath, filePath + '/README.md').replace(/\\/g, '/');
+                .forEach((fileName) => {
+                    const vueName = fileName.slice(0, -4);
+                    const markdownPath = path.resolve(basePath, fileName + '/README.md').replace(/\\/g, '/');
                     materialsMap[vueName] = {
                         name: vueName,
                         path: ensureReadmePath(markdownPath),
@@ -243,8 +243,8 @@ exports.getMaterial = function (srcPath, type) {
     const materialsMap = {};
 
     // 目录中的组件
-    const filePath = path.basename(srcPath);
-    const vueName = filePath.replace(/\.vue$/, ''); // @multi: filePath.slice(0, -4);
+    const fileName = path.basename(srcPath);
+    const vueName = fileName.replace(/\.vue$/, ''); // @multi: filePath.slice(0, -4);
     const markdownPath = path.resolve(srcPath + '/README.md').replace(/\\/g, '/');
     materialsMap[vueName] = {
         name: vueName,

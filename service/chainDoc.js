@@ -46,7 +46,7 @@ function chainMarkdown(config, rule) {
                     if (aIndex >= 0) {
                         const attr = tokens[idx].attrs[aIndex];
                         if (attr[1].startsWith('#')) {
-                            tokens[idx].attrPush([':to', `{hash: '${attr[1]}'}`]);
+                            tokens[idx].attrPush([':to', `{ hash: '${attr[1]}' }`]);
                             tokens[idx].attrs.splice(aIndex, 1);
                         }
                     }
@@ -187,12 +187,12 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
                 version = pkg.peerDependencies['cloud-ui.vusion'];
             else if (pkg.dependencies['cloud-ui.vusion'])
                 version = pkg.dependencies['cloud-ui.vusion'];
-            version = version.replace(/^[^\d.]+/, '').split('.').slice(0, 2).join('.');
+            version = version.replace(/^[^\d]+/, '').split('.').slice(0, 2).join('.');
 
             config.plugin('html-tags').after('html')
                 .use(HTMLTagsPlugin, [
                     { tags: [
-                        'https://static-vusion.163yun.com/packages/vue@2/dist/vue.min.js',
+                        `https://static-vusion.163yun.com/packages/vue@2/dist/vue${process.env.NODE_ENV === 'development' ? '' : '.min'}.js`,
                         `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-theme/index.css`,
                         `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-theme/index.js`,
                         `https://static-vusion.163yun.com/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.css`,

@@ -1,3 +1,4 @@
+const path = require('path');
 const IconFontPlugin = require('icon-font-loader').Plugin;
 const CSSSpritePlugin = require('css-sprite-loader').Plugin;
 const importGlobalLoaderPath = require.resolve('./loaders/import-global-loader');
@@ -11,6 +12,13 @@ const chainCSSOneOfs = require('./chainCSSOneOfs');
 
 const semver = require('semver');
 const isNewCSSLoader = semver.satisfies(require('css-loader/package.json').version, '>=3.0.0');
+if (isNewCSSLoader) {
+    const cssLoaderUtils = require('css-loader/dist/utils');
+    cssLoaderUtils.normalizeUrl = function normalizeUrl(url, isStringValue) {
+        isStringValue && (url = url.replace(/\\[\n]/g, ''));
+        return decodeURIComponent(unescape(url)); // Remove loaderUtils.urlToRequest
+    };
+}
 
 module.exports = function chainCSS(config, vueConfig, vusionConfig) {
     const mode = config.get('mode');
@@ -18,14 +26,17 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
 
     chainCSSOneOfs(config, (oneOf, modules) => {
         const cssOptions = {
+            /**
+             * [icon-font-loader(, css-sprite-loader, svg-classic-sprite-loader), postcss-loader, module-class-priority-loader]
+             */
             importLoaders: mode === 'production' ? 5 : 3,
             sourceMap: vueConfig.css.sourceMap,
         };
 
         if (vusionConfig.mode === 'raw')
-            cssOptions.importLoaders = 2;
+            cssOptions.importLoaders = 2; // [postcss-loader, module-class-priority-loader]
         if (vusionConfig.applyTheme)
-            cssOptions.importLoaders++;
+            cssOptions.importLoaders++; // +import-global-loader
 
         const cssOptionsModules = {
             getLocalIdent,
@@ -47,21 +58,27 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
 
         if (vusionConfig.mode !== 'raw') {
             mode === 'production' && oneOf.use('css-sprite-loader')
+                .before('postcss-loader') // 在 @vue/cli-service@4 中，已经添加了 postcss-loader
                 .loader('css-sprite-loader')
                 .end()
                 .use('svg-classic-sprite-loader')
+                .before('postcss-loader') // 在 @vue/cli-service@4 中，已经添加了 postcss-loader
                 .loader('svg-classic-sprite-loader')
                 .options({ filter: 'query' })
                 .end();
 
             oneOf.use('icon-font-loader')
+                .before('postcss-loader') // 在 @vue/cli-service@4 中，已经添加了 postcss-loader
                 .loader('icon-font-loader')
                 .end();
         }
 
         const postcssLoader = oneOf.use('postcss-loader')
             .loader('postcss-loader')
-            .options({ plugins: () => postcssPlugins })
+            .options({
+                sourceMap: vueConfig.css.sourceMap,
+                plugins: () => postcssPlugins,
+            })
             .end()
             .use('module-class-priority-loader')
             .loader(moduleClassPriorityLoaderPath)
@@ -101,7 +118,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
             .use(IconFontPlugin, [{
                 fontName: vusionConfig.name ? vusionConfig.name + '-icon' : 'vusion-icon',
                 filename: '[name].[hash:16].[ext]',
-                output: './fonts',
+                output: path.join(vueConfig.assetsDir, 'fonts'),
                 mergeDuplicates: mode === 'production',
             }]);
 

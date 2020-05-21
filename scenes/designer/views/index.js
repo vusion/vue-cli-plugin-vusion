@@ -3,11 +3,16 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
+import './dragEvents';
+import '../manipulator';
+
 import './designer.css';
 import '@/global/styles/theme.css';
 import '@/global/page';
 import '@/views/dashboard/library'; // @TODO
 import '@/global/styles/index.css';
+
+import Helper from './helper.vue';
 
 // 自动注册本地组件
 const requires = require.context('../components/', true, /\.vue$/);
@@ -35,3 +40,7 @@ new Vue({
         scrollBehavior: (to, from, savedPosition) => savedPosition || { x: 0, y: 0 },
     }),
 }).$mount('#app');
+
+new Vue({
+    render: (h) => h(Helper),
+}).$mount('#helper');

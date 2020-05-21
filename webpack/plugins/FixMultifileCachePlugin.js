@@ -11,6 +11,12 @@ module.exports = class FixMultifileCachePlugin {
                 const dependencies = data.dependencies;
                 const cacheEntry = dependencyCache.get(dependencies[0]);
                 if (cacheEntry) {
+                    if (invalidFileName && !invalidFileName.endsWith) {
+                        console.log(typeof invalidFileName);
+                        console.log(invalidFileName);
+                        return callback(null, cacheEntry);
+                    }
+
                     if (invalidFileName && invalidFileName.endsWith('.vue') && cacheEntry.resource === invalidFileName) {
                         // 看看能不能进一步缩小范围
                     } else

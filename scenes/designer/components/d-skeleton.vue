@@ -19,6 +19,10 @@ export default {
 .root[display="inline"] {
     display: inline-block;
     vertical-align: top;
-    min-width: 120px;
+    min-width: 80px;
+}
+
+.root[color="light"] {
+    background: #f4f6f9;
 }
 </style>

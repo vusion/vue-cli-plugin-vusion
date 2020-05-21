@@ -1,3 +1,16 @@
+html {
+    background: #e3e8f0 !important;
+}
+
+body {
+    width: calc(100vw - 80px) !important;
+    height: auto !important;
+    margin: 40px !important;
+    background: white !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) !important;
+    overflow: visible;
+}
+
 .vusion-designer-slot {
     height: 4px;
     background: #cfcfef;

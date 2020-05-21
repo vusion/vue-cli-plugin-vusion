@@ -1,7 +1,7 @@
 <template>
 <div :class="$style.root" v-tooltip.top="copySucceeded ? '复制成功' : tooltip" @click="onClick" @dblclick="onDblClick">
     <div :class="$style.icon">
-        <component :is="icon" :name="name"></component>
+        <component :is="icon" :name="name" :theme="theme"></component>
         <slot></slot>
     </div>
     <div :class="$style.name">{{ name }}</div>
@@ -15,6 +15,7 @@ export default {
     props: {
         icon: { type: String, default: 'i-icon' },
         name: { type: String, default: 'arrow' },
+        theme: String,
     },
     data() {
         return {
@@ -25,12 +26,12 @@ export default {
     methods: {
         onClick() {
             const packageName = this.$docs.package && this.$docs.package.name;
-            const prefix = packageName ? `${packageName}/src/components/${this.icon}.vue` : `${this.icon}.vue`;
-            this.copySucceeded = utils.copy(`icon-font: url('${prefix}/assets/${this.name}.svg');`);
+            const prefix = packageName === 'cloud-ui.vusion' ? `${packageName}/src/components/${this.icon}.vue` : packageName;
+            this.copySucceeded = utils.copy(`icon-font: url('${prefix}/assets/${this.theme ? this.theme + '/' : ''}${this.name}.svg');`);
             setTimeout(() => this.copySucceeded = false, 600);
         },
         onDblClick() {
-            this.copySucceeded = utils.copy(`<${this.icon} name="${this.name}"></${this.icon}>`);
+            this.copySucceeded = utils.copy(`<${this.icon} name="${this.name}"${this.theme ? ` theme="${this.theme}"` : ''}></${this.icon}>`);
             setTimeout(() => this.copySucceeded = false, 600);
         },
     },

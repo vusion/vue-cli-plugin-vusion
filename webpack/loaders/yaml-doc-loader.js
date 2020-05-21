@@ -4,9 +4,10 @@ const vusion = require('vusion-api');
 
 module.exports = function (yaml, map, meta) {
     const params = this.resourceQuery ? loaderUtils.parseQuery(this.resourceQuery) : {};
-    // 不知道为什么加依赖，就会全部重新生成
-    // if (params['yaml-doc'] !== 'api' && params['yaml-doc'] !== 'all')
-    //     this.addDependency(path.join(this.resourcePath, '../docs/index.md'));
+    if (params['yaml-doc'] !== 'api' && params['yaml-doc'] !== 'all') {
+        this.addContextDependency(path.join(this.resourcePath, '../docs'));
+        this.addDependency(path.join(this.resourcePath, '../docs/index.md'));
+    }
 
     const callback = this.async();
     const apiHandler = new vusion.fs.APIHandler(yaml, this.resourcePath);

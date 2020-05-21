@@ -40,9 +40,9 @@
                 :checked="currentShowDetail" @click="toggleShowDetail"></div>
             <div :class="$style['toolbar-item']" name="clear" v-tooltip.top="'清空日志'" @click="clearLogs"></div>
             <div :class="$style['toolbar-divider']"></div>
-            <div :class="$style['toolbar-item']" name="codesandbox" @click="openCodeSandbox()" v-tooltip.top="'在 CodeSandbox 中打开'"></div>
             <a v-if="githubLink" :class="$style['toolbar-item']" name="github" v-tooltip.top="'在 GitHub 中打开'"
                 :href="githubLink" target="_blank"></a>
+            <div :class="$style['toolbar-item']" name="codesandbox" @click="openCodeSandbox()" v-tooltip.top="'在 CodeSandbox 中打开'"></div>
             <!-- <div :class="$style['toolbar-item']" name="edit"></div>
             <div :class="$style['toolbar-item']" name="codepen"></div>
             <div :class="$style['toolbar-item']" name="jsfiddle"></div>

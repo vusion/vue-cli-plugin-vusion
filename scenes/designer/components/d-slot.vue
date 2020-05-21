@@ -1,12 +1,12 @@
 <template>
-<div :class="$style.root" :selected="!!mode">
-    <div v-if="!focused" :class="$style.init" @click="focused = true"></div>
+<div :class="$style.root" :selected="dragover" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop">
+    <div v-if="!focused" :class="$style.init" @click="focused = true, mode = 'add'"></div>
     <template v-else>
         <div v-if="mode !== 'layout'" :class="$style.mode">
             <div :class="$style.close" @click="close()"></div>
-            <span :class="$style.button" role="add" title="添加物料" @click="onClickAdd()" :color="mode === 'add' ? 'primary' : ''"></span>
+            <span draggable="true" :class="$style.button" role="add" title="添加物料" :color="mode === 'add' ? 'primary' : ''"></span>
             <span :class="$style.button" role="layout" title="添加布局" @click="mode = 'layout'"></span>
-            <div v-show="mode === 'add'" style="color: var(--brand-primary); margin-top: 10px;">请在右侧选择需要添加的组件或区块 →</div>
+            <div v-show="mode === 'add'" style="color: var(--brand-primary); margin-top: 10px;">请将需要添加的组件或区块拖拽到这里</div>
         </div>
         <div v-else-if="mode === 'layout'" :class="$style.layouts">
             <div :class="$style.close" @click="close()"></div>
@@ -78,10 +78,13 @@
 </template>
 
 <script>
+import manipulator from '../manipulator';
+
 export default {
     name: 'd-slot',
     props: {
         tag: { type: String, default: 'div' },
+        scopeId: String,
         file: String,
         nodePath: String,
     },
@@ -89,6 +92,7 @@ export default {
         return {
             focused: false,
             mode: '',
+            dragover: false,
         };
     },
     methods: {
@@ -103,11 +107,30 @@ export default {
         },
         select(type) {
             this.send({ command: 'addLayout', type, file: this.file, nodePath: this.nodePath });
-            this.$loading.show(2000);
         },
-        send(message) {
-            console.log('[vscode] Send: ' + JSON.stringify(message));
-            window.parent.postMessage(message, '*');
+        send(data) {
+            console.info('[vusion:designer] Send: ' + JSON.stringify(data));
+            window.parent.postMessage({ protocol: 'vusion', sender: 'designer', data }, '*');
+        },
+        onDragOver(e) {
+            this.dragover = true;
+        },
+        onDragLeave(e) {
+            this.dragover = false;
+        },
+        onDrop(e) {
+            this.dragover = false;
+            const dataTransfer = e.dataTransfer;
+            Array.from(dataTransfer.items).forEach((item) => console.info('[drop]', item.type, item.kind, dataTransfer.getData(item.type)));
+
+            const code = dataTransfer.getData('text/plain');
+            if (!code || !code.includes('<template>'))
+                return;
+
+            if (code.includes('<script>') || code.includes('<style>'))
+                this.send({ command: 'addCode', file: this.file, nodePath: this.nodePath, code });
+            else
+                manipulator.insert(this.scopeId, this.nodePath, code);
         },
     },
 };
@@ -115,8 +138,9 @@ export default {
 
 <style module>
 .root {
+    position: relative;
     user-select: none;
-    border: 2px dashed var(--border-color-base);
+    border: 1px dashed var(--border-color-base);
     background-color: hsla(0,0%,100%,.5);
     transition: all 0.2s;
 }
@@ -128,7 +152,7 @@ export default {
 .root[display="inline"] {
     display: inline-block;
     vertical-align: top;
-    min-width: 300px;
+    min-width: 160px;
 }
 
 .init {
