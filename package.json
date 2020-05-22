@@ -91,7 +91,7 @@
   },
   "peerDependencies": {
     "webpack": "^4.35.3",
-    "cloud-ui.vusion": ">=0.6.10"
+    "cloud-ui.vusion": ">=0.6.18"
   },
   "husky": {
     "hooks": {
