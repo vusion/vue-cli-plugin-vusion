@@ -15,7 +15,7 @@
 
 .property {
     /* color: #891391; */
-    color: #457cd0;
+    color: #2c75e4;
 }
 
 .value {
@@ -26,17 +26,15 @@
 .text {}
 
 .text[type="null"] {
-    color: #808080;
+    color: #93989f;
 }
 
 .text[type="string"] {
-    /* color: #c41916; */
-    color: #50a14f;
+    color: #55a808;
 }
 
 .text[type="literal"] {
-    /* color: #1d00cf; */
-    color: #a626a4;
+    color: #e0276e;
 }
 
 .text[editing] {
