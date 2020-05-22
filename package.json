@@ -76,7 +76,7 @@
   "devDependencies": {
     "@vue/cli-test-utils": "^4.2.3",
     "chai": "^4.2.0",
-    "cloud-ui.vusion": ">=0.6.10",
+    "cloud-ui.vusion": ">=0.6.18",
     "css-loader": "*",
     "eslint": "^6.0.0",
     "eslint-config-vusion": "^3.0.2",
