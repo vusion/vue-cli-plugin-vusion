@@ -62,17 +62,37 @@ const TemplateHandler = require('vusion-api/out/fs/TemplateHandler').default;
 exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     if (!options.vueFile)
         return;
-    if (!options.vueFile.fullPath.includes('test.vue'))
-        return;
     if (options.vueFile.tagName.startsWith('d-'))
+        return;
+
+    const traverse = TemplateHandler.prototype.traverse;
+    traverse.call({ ast }, (info) => {
+        const el = info.node;
+        el.nodePath = info.route;
+        if (el.type !== 1)
+            return;
+
+        // 没有特别好的方法，scopeId 是 vue.runtime 实现的，vusion-node-path 目前只能通过添加属性解决
+        el.attrsList.push({ name: 'vusion-node-path', value: info.route });
+        el.attrsMap['vusion-node-path'] = info.route;
+        const attr = { name: 'vusion-node-path', value: JSON.stringify(info.route) };
+        if (!el.attrs)
+            el.attrs = [];
+        el.attrs.push(attr);
+        el.rawAttrsMap['vusion-node-path'] = attr;
+        // 为了添加属性，只能全部开启 false
+        el.plain = false;
+    });
+
+    if (!options.vueFile.fullPath.includes('test.vue'))
         return;
 
     const subOptions = Object.assign({}, options);
     delete subOptions.plugins;
 
-    const traverse = TemplateHandler.prototype.traverse;
-    traverse.call({ ast }, (nodePath) => {
-        const el = nodePath.node;
+    traverse.call({ ast }, (info) => {
+        const el = info.node;
+        el.nodePath = info.route;
         // // 从根节点处理
         // if (el.parent)
         //     return;
@@ -86,7 +106,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             const children = el.children = el.children || [];
 
             const tmp = compiler.compile(
-                `<d-slot tag="div" scope-id="${options.scopeId.replace('data-v-', '')}" file="${options.vueFile.fullPath}" node-path="${nodePath.route}"></d-slot>`,
+                `<d-slot tag="div" scope-id="${options.scopeId.replace('data-v-', '')}" file="${options.vueFile.fullPath}" node-path="${info.route}"></d-slot>`,
                 subOptions,
             ).ast;
             children.push(tmp);
@@ -95,7 +115,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
 
             const tmp = compiler.compile(`
 <div>
-<d-slot tag="u-linear-layout" ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'} scope-id="${options.scopeId.replace('data-v-', '')}" file="${options.vueFile.fullPath}" node-path="${nodePath.route}"></d-slot>
+<d-slot tag="u-linear-layout" ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'} scope-id="${options.scopeId.replace('data-v-', '')}" file="${options.vueFile.fullPath}" node-path="${info.route}"></d-slot>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 </div>`, subOptions).ast;

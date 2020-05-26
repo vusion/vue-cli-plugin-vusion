@@ -72,6 +72,21 @@ window.addEventListener('message', (e) => {
 }
 
 export default {
+    init(contextVM) {
+        const copts = contextVM.constructor.options;
+        this.compile(copts);
+    },
+    compile(copts) {
+        const options = {
+            scopeId: copts.scopeId,
+            whitespace: 'condense',
+        };
+
+        // 通过 copts.__ 维系一份 template 源码
+        // 这份 ast 是纯净的代码
+        if (!copts.__template.ast)
+            copts.__template.ast = compiler.compile(copts.__template.content, options).ast;
+    },
     insert(scopeId, route, code) {
         code = code.replace(/^<template>\s+/, '').replace(/\s+<\/template>$/, '');
         const component = window.__VUE_HOT_MAP__[scopeId];

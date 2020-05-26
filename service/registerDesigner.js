@@ -151,6 +151,10 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 $2`)
                 .replace('exports.compile = compile;\n  exports.compileToFunctions', 'exports.compile = compile;\n  exports.generate = generate;\n  exports.compileToFunctions')
                 .replace('exports.ssrCompile = compile$1;\n  exports.ssrCompileToFunctions', 'exports.ssrCompile = compile$1;\n  exports.ssrGenerate = generate$1;\n  exports.ssrCompileToFunctions'));
+            // .replace('// _scopedId\n', `  if (el.nodePath) {
+            //     segments.push({ type: RAW, value: ' vusion-node-path="' + el.nodePath + '"' });
+            // }\n`));
+
             readAndWriteFile(vueTemplateCompilerBuildPath, '', (content) => content
                 .replace(/(ast = parse\(template\.trim\(\), options\);)\s+(if|optimize)/g, `$1
                 (options.plugins || []).forEach((plugin) => plugin(ast, options, exports));\n$2`)
@@ -166,6 +170,9 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                     }
                 }
                 $2`));
+            //             .replace('// _scopedId\n', `  if (el.nodePath) {
+            //     segments.push({ type: RAW, value: ' vusion-node-path="' + el.nodePath + '"' });
+            // }\n`));
 
             //             const vueComponentCompilerUtilsPath = require.resolve('@vue/component-compiler-utils');
             //             const compileTemplatePath = path.resolve(vueComponentCompilerUtilsPath, '../compileTemplate.js');

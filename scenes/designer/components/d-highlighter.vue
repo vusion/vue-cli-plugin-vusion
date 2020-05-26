@@ -1,7 +1,7 @@
 <template>
 <div v-show="rectStyle" :class="$style.root" :mode="mode" :style="rectStyle">
     <div :class="$style.bar">
-        <span :class="$style.tagName">{{ info.tagName }}</span>
+        <span :class="$style.tag">{{ info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
         <span :class="$style.icon" role="duplicate"></span> -->
         <span :class="$style.icon" role="remove"></span>
@@ -66,7 +66,7 @@ export default {
     left: 0;
     width: 200px;
     height: 200px;
-    z-index: 9999999999;
+    z-index: 99999999;
     border: 1px solid white;
     outline: 1px dashed #4a88e8;
     outline-offset:  -1px;
