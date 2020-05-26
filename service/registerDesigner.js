@@ -62,14 +62,15 @@ function readAndWriteFile(filePath, newRelativePath = '', handler) {
 module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
     if (args._[0] === 'designer') {
         process.env.DESIGNER = true;
-        vueConfig.pages = {
-            designer: {
-                entry: require.resolve('../scenes/designer/views/index.js'),
-                filename: 'index.html',
-                template: path.resolve(require.resolve('../scenes/designer/views/index.js'), '../index.html'),
-                chunks: 'all',
-                hash: true,
-            },
+        Object.keys(vueConfig.pages).forEach((page) => {
+            delete vueConfig.pages[page];
+        });
+        vueConfig.pages.designer = {
+            entry: require.resolve('../scenes/designer/views/index.js'),
+            filename: 'index.html',
+            template: path.resolve(require.resolve('../scenes/designer/views/index.js'), '../index.html'),
+            chunks: 'all',
+            hash: true,
         };
 
         vueConfig.devServer.open = false;
@@ -176,11 +177,12 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             //             `));
 
             const vueLoaderPath = require.resolve('vue-loader');
-            const templateLoaderPath = path.resolve(vueLoaderPath, '../loaders/templateLoader.js');
-            readAndWriteFile(templateLoaderPath, '', (content) => content
-                .replace('scopeId: query.scoped ? `data-v-${id}` : null,', 'scopeId: `data-v-${id}`,\n  filename: this.resourcePath,'));
+            // const templateLoaderPath = path.resolve(vueLoaderPath, '../loaders/templateLoader.js');
+            // readAndWriteFile(templateLoaderPath, '', (content) => content
+            //     .replace('scopeId: query.scoped ? `data-v-${id}` : null,', 'scopeId: `data-v-${id}`,\n  filename: this.resourcePath,'));
 
             readAndWriteFile(vueLoaderPath, '', (content) => content
+                .replace('const hasScoped = descriptor.styles.some(s => s.scoped)', 'const hasScoped = true')
                 .replace(/(code \+= `\\ncomponent\.options\.__file = .+)\n\s+ \} else if/, `
     $1
     if (process.env.DESIGNER && !resourcePath.includes('node_modules')) {

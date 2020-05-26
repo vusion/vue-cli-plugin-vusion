@@ -1,5 +1,6 @@
 <template>
 <div v-show="rectStyle" :class="$style.root" :mode="mode" :style="rectStyle">
+    <div :class="$style.tagName">{{ info.tagName }}</div>
     <div :class="$style.overlay" ref="overlay"></div>
 </div>
 </template>
@@ -9,7 +10,7 @@ export default {
     name: 'd-highlighter',
     props: {
         mode: { type: String, default: 'hover' },
-        el: [HTMLElement, HTMLDocument],
+        info: Object,
     },
     data() {
         return {
@@ -17,37 +18,40 @@ export default {
         };
     },
     watch: {
-        el: {
-            handler(el) {
-                if (el && el.nodeType === 1) {
-                    const rect = el.getBoundingClientRect();
-                    this.rectStyle = {
-                        top: rect.top + 'px',
-                        left: rect.left + 'px',
-                        width: rect.width + 'px',
-                        height: rect.height + 'px',
-                    };
-                } else {
-                    this.rectStyle = undefined;
-                }
+        info: {
+            handler(info) {
+                this.computeStyle();
             },
             immediate: true,
         },
     },
-    // methods: {
-    //     highlight(el) {
-
-    //     },
-    //     select(el) {
-    //         const rect = el.getBoundingClientRect();
-    //         this.rectStyle = {
-    //             top: rect.top + 'px',
-    //             left: rect.left + 'px',
-    //             width: rect.width + 'px',
-    //             height: rect.height + 'px',
-    //         };
-    //     },
-    // },
+    mounted() {
+        window.addEventListener('scroll', this.onAnyScroll, true);
+    },
+    destroyed() {
+        window.addEventListener('scroll', this.onAnyScroll, true);
+    },
+    methods: {
+        computeStyle() {
+            const el = this.info.el;
+            if (el && el.nodeType === 1) {
+                const rect = el.getBoundingClientRect();
+                this.rectStyle = {
+                    top: rect.top + 'px',
+                    left: rect.left + 'px',
+                    width: rect.width + 'px',
+                    height: rect.height + 'px',
+                };
+            } else {
+                this.rectStyle = undefined;
+            }
+        },
+        onAnyScroll() {
+            if (this.rectStyle) {
+                this.computeStyle();
+            }
+        },
+    },
 };
 </script>
 
@@ -59,11 +63,24 @@ export default {
     width: 200px;
     height: 200px;
     z-index: 9999999999;
-    border: 1px solid hsla(216, 77%, 60%, 0.4);
+    border: 1px solid white;
+    outline: 1px dashed #4a88e8;
+    outline-offset:  -1px;
     pointer-events: none;
 }
 
-.root[mode="select"] {
-    border-color: #4a88e8; /* #67a2ff; */
+.tagName {
+    position: absolute;
+    top: -20px;
+    right: -1px;
+    background: #4a88e8;
+    padding: 0 8px;
+    font-size: 12px;
+    color: white;
+    white-space: nowrap;
+}
+
+.root[mode="hover"] {
+    opacity: 0.5;
 }
 </style>
