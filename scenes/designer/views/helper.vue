@@ -1,7 +1,7 @@
 <template>
 <div>
     <d-highlighter :info="hover"></d-highlighter>
-    <d-highlighter mode="select" :info="selected"></d-highlighter>
+    <d-highlighter mode="selected" :info="selected"></d-highlighter>
 </div>
 </template>
 
@@ -66,20 +66,28 @@ export default {
             });
         },
         cancelEvent(e) {
+            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+                return;
             e.stopImmediatePropagation();
             e.preventDefault();
         },
         onMouseOver(e) {
+            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+                return;
             this.cancelEvent(e);
             // console.log(e.target);
             this.hover = this.getNodeInfo(e.target);
         },
         onMouseLeave(e) {
+            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+                return;
             this.cancelEvent(e);
 
             this.hover = {};
         },
         onClick(e) {
+            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+                return;
             this.cancelEvent(e);
 
             this.selected = this.getNodeInfo(e.target);
@@ -92,3 +100,9 @@ export default {
     },
 };
 </script>
+
+<style module>
+:global #app * {
+    cursor: default !important;
+}
+</style>

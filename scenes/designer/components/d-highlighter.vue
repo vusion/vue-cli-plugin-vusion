@@ -1,7 +1,11 @@
 <template>
 <div v-show="rectStyle" :class="$style.root" :mode="mode" :style="rectStyle">
-    <div :class="$style.tagName">{{ info.tagName }}</div>
-    <div :class="$style.overlay" ref="overlay"></div>
+    <div :class="$style.bar">
+        <span :class="$style.tagName">{{ info.tagName }}</span>
+        <!-- <span :class="$style.icon" role="add"></span>
+        <span :class="$style.icon" role="duplicate"></span> -->
+        <span :class="$style.icon" role="remove"></span>
+    </div>
 </div>
 </template>
 
@@ -69,18 +73,38 @@ export default {
     pointer-events: none;
 }
 
-.tagName {
-    position: absolute;
-    top: -20px;
-    right: -1px;
-    background: #4a88e8;
-    padding: 0 8px;
-    font-size: 12px;
-    color: white;
-    white-space: nowrap;
+.root[mode="selected"] {
+
 }
 
 .root[mode="hover"] {
     opacity: 0.5;
+}
+
+.bar {
+    position: absolute;
+    top: -20px;
+    right: -1px;
+    background: #4a88e8;
+    padding: 0 4px;
+    font-size: 12px;
+    color: white;
+    white-space: nowrap;
+    pointer-events: auto;
+}
+
+.icon {
+    margin-left: 4px;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+
+.icon:hover {
+    opacity: 1;
+}
+
+.icon::before {
+    icon-font: url('../assets/delete.svg');
 }
 </style>
