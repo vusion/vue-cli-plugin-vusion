@@ -1,10 +1,11 @@
 <template>
-<div v-show="rectStyle" :class="$style.root" :mode="mode" :style="rectStyle">
+<div v-show="rectStyle" :class="$style.root" :mode="mode" :style="rectStyle"
+    :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp">
     <div :class="$style.bar">
         <span :class="$style.tag">{{ info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
         <span :class="$style.icon" role="duplicate"></span> -->
-        <span :class="$style.icon" role="remove"></span>
+        <span :class="$style.icon" role="remove" @click="remove"></span>
     </div>
 </div>
 </template>
@@ -55,6 +56,21 @@ export default {
                 this.computeStyle();
             }
         },
+        onKeyUp(e) {
+            if (e.key === 'Backspace' || e.key === 'Delete')
+                this.remove();
+        },
+        remove() {
+            const nodeInfo = this.info;
+
+            this.$parent.send({
+                command: 'removeNode',
+                type: nodeInfo.type,
+                tag: nodeInfo.tag,
+                scopeId: nodeInfo.scopeId,
+                nodePath: nodeInfo.nodePath,
+            });
+        },
     },
 };
 </script>
@@ -95,7 +111,7 @@ export default {
 
 .icon {
     margin-left: 4px;
-    opacity: 0.4;
+    opacity: 0.5;
     transition: opacity 0.2s;
     cursor: pointer;
 }

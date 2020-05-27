@@ -1,12 +1,45 @@
 <template>
 <div>
     <d-highlighter :info="hover"></d-highlighter>
-    <d-highlighter mode="selected" :info="selected"></d-highlighter>
+    <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
 </div>
 </template>
 
 <script>
-import manipulator from '../manipulator';
+import * as compiler from 'vue-template-compiler/browser';
+import { compilerPlugin } from '../transform';
+import api from 'vue-hot-reload-api';
+import Vue from 'vue';
+{
+    const oldRerender = api.rerender;
+    api.rerender = function (id, options, live) {
+        oldRerender(id, options);
+    };
+
+    const oldReload = api.reload;
+    api.reload = function (id, options, live) {
+        if (!live) {
+            const component = window.__VUE_HOT_MAP__[id];
+            const oldOptions = component.options;
+
+            const isSame = (o1, o2, type) => (o1[type] === o2[type]) || (o1[type] && o2[type] && o1[type].content === o2[type].content);
+            // 大部分可能格式仍然有变动
+            if (isSame(oldOptions, options, '__template') && isSame(oldOptions, options, '__script') && isSame(oldOptions, options, '__style')) {
+                console.info('[vusion:designer] Same');
+                return;
+            }
+        }
+
+        oldReload(id, options);
+        oldRerender(id, options);
+
+        if (!live) {
+            const $loading = Vue.prototype.$loading;
+            $loading && $loading.hide();
+            api.onReload && api.onReload(id, options);
+        }
+    };
+}
 
 export default {
     data() {
@@ -14,11 +47,15 @@ export default {
             contextVM: undefined,
             hover: {},
             selected: {},
+            lastChanged: 0,
         };
     },
     mounted() {
         this.onRoute();
         this.$parent.$on('route', this.onRoute);
+        api.onReload = () => {
+            setTimeout(() => this.updateContext());
+        };
 
         // https://github.com/vuejs/vue-devtools/blob/dev/packages/app-backend/src/component-selector.js
         window.addEventListener('mouseover', this.onMouseOver, true);
@@ -28,6 +65,8 @@ export default {
         window.addEventListener('mouseenter', this.cancelEvent, true);
         window.addEventListener('mousedown', this.cancelEvent, true);
         window.addEventListener('mouseup', this.cancelEvent, true);
+
+        window.addEventListener('contextmenu', this.preventDefault, true);
 
         window.addEventListener('message', this.onMessage);
     },
@@ -39,6 +78,8 @@ export default {
         window.removeEventListener('mouseenter', this.cancelEvent, true);
         window.removeEventListener('mousedown', this.cancelEvent, true);
         window.removeEventListener('mouseup', this.cancelEvent, true);
+
+        window.removeEventListener('contextmenu', this.preventDefault, true);
 
         window.removeEventListener('message', this.onMessage);
     },
@@ -75,12 +116,14 @@ export default {
                 nodePath: node.getAttribute('vusion-node-path'),
             };
         },
+        updateContext() {
+            this.contextVM = this.$parent.appVM.$children[0];
+        },
         // 每次切换页面，从这里开始
         onRoute(to, from) {
             setTimeout(() => {
-                this.contextVM = this.$parent.appVM.$children[0];
+                this.updateContext();
                 this.reset();
-
                 if (!this.contextVM)
                     return;
 
@@ -108,6 +151,9 @@ export default {
             e.stopImmediatePropagation();
             e.preventDefault();
         },
+        preventDefault(e) {
+            e.preventDefault();
+        },
         onMouseOver(e) {
             if (!this.contextVM || !this.contextVM.$el.contains(e.target))
                 return;
@@ -125,15 +171,23 @@ export default {
         onClick(e) {
             if (!this.contextVM || !this.contextVM.$el.contains(e.target))
                 return;
+
             const nodeInfo = this.getNodeInfo(e.target);
+            if (nodeInfo.el === this.selected.el)
+                return;
             this.cancelEvent(e, nodeInfo);
             this.selected = nodeInfo;
+
             this.send({
                 command: 'selectNode',
                 type: nodeInfo.type,
                 tag: nodeInfo.tag,
                 scopeId: nodeInfo.scopeId,
                 nodePath: nodeInfo.nodePath,
+            });
+
+            setTimeout(() => {
+                nodeInfo.el && this.$refs.selected.$el.focus();
             });
         },
         send(data) {
@@ -142,9 +196,17 @@ export default {
             window.parent.postMessage({ protocol: 'vusion', sender: 'designer', data }, '*');
         },
         onMessage(e) {
-            console.log(e.data);
-            if (!e.data || e.data.protocol !== 'vusion')
+            if (!e.data)
                 return;
+            if (e.data.source && e.data.source.startsWith('vue-devtools'))
+                return;
+
+            if (e.data.type && e.data.type.startsWith('webpack'))
+                this.onWebpackMessage(e);
+            else if (e.data.protocol === 'vusion')
+                this.onVusionMessage(e);
+        },
+        onVusionMessage(e) {
             if (e.data.sender === 'designer')
                 return;
 
@@ -154,7 +216,51 @@ export default {
                 console.log(el);
                 const nodeInfo = this.getNodeInfo(el);
                 this.selected = nodeInfo;
+            } else if (data.command === 'rerender') {
+                this.rerender(data);
+                // setTimeout(() => this.updateContext(), 1000);
             }
+        },
+        onWebpackMessage(e) {
+            if (e.data.type === 'webpackInvalid') {
+                // console.log('[vusion:designer] lastChanged:', lastChanged);
+                if (!this.lastChanged)
+                    this.send({ command: 'loading', status: true });
+                else
+                    this.lastChanged--;
+            } else if (e.data.type === 'webpackOk') {
+                this.send({ command: 'loading', status: false });
+            }
+        },
+        rerender(data) {
+            const options = {
+                scopeId: data.scopeId,
+                whitespace: 'condense',
+                // plugins: [compilerPlugin],
+            };
+
+            /**
+             * 更新 render 函数
+             */
+            const puppetOptions = Object.assign({
+                vueFile: {
+                    fullPath: data.file,
+                    tagName: 'test',
+                },
+                plugins: [compilerPlugin],
+            }, options);
+            // const puppetEl = flatted.parse(flatted.stringify(copts.__template.ast));
+            // compilerPlugin(puppetEl, puppetOptions, compiler);
+            // const result = compiler.generate(puppetEl, puppetOptions);
+            const result = compiler.compile(data.content, puppetOptions);
+
+            /* eslint-disable no-new-func */
+            api.rerender(data.scopeId.replace(/^data-v-/, ''), {
+                render: new Function(result.render),
+                staticRenderFns: result.staticRenderFns.map((code) => new Function(code)),
+            }, true);
+
+            this.lastChanged += 2;
         },
     },
 };
