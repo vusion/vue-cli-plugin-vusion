@@ -3,20 +3,16 @@
 const fs = require('fs');
 const path = require('path');
 const globby = require('globby');
+const JS = require('javascript-stringify');
 
 const kebab2Camel = (name) => name.replace(/(?:^|-)([a-zA-Z0-9])/g, (m, $1) => $1.toUpperCase());
 
 function createRoute(routePath, flatRoutes) {
-    if (!routePath)
-        routePath = '/';
     if (flatRoutes[routePath])
         return flatRoutes[routePath];
 
-    let [m, parentPath, currentPath] = routePath.match(/(.*)\/(.*)/);
-    if (routePath === '/')
-        currentPath = '/';
-    if (!parentPath)
-        parentPath = '/';
+    const cap = routePath.match(/(.*)\/(.*)/);
+    const [m, parentPath, currentPath] = cap || [null, '', routePath];
 
     return flatRoutes[routePath] = {
         path: currentPath,
@@ -32,16 +28,19 @@ function createRoute(routePath, flatRoutes) {
  *  '/aaa/bbb',
  * }
  */
-exports.getFlatRoutes = function (basePath) {
+exports.getFlatRoutes = function (basePath, filters = {}) {
     // 这里本可以直接在递归目录时生成每一级路由
     // 但现在采用的是获取所有的扁平化路由，为了方便配置和合并
     const flatRoutes = {};
     globby.sync(['**/*.{vue,md}', '!**/*.vue/docs/*.md', '!**/*.blocks/**'], { cwd: basePath }).forEach((filePath) => {
+        if (filters.excludes && filters.excludes.some((exclude) => filePath.includes(exclude)))
+            return;
+
         filePath = filePath.replace(/\\/g, '/');
-        const routePath = ('/' + filePath).replace(/(\/index)?\.(vue|md)$/, '') || '/';
+        const routePath = ('/' + filePath).replace(/(\/index)?\.(vue|md)$/, '').replace(/^\//, '');
 
         const route = createRoute(routePath, flatRoutes);
-        route.filePath = filePath;
+        route.filePath = './' + filePath;
         route.fullPath = path.join(basePath, filePath);
     });
 
@@ -52,7 +51,12 @@ const _mergeFlatRoutes = function (routes1, routes2) {
     if (!routes2)
         return routes1;
     Object.keys(routes2).forEach((key) => {
-        routes1[key] = routes1[key] ? Object.assign(routes1[key], routes2[key]) : routes2[key];
+        if (routes1[key]) {
+            routes1[key] = Object.assign(routes1[key], routes2[key]);
+        } else {
+            console.warn('[routes-loader] Warning 该路由在目录结构中没有生成，请检查配置: ' + key);
+            routes1[key] = routes2[key];
+        }
     });
     return routes1;
 };
@@ -64,21 +68,20 @@ exports.mergeFlatRoutes = (...args) => args.reduceRight((acc, cur) => _mergeFlat
 /**
  * 将扁平路由转换为正常使用的嵌套路由
  */
-exports.nestRoutes = function (flatRoutes) {
+exports.nestRoutes = function (flatRoutes, root) {
     const routes = [];
 
     const parse = function (route) {
-        if (route.routePath === '/')
+        if (route.routePath === '')
             return;
+
+        if (route.parentPath === undefined)
+            route.parentPath = '';
 
         let parent = flatRoutes[route.parentPath];
         if (!parent) {
             parent = createRoute(route.parentPath, flatRoutes);
-            try {
-                parent.fullPath = parent.filePath = require.resolve('cloud-ui.vusion/src/layouts/l-wrapper.vue/index.js').replace(/\\/g, '/');
-            } catch (e) {
-                parent.fullPath = parent.filePath = require.resolve(path.resolve(process.cwd(), './src/layouts/l-wrapper.vue/index.js')).replace(/\\/g, '/');
-            }
+            parent.fullPath = parent.filePath = 'cloud-ui.vusion/src/layouts/l-wrapper.vue';
             parse(parent);
         }
 
@@ -93,7 +96,12 @@ exports.nestRoutes = function (flatRoutes) {
         if (route.children && !!route.children[0].path)
             route.children.unshift({ path: '', redirect: route.children[0].path });
     });
-    routes.push(flatRoutes['/'], { path: '*', redirect: '/' });
+    routes.push(flatRoutes['']);
+
+    if (root) {
+        routes[0].path = '/';
+        routes.push({ path: '*', redirect: '/' });
+    }
 
     return routes;
 };
@@ -101,20 +109,31 @@ exports.nestRoutes = function (flatRoutes) {
 /**
  * 拼接为 JS 字符串
  */
+exports.renderRoute = function (route) {
+    const properties = [];
+    properties.push(`path: '${route.path}'`);
+    /* eslint-disable multiline-ternary */
+    route.filePath && properties.push(route.chunkName
+        ? `component: () => import(/* webpackChunkName: "${route.chunkName}" */ '${route.filePath.replace(/\\/g, '/')}')`
+        : `component: require('${route.filePath.replace(/\\/g, '/')}').default`);
+    route.name && properties.push(`name: '${route.name}'`);
+    route.components && properties.push(`components: ${JS.stringify(route.components)}`);
+    route.redirect && properties.push(`redirect: '${route.redirect}'`);
+    route.props && properties.push(`props: ${JS.stringify(route.props)}`);
+    route.alias && properties.push(`alias: '${route.alias}'`);
+    route.children && properties.push(`children: ${exports.renderRoutes(route.children)}`);
+    route.beforeEnter && properties.push(`beforeEnter: ${JS.stringify(route.beforeEnter)}`);
+    route.meta && properties.push(`meta: ${JS.stringify(route.meta)}`);
+    route.caseSensitive && properties.push(`caseSensitive: '${route.caseSensitive}'`);
+    route.pathToRegexpOptions && properties.push(`pathToRegexpOptions: '${route.pathToRegexpOptions}'`);
+    return `{ ${properties.join(', ')} }`;
+};
+
+/**
+ * 拼接为 JS 字符串
+ */
 exports.renderRoutes = function (routes) {
-    return '[\n' + routes.map((route) => {
-        const properties = [];
-        properties.push(`path: '${route.path}'`);
-        /* eslint-disable multiline-ternary */
-        route.fullPath && properties.push(route.chunkName
-            ? `component: () => import(/* webpackChunkName: "${route.chunkName}" */ '${route.fullPath.replace(/\\/g, '/')}')`
-            : `component: require('${route.fullPath.replace(/\\/g, '/')}').default`);
-        route.children && properties.push(`children: ${exports.renderRoutes(route.children)}`);
-        route.redirect && properties.push(`redirect: '${route.redirect}'`);
-        route.alias && properties.push(`alias: '${route.alias}'`);
-        route.meta && properties.push(`meta: ${JSON.stringify(route.meta)}`);
-        return `{ ${properties.join(', ')} }`;
-    }).join(',\n') + '\n]\n';
+    return '[\n' + routes.map((route) => exports.renderRoute(route)).join(',\n') + '\n]\n';
 };
 
 function ensureReadmePath(markdownPath) {
