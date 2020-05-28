@@ -20,9 +20,9 @@ const RESERVED_DIRS = [
 
 // 生成routes，通过字符串拼接的形式
 module.exports = function (content) {
-    const options = loaderUtils.getOptions(this);
-    options.rootPath = options.rootPath || options.name;
-    options.chunkName = options.chunkName || options.name;
+    const options = loaderUtils.getOptions(this) || {};
+    options.rootPath = options.rootPath || options.scopeName;
+    options.chunkName = options.chunkName || options.scopeName;
 
     const resourceDir = path.dirname(this.resourcePath);
 
@@ -39,7 +39,7 @@ module.exports = function (content) {
         key = key.replace(/\/views\//, '/').replace(/\$/, ':');
         route.path = route.path.replace(/\/views\//, '/').replace(/\$/, ':');
         route.filePath = './' + path.join('views', route.filePath);
-        route.chunkName = options && options.chunkName;
+        route.chunkName = options.chunkName;
 
         handledFlatRoutes[key] = route;
 
