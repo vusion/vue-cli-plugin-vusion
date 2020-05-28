@@ -112,6 +112,7 @@ exports.renderRoutes = function (routes) {
         route.children && properties.push(`children: ${exports.renderRoutes(route.children)}`);
         route.redirect && properties.push(`redirect: '${route.redirect}'`);
         route.alias && properties.push(`alias: '${route.alias}'`);
+        route.meta && properties.push(`meta: ${JSON.stringify(route.meta)}`);
         return `{ ${properties.join(', ')} }`;
     }).join(',\n') + '\n]\n';
 };
