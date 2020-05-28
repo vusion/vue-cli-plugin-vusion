@@ -1,7 +1,5 @@
-const fs = require('fs');
 const path = require('path');
 const loaderUtils = require('loader-utils');
-const JS = require('javascript-stringify');
 
 const _ = require('./utils');
 
@@ -18,6 +16,12 @@ const RESERVED_DIRS = [
     'module',
 ];
 
+const normalize = (routePath) => routePath
+    .replace(/(^|\/)views\//g, '$1/')
+    .replace(/(^|\/)_/g, '$1:')
+    .replace(/_($|\/)/g, '?$1')
+    .replace(/\$/g, '*');
+
 // 生成routes，通过字符串拼接的形式
 module.exports = function (content) {
     const options = loaderUtils.getOptions(this) || {};
@@ -32,12 +36,14 @@ module.exports = function (content) {
     const flatRoutes = _.getFlatRoutes(viewsPath, {
         excludes: RESERVED_DIRS.map((dir) => `/${dir}/`),
     });
+
     const handledFlatRoutes = {};
     Object.keys(flatRoutes).map((key) => {
         const route = flatRoutes[key];
 
-        key = key.replace(/\/views\//, '/').replace(/\$/, ':');
-        route.path = route.path.replace(/\/views\//, '/').replace(/\$/, ':');
+        route.routePath = key = normalize(key);
+        route.path = normalize(route.path);
+        route.parentPath = normalize(route.parentPath);
         route.filePath = './' + path.join('views', route.filePath);
         route.chunkName = options.chunkName;
 
@@ -45,6 +51,8 @@ module.exports = function (content) {
 
         return route;
     });
+    if (!handledFlatRoutes[''])
+        _.createRoute('', handledFlatRoutes, true);
 
     let routesMap = {};
     try {
@@ -52,6 +60,10 @@ module.exports = function (content) {
         // eslint-disable-next-line no-eval
         routesMap = eval('(function(){return ' + ctn + '})()');
     } catch (e) {}
+
+    Object.keys(routesMap).forEach((key) => {
+        routesMap[key] = _.normalizeRoute(key, routesMap[key]);
+    });
 
     const routes = _.nestRoutes(_.mergeFlatRoutes(handledFlatRoutes, routesMap));
     const rootRoute = routes[0];

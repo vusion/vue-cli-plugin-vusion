@@ -7,19 +7,34 @@ const JS = require('javascript-stringify');
 
 const kebab2Camel = (name) => name.replace(/(?:^|-)([a-zA-Z0-9])/g, (m, $1) => $1.toUpperCase());
 
-function createRoute(routePath, flatRoutes) {
+exports.createRoute = function createRoute(routePath, flatRoutes, wrapper) {
     if (flatRoutes[routePath])
         return flatRoutes[routePath];
 
     const cap = routePath.match(/(.*)\/(.*)/);
     const [m, parentPath, currentPath] = cap || [null, '', routePath];
 
-    return flatRoutes[routePath] = {
+    const route = {
         path: currentPath,
         parentPath,
         routePath,
     };
-}
+    if (wrapper)
+        route.fullPath = route.filePath = 'cloud-ui.vusion/src/layouts/l-wrapper.vue';
+
+    return flatRoutes[routePath] = route;
+};
+
+exports.normalizeRoute = function normalizeRoute(routePath, route) {
+    const cap = routePath.match(/(.*)\/(.*)/);
+    const [m, parentPath, currentPath] = cap || [null, '', routePath];
+
+    return Object.assign({
+        path: currentPath,
+        parentPath,
+        routePath,
+    }, route);
+};
 
 /**
  * 根本文件路由获取扁平文件管理
@@ -39,7 +54,7 @@ exports.getFlatRoutes = function (basePath, filters = {}) {
         filePath = filePath.replace(/\\/g, '/');
         const routePath = ('/' + filePath).replace(/(\/index)?\.(vue|md)$/, '').replace(/^\//, '');
 
-        const route = createRoute(routePath, flatRoutes);
+        const route = exports.createRoute(routePath, flatRoutes);
         route.filePath = './' + filePath;
         route.fullPath = path.join(basePath, filePath);
     });
@@ -54,7 +69,7 @@ const _mergeFlatRoutes = function (routes1, routes2) {
         if (routes1[key]) {
             routes1[key] = Object.assign(routes1[key], routes2[key]);
         } else {
-            console.warn('[routes-loader] Warning 该路由在目录结构中没有生成，请检查配置: ' + key);
+            key && console.warn('[routes-loader] Warning 该路由在目录结构中没有生成，请检查配置: ' + key);
             routes1[key] = routes2[key];
         }
     });
@@ -80,8 +95,7 @@ exports.nestRoutes = function (flatRoutes, root) {
 
         let parent = flatRoutes[route.parentPath];
         if (!parent) {
-            parent = createRoute(route.parentPath, flatRoutes);
-            parent.fullPath = parent.filePath = 'cloud-ui.vusion/src/layouts/l-wrapper.vue';
+            parent = exports.createRoute(route.parentPath, flatRoutes, true);
             parse(parent);
         }
 
@@ -93,8 +107,10 @@ exports.nestRoutes = function (flatRoutes, root) {
     // 补充
     Object.keys(flatRoutes).forEach((key) => {
         const route = flatRoutes[key];
-        if (route.children && !!route.children[0].path)
-            route.children.unshift({ path: '', redirect: route.children[0].path });
+        if (route.children && route.children.length) {
+            const firstChild = route.children.find((child) => child.first) || route.children[0];
+            route.children.unshift({ path: '', redirect: firstChild.path });
+        }
     });
     routes.push(flatRoutes['']);
 
