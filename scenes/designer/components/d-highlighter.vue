@@ -62,6 +62,13 @@ export default {
         },
         remove() {
             const nodeInfo = this.info;
+            if (nodeInfo.el === this.$parent.contextVM.$el) {
+                this.$parent.send({
+                    command: 'toast',
+                    message: '页面根节点不能删除！',
+                });
+                return;
+            }
 
             this.$parent.send({
                 command: 'removeNode',

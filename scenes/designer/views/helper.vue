@@ -14,6 +14,7 @@ import Vue from 'vue';
     const oldRerender = api.rerender;
     api.rerender = function (id, options, live) {
         oldRerender(id, options);
+        api.onRerender && api.onRerender(id, options);
     };
 
     const oldReload = api.reload;
@@ -22,7 +23,7 @@ import Vue from 'vue';
             const component = window.__VUE_HOT_MAP__[id];
             const oldOptions = component.options;
 
-            const isSame = (o1, o2, type) => (o1[type] === o2[type]) || (o1[type] && o2[type] && o1[type].content === o2[type].content);
+            const isSame = (o1, o2, type) => o1[type] === o2[type];
             // 大部分可能格式仍然有变动
             if (isSame(oldOptions, options, '__template') && isSame(oldOptions, options, '__script') && isSame(oldOptions, options, '__style')) {
                 console.info('[vusion:designer] Same');
@@ -36,8 +37,8 @@ import Vue from 'vue';
         if (!live) {
             const $loading = Vue.prototype.$loading;
             $loading && $loading.hide();
-            api.onReload && api.onReload(id, options);
         }
+        api.onReload && api.onReload(id, options);
     };
 }
 
@@ -48,15 +49,33 @@ export default {
             hover: {},
             selected: {},
             lastChanged: 0,
-            dSlotMap: new WeakMap(),
+            slotsMap: new WeakMap(),
         };
     },
     watch: {
         selected(selected, old) {
-            if (old && this.dSlotMap.has(old)) {
-                const dSlot = this.dSlotMap.get(old);
-                dSlot.$el.remove(dSlot.$el);
-                dSlot.$destroy();
+            // @TODO:
+            // if (selected && old
+            //     && selected.scopeId === old.scopeId
+            //     && selected.tag === old.tag
+            //     && selected.nodePath === old.nodePath) {
+            //     const dSlot = this.slotsMap.get(old);
+            //     if (dSlot) {
+            //         this.slotsMap.delete(old);
+            //         dSlot.nodeInfo = selected;
+            //         selected.el.append(dSlot.$el);
+            //         this.slotsMap.set(selected, dSlot);
+            //     }
+            //     return;
+            // }
+
+            if (old && this.slotsMap.has(old)) {
+                const slots = this.slotsMap.get(old);
+                slots.forEach((slot) => {
+                    slot.$el.remove();
+                    slot.$destroy();
+                });
+                this.slotsMap.delete(old);
             }
 
             if (selected && selected.el) {
@@ -65,28 +84,60 @@ export default {
                     return;
                 }
                 // const tag = nodeInfo.tag;
-                const dSlot = this.createDSlot({
+                const slots = [];
+                const appendSlot = this.createDSlot({
                     propsData: {
+                        position: 'append',
                         nodeInfo: selected,
                     },
                 });
-                dSlot.$parent = this;
-                dSlot.$on('mode-change', ($event) => {
-                    this.$nextTick(() => {
-                        this.$refs.hover.computeStyle();
-                        this.$refs.selected.computeStyle();
+                selected.el.append(appendSlot.$el);
+                slots.push(appendSlot);
+                if (selected.el !== this.contextVM.$el) {
+                    const insertBeforeSlot = this.createDSlot({
+                        propsData: {
+                            position: 'insertBefore',
+                            nodeInfo: selected,
+                        },
                     });
-                });
-                selected.el.append(dSlot.$el);
-                this.dSlotMap.set(selected, dSlot);
+                    selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
+                    slots.push(insertBeforeSlot);
+                    const insertAfterSlot = this.createDSlot({
+                        propsData: {
+                            position: 'insertAfter',
+                            nodeInfo: selected,
+                        },
+                    });
+                    selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
+                    slots.push(insertAfterSlot);
+                }
+                this.slotsMap.set(selected, slots);
             }
         },
     },
     mounted() {
         this.onRoute();
         this.$parent.$on('route', this.onRoute);
-        api.onReload = () => {
-            setTimeout(() => this.updateContext());
+        api.onRerender = api.onReload = () => {
+            setTimeout(() => {
+                this.updateContext();
+                const oldHover = this.hover;
+                if (oldHover) {
+                    const el = document.querySelector(`[vusion-node-path="${oldHover.nodePath}"]`);
+                    const nodeInfo = this.getNodeInfo(el);
+                    if (nodeInfo.el !== oldHover.el) {
+                        this.hover = nodeInfo;
+                    }
+                }
+                const oldSelected = this.selected;
+                if (oldSelected) {
+                    const el = document.querySelector(`[vusion-node-path="${oldSelected.nodePath}"]`);
+                    const nodeInfo = this.getNodeInfo(el);
+                    this.select(nodeInfo);
+                }
+                // this.$refs.hover.computeStyle();
+                // this.$refs.selected.computeStyle();
+            });
         };
 
         // https://github.com/vuejs/vue-devtools/blob/dev/packages/app-backend/src/component-selector.js
@@ -120,6 +171,15 @@ export default {
             this.hover = {};
             this.selected = {};
         },
+        getRelatedVue(node) {
+            while (node && !node.__vue__)
+                node = node.parentElement;
+            return node && node.__vue__;
+        },
+        isDesignerComponent(node) {
+            const vue = this.getRelatedVue(node);
+            return vue && vue.$options.name && vue.$options.name.startsWith('d-');
+        },
         getNodeInfo(node) {
             if (!this.contextVM)
                 return {};
@@ -144,8 +204,8 @@ export default {
             }
 
             tag = tag.toLowerCase();
-            if (tag.startsWith('d-'))
-                return {};
+            // if (tag.startsWith('d-'))
+            //     return {};
 
             return {
                 el: node,
@@ -183,7 +243,7 @@ export default {
                 return;
             if (!nodeInfo) {
                 nodeInfo = this.getNodeInfo(e.target);
-                if (nodeInfo.tag && nodeInfo.tag.startsWith('d-'))
+                if (this.isDesignerComponent(e.target))
                     return;
             }
 
@@ -214,6 +274,8 @@ export default {
             const nodeInfo = this.getNodeInfo(e.target);
             if (nodeInfo.el === this.selected.el)
                 return;
+            if (this.isDesignerComponent(e.target))
+                return;
             this.cancelEvent(e, nodeInfo);
             this.select(nodeInfo);
 
@@ -232,7 +294,17 @@ export default {
         createDSlot(options) {
             const Ctor = Vue.component('d-slot');
             const el = document.createElement('div');
-            return new Ctor(options).$mount(el);
+            const dSlot = new Ctor(options);
+            dSlot.$mount(el);
+            el.__vue__ = dSlot;
+            dSlot.$parent = this;
+            dSlot.$on('mode-change', ($event) => {
+                this.$nextTick(() => {
+                    this.$refs.hover.computeStyle();
+                    this.$refs.selected.computeStyle();
+                });
+            });
+            return dSlot;
         },
         select(nodeInfo) {
             if (nodeInfo.el === this.selected.el)
@@ -242,7 +314,7 @@ export default {
         },
         send(data) {
             const dataString = JSON.stringify(data);
-            console.info('[vusion:designer] Send: ' + (dataString.length > 100 ? dataString.slice(0, 100) + '...' : dataString));
+            console.info('[vusion:designer] Send: ' + dataString); // (dataString.length > 100 ? dataString.slice(0, 100) + '...' : dataString));
             window.parent.postMessage({ protocol: 'vusion', sender: 'designer', data }, '*');
         },
         onMessage(e) {
@@ -282,8 +354,9 @@ export default {
             }
         },
         rerender(data) {
+            const scopeId = this.contextVM.$options._scopeId;
             const options = {
-                scopeId: data.scopeId,
+                scopeId,
                 whitespace: 'condense',
                 // plugins: [compilerPlugin],
             };
@@ -304,7 +377,7 @@ export default {
             const result = compiler.compile(data.content, puppetOptions);
 
             /* eslint-disable no-new-func */
-            api.rerender(data.scopeId.replace(/^data-v-/, ''), {
+            api.rerender(scopeId.replace(/^data-v-/, ''), {
                 render: new Function(result.render),
                 staticRenderFns: result.staticRenderFns.map((code) => new Function(code)),
             }, true);

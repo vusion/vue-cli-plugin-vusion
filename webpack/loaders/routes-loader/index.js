@@ -44,7 +44,7 @@ module.exports = function (content) {
         route.routePath = key = normalize(key);
         route.path = normalize(route.path);
         route.parentPath = normalize(route.parentPath);
-        route.filePath = './' + path.join('views', route.filePath);
+        route.filePath = './' + path.relative(resourceDir, path.join(viewsPath, route.filePath));
         route.chunkName = options.chunkName;
 
         handledFlatRoutes[key] = route;

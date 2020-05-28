@@ -194,9 +194,9 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
     $1
     if (process.env.DESIGNER && !resourcePath.includes('node_modules')) {
         code += \`\\ncomponent.options.__source = \${JSON.stringify(source)}\`
-        code += \`\\ncomponent.options.__template = \${JSON.stringify({ content: descriptor.template && descriptor.template.content })}\`
-        code += \`\\ncomponent.options.__script = \${JSON.stringify({ content: descriptor.script && descriptor.script.content })}\`
-        code += \`\\ncomponent.options.__style = \${JSON.stringify({ content: descriptor.styles[0] && descriptor.styles[0].content })}\`
+        code += \`\\ncomponent.options.__template = \${JSON.stringify(descriptor.template && descriptor.template.content)}\`
+        code += \`\\ncomponent.options.__script = \${JSON.stringify(descriptor.script && descriptor.script.content)}\`
+        code += \`\\ncomponent.options.__style = \${JSON.stringify(descriptor.styles[0] && descriptor.styles[0].content)}\`
     }
   } else if`));
 

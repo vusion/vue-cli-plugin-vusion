@@ -1,7 +1,9 @@
 <template>
-<div :class="$style.root" :display="display" :focused="focused" :dragover="dragover" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop">
+<div :class="$style.root" :display="display" :position="position" :expanded="expanded"
+    :dragover="dragover" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop">
     <div :class="$style.wrap">
-        <div v-if="!focused" :class="$style.init" @click="onClickAdd"></div>
+        <div v-if="!expanded" :class="$style.init" :dragover="dragover" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop"
+            :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
         <template v-else>
             <div v-if="mode !== 'layout'" :class="$style.mode">
                 <div :class="$style.close" @click="close()"></div>
@@ -93,28 +95,33 @@ export default {
     props: {
         tag: { type: String, default: 'div' },
         display: { type: String, default: 'block' },
+        position: { type: String, default: 'append' },
         nodeInfo: Object,
     },
     data() {
         return {
-            focused: false,
+            expanded: false,
             mode: '',
             dragover: false,
+            POSITION_TEXT: {
+                append: '在内部追加',
+                insertBefore: '在前面插入',
+                insertAfter: '在后面插入',
+            },
         };
     },
     created() {
-        this.$watch(() => [this.focused, this.mode], (result) => {
+        this.$watch(() => [this.expanded, this.mode], (result) => {
             this.$emit('mode-change', result);
         });
-        console.log(this.nodeInfo);
     },
     methods: {
         close() {
-            this.focused = false;
+            this.expanded = false;
             this.mode = '';
         },
         onClickAdd() {
-            this.focused = true;
+            this.expanded = true;
             this.mode = 'add';
             this.send({ command: 'readyToAdd', file: this.file, nodePath: this.nodePath });
         },
@@ -141,11 +148,14 @@ export default {
 
             // if (code.includes('<script>') || code.includes('<style>'))
             this.send({
-                command: 'appendCode',
+                command: 'addCode',
+                position: this.position,
                 code,
                 nodePath: this.nodeInfo.nodePath,
                 scopeId: this.nodeInfo.scopeId,
             });
+
+            this.close();
             // else
             //     manipulator.insert(this.scopeId, this.nodePath, code);
         },
@@ -157,20 +167,42 @@ export default {
 .root {
     position: relative;
     user-select: none;
-    padding: 4px;
 }
 
 .wrap {
-    border: 1px solid hsla(216, 77%, 60%, 0.6);
+    position: absolute;
+    height: 8px;
+    top: auto;
+    bottom: 4px;
+    right: 8px;
+    left: 8px;
+}
+
+.root[position="append"] {}
+
+.root[position="insertBefore"] .wrap {
+    right: 0;
+    left: 0;
+}
+
+.root[position="insertAfter"] .wrap {
+    top: 4px;
+    bottom: auto;
+    right: 0;
+    left: 0;
+}
+
+.root[expanded] .wrap {
+    position: static;
+    height: auto;
+    /* border: 1px solid hsla(216, 77%, 60%, 0.6); */
+    cursor: initial !important;
     transition: all 0.2s;
+    background: hsla(213, 77%, 80%, 0.3);
 }
 
-.root[focused] .wrap {
-    border-style: solid;
-}
-
-.root[dragover] .wrap {
-    background: #ebf2fc;
+.root[expanded][dragover] .wrap {
+    background: hsla(216, 77%, 60%, 0.6);
 }
 
 .root[display="inline"] {
@@ -180,18 +212,29 @@ export default {
 }
 
 .init {
-    cursor: pointer;
     text-align: center;
     color: hsla(216, 77%, 60%, 0.6);
-    transition: color 0.2s;
+    transition: all 0.2s;
+    height: 100%;
+    background: hsla(213, 77%, 80%, 0.3);
 }
 
-.init::before {
+:global(#app) .init {
+    cursor: cell !important;
+}
+
+.root[dragover] .init, .init:hover {
+    margin-top: -4px;
+    height: 200%;
+    background: hsla(213, 77%, 80%, 0.6);
+}
+
+/* .init::before {
     font-size: 24px;
     content: '+';
     line-height: 24px;
     vertical-align: 1px;
-}
+} */
 
 .root[display="inline"] .init::before {
     /* line-height: 24px;
