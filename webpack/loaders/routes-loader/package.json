@@ -1,12 +1,12 @@
 {
   "name": "@vusion/routes-loader",
   "description": "Vusion Routes Loader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Forrest <rainforest92@126.com>",
   "main": "./index.js",
-  "repository": "vusion/vusion-loader",
+  "repository": "vusion/vue-cli-plugin-vusion",
   "bugs": {
-    "url": "http://github.com/vusion/vusion-loader/issues"
+    "url": "http://github.com/vusion/vue-cli-plugin-vusion/issues"
   },
   "license": "MIT",
   "keywords": [
