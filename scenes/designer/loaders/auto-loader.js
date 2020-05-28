@@ -16,7 +16,7 @@ module.exports = function (content) {
     // 动态生成路由
     const srcPath = config.srcPath;
     const srcViewsPath = path.resolve(srcPath, 'views');
-    // this.addContextDependency(srcViewsPath);
+    this.addContextDependency(srcViewsPath);
     const flatRoutes = _.getFlatRoutes(srcViewsPath);
     const routes = Object.keys(flatRoutes).map((key) => {
         const route = flatRoutes[key];

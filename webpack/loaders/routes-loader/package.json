@@ -1,0 +1,48 @@
+{
+    "name": "@vusion/routes-loader",
+    "description": "Vusion Routes Loader",
+    "version": "0.1.0",
+    "author": "Forrest <rainforest92@126.com>",
+    "main": "./index.js",
+    "repository": "vusion/vusion-loader",
+    "bugs": {
+      "url": "http://github.com/vusion/vusion-loader/issues"
+    },
+    "license": "MIT",
+    "keywords": [
+      "vusion",
+      "vue",
+      "webpack",
+      "loader"
+    ],
+    "tags": [
+      "vusion",
+      "vue",
+      "webpack",
+      "loader"
+    ],
+    "dependencies": {
+        "globby": "^10.0.1",
+        "javascript-stringify": "^2.0.1",
+        "loader-utils": "^1.2.3"
+    },
+    "devDependencies": {
+      "@babel/core": "^7.5.4",
+      "babel-loader": "^8.0.6",
+      "css-loader": "^3.0.0",
+      "eslint": "^6.0.0",
+      "eslint-config-vusion": "^3.0.2",
+      "file-loader": "^4.0.0",
+      "vue": "^2.6.10",
+      "vue-loader": "^15.7.0",
+      "vue-style-loader": "^4.1.2",
+      "vue-template-compiler": "^2.6.10",
+      "vue-template-loader": "^1.0.0",
+      "vusion-hooks": "^0.2.2",
+      "vusion-utils": "^0.3.4",
+      "webpack": "^4.35.2",
+      "webpack-cli": "^3.3.5",
+      "webpack-dev-server": "^3.7.2"
+    }
+  }
+  

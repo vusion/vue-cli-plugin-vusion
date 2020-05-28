@@ -1,6 +1,6 @@
 <template>
 <div>
-    <d-highlighter :info="hover"></d-highlighter>
+    <d-highlighter ref="hover" :info="hover"></d-highlighter>
     <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
 </div>
 </template>
@@ -48,7 +48,39 @@ export default {
             hover: {},
             selected: {},
             lastChanged: 0,
+            dSlotMap: new WeakMap(),
         };
+    },
+    watch: {
+        selected(selected, old) {
+            if (old && this.dSlotMap.has(old)) {
+                const dSlot = this.dSlotMap.get(old);
+                dSlot.$el.remove(dSlot.$el);
+                dSlot.$destroy();
+            }
+
+            if (selected && selected.el) {
+                if (getComputedStyle(selected.el).display.includes('inline')) {
+                    // dSlot.display = 'inline';
+                    return;
+                }
+                // const tag = nodeInfo.tag;
+                const dSlot = this.createDSlot({
+                    propsData: {
+                        nodeInfo: selected,
+                    },
+                });
+                dSlot.$parent = this;
+                dSlot.$on('mode-change', ($event) => {
+                    this.$nextTick(() => {
+                        this.$refs.hover.computeStyle();
+                        this.$refs.selected.computeStyle();
+                    });
+                });
+                selected.el.append(dSlot.$el);
+                this.dSlotMap.set(selected, dSlot);
+            }
+        },
     },
     mounted() {
         this.onRoute();
@@ -99,10 +131,17 @@ export default {
             if (!node)
                 return {};
 
-            const type = node.__vue__ ? 'component' : 'element';
-            let tag = type === 'component' ? node.__vue__.$options.name : node.tagName;
-            if (!tag)
-                return {};
+            let type = node.__vue__ ? 'component' : 'element';
+            let tag = type === 'component' ? (node.__vue__.$options.name || 'anonymous') : node.tagName;
+            if (node.__vue__ === this.contextVM) { // el 正好为根节点的时候
+                if (node.__vue__.$children.length === 1 && node.__vue__.$children[0].$el === node) {
+                    type = 'component';
+                    tag = node.__vue__.$children[0].$options.name || 'anonymous';
+                } else {
+                    type = 'element';
+                    tag = node.tagName;
+                }
+            }
 
             tag = tag.toLowerCase();
             if (tag.startsWith('d-'))
@@ -176,7 +215,7 @@ export default {
             if (nodeInfo.el === this.selected.el)
                 return;
             this.cancelEvent(e, nodeInfo);
-            this.selected = nodeInfo;
+            this.select(nodeInfo);
 
             this.send({
                 command: 'selectNode',
@@ -189,6 +228,17 @@ export default {
             setTimeout(() => {
                 nodeInfo.el && this.$refs.selected.$el.focus();
             });
+        },
+        createDSlot(options) {
+            const Ctor = Vue.component('d-slot');
+            const el = document.createElement('div');
+            return new Ctor(options).$mount(el);
+        },
+        select(nodeInfo) {
+            if (nodeInfo.el === this.selected.el)
+                return;
+
+            this.selected = nodeInfo;
         },
         send(data) {
             const dataString = JSON.stringify(data);
@@ -213,9 +263,8 @@ export default {
             const data = e.data.data;
             if (data.command === 'selectNode') {
                 const el = document.querySelector(`[vusion-node-path="${data.nodePath}"]`);
-                console.log(el);
                 const nodeInfo = this.getNodeInfo(el);
-                this.selected = nodeInfo;
+                this.select(nodeInfo);
             } else if (data.command === 'rerender') {
                 this.rerender(data);
                 // setTimeout(() => this.updateContext(), 1000);
