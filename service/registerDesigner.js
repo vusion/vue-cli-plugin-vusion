@@ -190,7 +190,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
 
             readAndWriteFile(vueLoaderPath, '', (content) => content
                 .replace('const hasScoped = descriptor.styles.some(s => s.scoped)', 'const hasScoped = true')
-                .replace(/(code \+= `\\ncomponent\.options\.__file = .+)\n\s+ \} else if/, `
+                .replace(/(if \(needsHotReload\) \{)\s+(code \+=)/, `
     $1
     if (process.env.DESIGNER && !resourcePath.includes('node_modules')) {
         code += \`\\ncomponent.options.__source = \${JSON.stringify(source)}\`
@@ -198,7 +198,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
         code += \`\\ncomponent.options.__script = \${JSON.stringify(descriptor.script && descriptor.script.content)}\`
         code += \`\\ncomponent.options.__style = \${JSON.stringify(descriptor.styles[0] && descriptor.styles[0].content)}\`
     }
-  } else if`));
+    $2`));
 
             // console.log(config.toString());
             // process.exit(0);

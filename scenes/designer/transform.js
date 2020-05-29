@@ -22,5 +22,31 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         // 为了添加属性，只能全部开启 false
         el.plain = false;
     });
+
+    traverse.call({ ast }, (info) => {
+        const el = info.node;
+        if (el.tag === 'u-linear-layout' || el.tag === 'u-grid-layout-column') {
+            const children = el.children = el.children || [];
+
+            const subOptions = {
+                scopeId: options.scopeId,
+                whitespace: 'condense',
+            };
+
+            let display = 'block';
+            if (el.tag === 'u-linear-layout') {
+                if (el.attrsMap.direction === 'vertical')
+                    display = 'inline';
+            }
+
+            const tmp = compiler.compile(`
+    <div>
+    <d-slot tag="${el.tag}" display="${display}" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${el.nodePath}' }"></d-slot>
+    </div>`, subOptions).ast;
+            children.push(...tmp.children);
+        }
+    });
+/* <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
+<d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton> */
 };
 

@@ -1,9 +1,12 @@
 <template>
-<div :class="$style.root" :display="display" :position="position" :expanded="expanded"
-    :dragover="dragover" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop">
+<div :class="$style.root" :type="type" :display="display" :position="position" :expanded="expanded"
+    :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop">
     <div :class="$style.wrap">
-        <div v-if="!expanded" :class="$style.init" :dragover="dragover" @dragover.prevent="onDragOver" @dragleave="onDragLeave" @drop.prevent="onDrop"
-            :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
+        <template v-if="!expanded">
+            <div :class="$style.init" v-if="type === 'layout'" :dragover="dragover" :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
+            <div :class="$style.init" v-else :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
+                :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
+        </template>
         <template v-else>
             <div v-if="mode !== 'layout'" :class="$style.mode">
                 <div :class="$style.close" @click="close()"></div>
@@ -88,8 +91,6 @@
 </template>
 
 <script>
-import manipulator from '../manipulator';
-
 export default {
     name: 'd-slot',
     props: {
@@ -110,9 +111,17 @@ export default {
             },
         };
     },
+    computed: {
+        type(type) {
+            if (this.tag === 'u-linear-layout' || this.tag === 'u-grid-layout-column')
+                return 'layout';
+            else
+                return 'default';
+        },
+    },
     created() {
         this.$watch(() => [this.expanded, this.mode], (result) => {
-            this.$emit('mode-change', result);
+            this.$root.$emit('d-slot:mode-change', result);
         });
     },
     methods: {
@@ -126,10 +135,16 @@ export default {
             this.send({ command: 'readyToAdd', file: this.file, nodePath: this.nodePath });
         },
         select(type) {
-            this.send({ command: 'addLayout', type, file: this.file, nodePath: this.nodePath });
+            this.send({
+                command: 'addLayout',
+                position: this.position,
+                type,
+                nodePath: this.nodeInfo.nodePath,
+                scopeId: this.nodeInfo.scopeId,
+            });
         },
         send(data) {
-            return this.$parent.send(data);
+            return this.$root.$emit('d-slot:send', data);
         },
         onDragOver(e) {
             this.dragover = true;
@@ -156,8 +171,6 @@ export default {
             });
 
             this.close();
-            // else
-            //     manipulator.insert(this.scopeId, this.nodePath, code);
         },
     },
 };
@@ -229,12 +242,27 @@ export default {
     background: hsla(213, 77%, 80%, 0.6);
 }
 
-/* .init::before {
+.root[type="layout"] {
+    padding: 4px;
+}
+
+.root[type="layout"] .wrap {
+    position: static;
+    height: auto;
+}
+
+.root[type="layout"][dragover] .init,
+.root[type="layout"] .init:hover {
+    margin-top: 0;
+    height: auto;
+}
+
+.root[type="layout"] .init::before {
     font-size: 24px;
     content: '+';
     line-height: 24px;
     vertical-align: 1px;
-} */
+}
 
 .root[display="inline"] .init::before {
     /* line-height: 24px;
@@ -320,16 +348,16 @@ export default {
 
 .layout svg {
     display: block;
-    fill: #d8dfe7;
+    fill: rgba(0,0,0,0.3);
     transition: fill 0.2s;
-    outline: 1px dashed #d8dfe7;
+    outline: 1px dashed rgba(0,0,0,0.3);
     outline-offset: 1px;
     transition: all 0.2s;
 }
 
 .layout:hover svg {
-    outline-color: #6d7882;
-    fill: #6d7882;
+    outline-color: rgba(0,0,0,0.6);
+    fill: rgba(0,0,0,0.6);
 }
 
 .close {

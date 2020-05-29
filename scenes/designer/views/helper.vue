@@ -10,35 +10,25 @@ import * as compiler from 'vue-template-compiler/browser';
 import { compilerPlugin } from '../transform';
 import api from 'vue-hot-reload-api';
 import Vue from 'vue';
+
+let lastChanged = 0;
 {
     const oldRerender = api.rerender;
     api.rerender = function (id, options, live) {
         oldRerender(id, options);
-        api.onRerender && api.onRerender(id, options);
+        if (!live)
+            lastChanged--;
+        api.onRerender && api.onRerender(id, options, live);
     };
 
     const oldReload = api.reload;
     api.reload = function (id, options, live) {
-        if (!live) {
-            const component = window.__VUE_HOT_MAP__[id];
-            const oldOptions = component.options;
-
-            const isSame = (o1, o2, type) => o1[type] === o2[type];
-            // 大部分可能格式仍然有变动
-            if (isSame(oldOptions, options, '__template') && isSame(oldOptions, options, '__script') && isSame(oldOptions, options, '__style')) {
-                console.info('[vusion:designer] Same');
-                return;
-            }
-        }
-
+        // const component = window.__VUE_HOT_MAP__[id];
         oldReload(id, options);
-        oldRerender(id, options);
-
-        if (!live) {
-            const $loading = Vue.prototype.$loading;
-            $loading && $loading.hide();
-        }
-        api.onReload && api.onReload(id, options);
+        // oldRerender(id, options);
+        if (!live)
+            lastChanged--;
+        api.onReload && api.onReload(id, options, live);
     };
 }
 
@@ -46,9 +36,9 @@ export default {
     data() {
         return {
             contextVM: undefined,
+            oldContextEl: undefined,
             hover: {},
             selected: {},
-            lastChanged: 0,
             slotsMap: new WeakMap(),
         };
     },
@@ -85,14 +75,16 @@ export default {
                 }
                 // const tag = nodeInfo.tag;
                 const slots = [];
-                const appendSlot = this.createDSlot({
-                    propsData: {
-                        position: 'append',
-                        nodeInfo: selected,
-                    },
-                });
-                selected.el.append(appendSlot.$el);
-                slots.push(appendSlot);
+                if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
+                    const appendSlot = this.createDSlot({
+                        propsData: {
+                            position: 'append',
+                            nodeInfo: selected,
+                        },
+                    });
+                    selected.el.append(appendSlot.$el);
+                    slots.push(appendSlot);
+                }
                 if (selected.el !== this.contextVM.$el) {
                     const insertBeforeSlot = this.createDSlot({
                         propsData: {
@@ -118,9 +110,14 @@ export default {
     mounted() {
         this.onRoute();
         this.$parent.$on('route', this.onRoute);
-        api.onRerender = api.onReload = () => {
+        setTimeout(() => {
+            this.$parent.appVM.$on('d-slot:send', this.onDSlotSend);
+            this.$parent.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
+        });
+
+        api.onRerender = api.onReload = (id, options, live) => {
             setTimeout(() => {
-                this.updateContext();
+                !live && this.updateContext();
                 const oldHover = this.hover;
                 if (oldHover) {
                     const el = document.querySelector(`[vusion-node-path="${oldHover.nodePath}"]`);
@@ -165,6 +162,9 @@ export default {
         window.removeEventListener('contextmenu', this.preventDefault, true);
 
         window.removeEventListener('message', this.onMessage);
+
+        this.$parent.appVM.$off('d-slot:send', this.onDSlotSend);
+        this.$parent.appVM.$off('d-slot:mode-change', this.onDSlotModeChange);
     },
     methods: {
         reset() {
@@ -177,8 +177,14 @@ export default {
             return node && node.__vue__;
         },
         isDesignerComponent(node) {
-            const vue = this.getRelatedVue(node);
-            return vue && vue.$options.name && vue.$options.name.startsWith('d-');
+            let vue = this.getRelatedVue(node);
+            // console.log(vue && vue.$options.name, vue.$root && vue.$root.$options.name);
+            while (vue) {
+                if (vue.$options.name && vue.$options.name.startsWith('d-'))
+                    return true;
+                vue = vue.$parent;
+            }
+            return false;
         },
         getNodeInfo(node) {
             if (!this.contextVM)
@@ -217,25 +223,36 @@ export default {
         },
         updateContext() {
             this.contextVM = this.$parent.appVM.$children[0];
+            if (!this.contextVM)
+                return;
+            this.oldContextEl = this.contextVM.$el;
+            // this.reset();
+
+            const copts = this.contextVM.constructor.options;
+            !lastChanged && this.send({ command: 'initContext', copts: JSON.stringify({
+                file: copts.__file,
+                scopeId: copts._scopeId,
+                // @TODO: 之后这几个应该可以放在外边做
+                source: copts.__source,
+                script: copts.__script,
+                style: copts.__style,
+                template: copts.__template,
+            }) });
         },
         // 每次切换页面，从这里开始
         onRoute(to, from) {
             setTimeout(() => {
-                this.updateContext();
                 this.reset();
-                if (!this.contextVM)
-                    return;
-
-                const copts = this.contextVM.constructor.options;
-                this.send({ command: 'initContext', copts: JSON.stringify({
-                    file: copts.__file,
-                    scopeId: copts._scopeId,
-                    // @TODO: 之后这几个应该可以放在外边做
-                    source: copts.__source,
-                    script: copts.__script,
-                    style: copts.__style,
-                    template: copts.__template,
-                }) });
+                this.updateContext();
+            });
+        },
+        onDSlotSend(data) {
+            this.send(data);
+        },
+        onDSlotModeChange($event) {
+            this.$nextTick(() => {
+                this.$refs.hover.computeStyle();
+                this.$refs.selected.computeStyle();
             });
         },
         cancelEvent(e, nodeInfo) {
@@ -257,6 +274,8 @@ export default {
             if (!this.contextVM || !this.contextVM.$el.contains(e.target))
                 return;
             const nodeInfo = this.getNodeInfo(e.target);
+            if (this.isDesignerComponent(e.target))
+                return;
             this.cancelEvent(e, nodeInfo);
             this.hover = nodeInfo;
         },
@@ -295,10 +314,11 @@ export default {
             const Ctor = Vue.component('d-slot');
             const el = document.createElement('div');
             const dSlot = new Ctor(options);
+            dSlot.$on('d-slot:send', (data) => this.send(data));
             dSlot.$mount(el);
             el.__vue__ = dSlot;
             dSlot.$parent = this;
-            dSlot.$on('mode-change', ($event) => {
+            dSlot.$on('d-slot:mode-change', ($event) => {
                 this.$nextTick(() => {
                     this.$refs.hover.computeStyle();
                     this.$refs.selected.computeStyle();
@@ -339,16 +359,13 @@ export default {
                 this.select(nodeInfo);
             } else if (data.command === 'rerender') {
                 this.rerender(data);
-                // setTimeout(() => this.updateContext(), 1000);
             }
         },
         onWebpackMessage(e) {
             if (e.data.type === 'webpackInvalid') {
                 // console.log('[vusion:designer] lastChanged:', lastChanged);
-                if (!this.lastChanged)
+                if (!lastChanged)
                     this.send({ command: 'loading', status: true });
-                else
-                    this.lastChanged--;
             } else if (e.data.type === 'webpackOk') {
                 this.send({ command: 'loading', status: false });
             }
@@ -358,7 +375,6 @@ export default {
             const options = {
                 scopeId,
                 whitespace: 'condense',
-                // plugins: [compilerPlugin],
             };
 
             /**
@@ -382,7 +398,7 @@ export default {
                 staticRenderFns: result.staticRenderFns.map((code) => new Function(code)),
             }, true);
 
-            this.lastChanged += 2;
+            lastChanged += 2;
         },
     },
 };

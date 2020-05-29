@@ -4,7 +4,6 @@ import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
 import './dragEvents';
-import '../manipulator';
 
 import './designer.css';
 import '@/global/styles/theme.css';
