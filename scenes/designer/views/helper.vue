@@ -229,7 +229,8 @@ export default {
             // this.reset();
 
             const copts = this.contextVM.constructor.options;
-            !lastChanged && this.send({ command: 'initContext', copts: JSON.stringify({
+            // !lastChanged &&
+            this.send({ command: 'initContext', copts: JSON.stringify({
                 file: copts.__file,
                 scopeId: copts._scopeId,
                 // @TODO: 之后这几个应该可以放在外边做
@@ -287,15 +288,19 @@ export default {
             this.hover = {};
         },
         onClick(e) {
-            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+            if (!this.contextVM || !this.contextVM.$el.contains(e.target)) {
+                this.send({
+                    command: 'selectContext',
+                });
                 return;
+            }
 
             const nodeInfo = this.getNodeInfo(e.target);
-            if (nodeInfo.el === this.selected.el)
-                return;
             if (this.isDesignerComponent(e.target))
                 return;
             this.cancelEvent(e, nodeInfo);
+            // if (nodeInfo.el === this.selected.el)
+            //     return;
             this.select(nodeInfo);
 
             this.send({
@@ -407,5 +412,9 @@ export default {
 <style module>
 :global #app * {
     cursor: default !important;
+}
+
+:global #app > div:not([class]) {
+    padding-top: 30px;
 }
 </style>

@@ -10,9 +10,9 @@
         <template v-else>
             <div v-if="mode !== 'layout'" :class="$style.mode">
                 <div :class="$style.close" @click="close()"></div>
-                <u-linear-layout direction="vertical" layout="block" gap="small" style="width: 400px; margin: 0 auto;">
-                    <u-text color="primary">请将需要添加的组件或区块拖拽到这里</u-text>
-                    <div>或者你可以快捷添加以下功能：</div>
+                <u-linear-layout :class="$style.actions" direction="vertical" layout="block" gap="small">
+                    <u-text color="primary" style="font-weight: bold">请将需要添加的组件或区块拖拽到这里</u-text>
+                    <div>或者你可以快捷选择以下功能：</div>
                     <!-- <u-button size="small">描述列表组</u-button> -->
                     <u-button size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
                 </u-linear-layout>
@@ -285,6 +285,12 @@ export default {
 .mode {
     text-align: center;
     padding: 30px 0;
+}
+
+.actions {
+    width: 400px;
+    margin: 0 auto;
+    max-width: 90%;
 }
 
 .button {

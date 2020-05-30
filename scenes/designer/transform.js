@@ -35,7 +35,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
 
             let display = 'block';
             if (el.tag === 'u-linear-layout') {
-                if (el.attrsMap.direction === 'vertical')
+                if (el.attrsMap.direction !== 'vertical')
                     display = 'inline';
             }
 
