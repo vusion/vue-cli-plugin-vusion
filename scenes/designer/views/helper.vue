@@ -117,20 +117,22 @@ export default {
 
         api.onRerender = api.onReload = (id, options, live) => {
             setTimeout(() => {
-                !live && this.updateContext();
+                !live && this.updateContext(options);
                 const oldHover = this.hover;
                 if (oldHover) {
                     const el = document.querySelector(`[vusion-node-path="${oldHover.nodePath}"]`);
                     const nodeInfo = this.getNodeInfo(el);
                     if (nodeInfo.el !== oldHover.el) {
                         this.hover = nodeInfo;
-                    }
+                    } else
+                        this.$refs.hover.computeStyle();
                 }
                 const oldSelected = this.selected;
                 if (oldSelected) {
                     const el = document.querySelector(`[vusion-node-path="${oldSelected.nodePath}"]`);
                     const nodeInfo = this.getNodeInfo(el);
                     this.select(nodeInfo);
+                    this.$refs.selected.computeStyle();
                 }
                 // this.$refs.hover.computeStyle();
                 // this.$refs.selected.computeStyle();
@@ -221,14 +223,14 @@ export default {
                 nodePath: node.getAttribute('vusion-node-path'),
             };
         },
-        updateContext() {
+        updateContext(copts) {
             this.contextVM = this.$parent.appVM.$children[0];
             if (!this.contextVM)
                 return;
             this.oldContextEl = this.contextVM.$el;
             // this.reset();
 
-            const copts = this.contextVM.constructor.options;
+            copts = copts || this.contextVM.constructor.options;
             // !lastChanged &&
             this.send({ command: 'initContext', copts: JSON.stringify({
                 file: copts.__file,
