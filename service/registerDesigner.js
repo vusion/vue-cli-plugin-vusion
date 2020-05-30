@@ -125,6 +125,8 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             // 很多 loader 与 Plugin 有结合，所以 thread-loader 不能开启
             config.module.rule('js').uses.delete('thread-loader');
 
+            config.module.rule('vue').uses.delete('cache-loader');
+
             // Eslint 需要删除 @vue/cli-plugin-eslint
             // chainMarkdown(config, config.module.rule('markdown').test(/\.md$/));
 

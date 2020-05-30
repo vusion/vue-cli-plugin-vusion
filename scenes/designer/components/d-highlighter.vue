@@ -5,6 +5,7 @@
         <span :class="$style.tag">{{ info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
         <span :class="$style.icon" role="duplicate"></span> -->
+        <span :class="$style.icon" role="duplicate" @click="duplicate"></span>
         <span :class="$style.icon" role="remove" @click="remove"></span>
     </div>
 </div>
@@ -78,6 +79,24 @@ export default {
                 nodePath: nodeInfo.nodePath,
             });
         },
+        duplicate() {
+            const nodeInfo = this.info;
+            if (nodeInfo.el === this.$parent.contextVM.$el) {
+                this.$parent.send({
+                    command: 'toast',
+                    message: '页面根节点不能复制！',
+                });
+                return;
+            }
+
+            this.$parent.send({
+                command: 'duplicateNode',
+                type: nodeInfo.type,
+                tag: nodeInfo.tag,
+                scopeId: nodeInfo.scopeId,
+                nodePath: nodeInfo.nodePath,
+            });
+        },
     },
 };
 </script>
@@ -127,7 +146,11 @@ export default {
     opacity: 1;
 }
 
-.icon::before {
+.icon[role="remove"]::before {
     icon-font: url('../assets/delete.svg');
+}
+
+.icon[role="duplicate"]::before {
+    icon-font: url('../assets/add_to_photos.svg');
 }
 </style>

@@ -61,7 +61,7 @@ module.exports = function (content) {
 
     const routes = Object.keys(flatRoutes).map((key) => {
         const route = flatRoutes[key];
-        route.path = key.replace(/\/views\//, '/').replace(/^\/?/, '/');
+        route.path = key.replace(/\/views(\/|$)/, '$1').replace(/^\/?/, '/');
         return route;
     });
 

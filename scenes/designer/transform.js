@@ -8,8 +8,19 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     traverse.call({ ast }, (info) => {
         const el = info.node;
         el.nodePath = info.route;
-        if (el.type !== 1)
+        if (el.type !== 1) {
             return;
+            // if (el.parent && el.parent.tag === 'd-text')
+            //     return;
+
+            // el.type = 1;
+            // el.tag = 'd-text';
+            // el.attrsList = [];
+            // el.attrsMap = {};
+            // el.attrs = [];
+            // el.rawAttrsMap = {};
+            // el.children = [];
+        }
 
         // 没有特别好的方法，scopeId 是 vue.runtime 实现的，vusion-node-path 目前只能通过添加属性解决
         el.attrsList.push({ name: 'vusion-node-path', value: info.route });
