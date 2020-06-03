@@ -35,6 +35,7 @@
     "@vusion/md-vue-loader": "^1.4.0",
     "@vusion/mini-css-extract-plugin": "^0.8.5",
     "@vusion/postcss-calc": "^7.0.3",
+    "@vusion/routes-loader": "^0.2.0",
     "babel-loader": "^8.0.6",
     "codesandbox": "^2.1.12",
     "color": "^3.1.2",
