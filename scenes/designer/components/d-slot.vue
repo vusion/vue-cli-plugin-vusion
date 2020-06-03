@@ -159,25 +159,15 @@ export default {
 
             const code = dataTransfer.getData('text/plain');
             const nodeData = dataTransfer.getData('application/json') || "{}";
-            if (!code || !code.includes('<template>')){
-                this.send({
-                    command: 'addBlock',
-                    position: this.position,
-                    nodePath: this.nodeInfo.nodePath,
-                    scopeId: this.nodeInfo.scopeId,
-                    nodeData,
-                });
-            }else{
-                this.send({
-                    command: 'addCode',
-                    position: this.position,
-                    code,
-                    nodePath: this.nodeInfo.nodePath,
-                    scopeId: this.nodeInfo.scopeId,
-                    nodeData,
-                });
-            }
-
+            this.send({
+                command: 'addCode',
+                position: this.position,
+                code,
+                nodePath: this.nodeInfo.nodePath,
+                scopeId: this.nodeInfo.scopeId,
+                nodeData,
+            });
+            
             this.close();
         },
     },
