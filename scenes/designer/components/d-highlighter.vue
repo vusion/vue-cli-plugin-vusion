@@ -12,6 +12,8 @@
 </template>
 
 <script>
+import * as utils from '../utils';
+
 export default {
     name: 'd-highlighter',
     props: {
@@ -31,17 +33,11 @@ export default {
             immediate: true,
         },
     },
-    mounted() {
-        window.addEventListener('scroll', this.onAnyScroll, true);
-    },
-    destroyed() {
-        window.addEventListener('scroll', this.onAnyScroll, true);
-    },
     methods: {
         computeStyle() {
             const el = this.info.el;
             if (el && el.nodeType === 1) {
-                const rect = el.getBoundingClientRect();
+                const rect = utils.getVisibleRect(el);
                 this.rectStyle = {
                     top: rect.top + 'px',
                     left: rect.left + 'px',
@@ -50,11 +46,6 @@ export default {
                 };
             } else {
                 this.rectStyle = undefined;
-            }
-        },
-        onAnyScroll() {
-            if (this.rectStyle) {
-                this.computeStyle();
             }
         },
         onKeyUp(e) {

@@ -2,6 +2,8 @@
 <div>
     <d-highlighter ref="hover" :info="hover"></d-highlighter>
     <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
+    <div v-show="contextVM" :class="$style.mask" :style="maskStyle"></div>
+    <div v-show="subVM" :class="$style.mask" :style="subMaskStyle"></div>
 </div>
 </template>
 
@@ -10,6 +12,7 @@ import * as compiler from 'vue-template-compiler/browser';
 import { compilerPlugin } from '../transform';
 import api from 'vue-hot-reload-api';
 import Vue from 'vue';
+import * as utils from '../utils';
 
 let lastChanged = 0;
 {
@@ -33,13 +36,21 @@ let lastChanged = 0;
 }
 
 export default {
+    name: 'helper',
     data() {
         return {
+            // appVM: undefined,
+            // router: undefined,
+            contextPath: '',
+            oldContextVM: undefined,
             contextVM: undefined,
-            oldContextEl: undefined,
+            contextDepth: 0,
+            subVM: undefined,
             hover: {},
             selected: {},
             slotsMap: new WeakMap(),
+            maskStyle: {},
+            subMaskStyle: {},
         };
     },
     watch: {
@@ -108,11 +119,27 @@ export default {
         },
     },
     mounted() {
-        this.onRoute();
-        this.$parent.$on('route', this.onRoute);
+        // appVM 的实体是在 router 中的，所以需要延时获取
         setTimeout(() => {
-            this.$parent.appVM.$on('d-slot:send', this.onDSlotSend);
-            this.$parent.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
+            const appEl = document.getElementById('app');
+            this.appVM = appEl.__vue__;
+            this.router = this.appVM.$router;
+
+            if (!this.appVM || !this.router) {
+                return console.error('[vusion:designer] Cannot find appVM');
+            }
+
+            this.appVM.$on('d-slot:send', this.onDSlotSend);
+            this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
+
+            // this.router.afterEach((to, from) => this.onRoute(to, from));
+            this.onNavigate();
+
+            this.sendCommand('ready', {
+                routerMode: this.router.options.mode,
+            });
+
+            console.info('[vusion:designer] Helper ready');
         });
 
         api.onRerender = api.onReload = (id, options, live) => {
@@ -150,6 +177,9 @@ export default {
 
         window.addEventListener('contextmenu', this.preventDefault, true);
 
+        window.addEventListener('scroll', this.updateStyle, true);
+        window.addEventListener('resize', this.updateStyle);
+
         window.addEventListener('message', this.onMessage);
     },
     destroyed() {
@@ -163,12 +193,49 @@ export default {
 
         window.removeEventListener('contextmenu', this.preventDefault, true);
 
+        window.addEventListener('scroll', this.updateStyle, true);
+        window.addEventListener('resize', this.updateStyle);
+
         window.removeEventListener('message', this.onMessage);
 
-        this.$parent.appVM.$off('d-slot:send', this.onDSlotSend);
-        this.$parent.appVM.$off('d-slot:mode-change', this.onDSlotModeChange);
+        this.appVM.$off('d-slot:send', this.onDSlotSend);
+        this.appVM.$off('d-slot:mode-change', this.onDSlotModeChange);
     },
     methods: {
+        /**
+         * routePath 为 ViewPath 格式
+         */
+        navigate(routePath, replace = true) {
+            const [backend, to] = routePath.replace(/\/$/, '').split('#');
+            if (replace)
+                this.router.replace(to);
+            else
+                this.router.push(to);
+
+            this.onNavigate(to);
+        },
+        /**
+         * onNavigate 导航变更时触发
+         * @on
+         * - 页面每次加载
+         * - 路由跳转
+         * 目前只处理 history 模式
+         */
+        onNavigate(contextPath = '') {
+            // if (contextPath !== undefined)
+            this.contextPath = contextPath;
+            // else {
+            //     const cap = location.pathname.match(/^\/.+?\//);
+            //     if (!cap)
+            //         return;
+            //     this.contextPath = location.pathname.slice(cap[0].length - 1);
+            // }
+
+            setTimeout(() => {
+                this.reset();
+                this.updateContext();
+            });
+        },
         reset() {
             this.hover = {};
             this.selected = {};
@@ -223,31 +290,100 @@ export default {
                 nodePath: node.getAttribute('vusion-node-path'),
             };
         },
+        /**
+         * 更新上下文实例信息
+         *  @on
+         *  - onNavigate 导航变更时触发
+         *   - 页面每次加载
+         *   - 路由跳转
+         * - reload
+         * - rerender
+         */
         updateContext(copts) {
-            this.contextVM = this.$parent.appVM.$children[0];
-            if (!this.contextVM)
-                return;
-            this.oldContextEl = this.contextVM.$el;
-            // this.reset();
-
-            copts = copts || this.contextVM.constructor.options;
-            // !lastChanged &&
-            this.send({ command: 'initContext', copts: JSON.stringify({
-                file: copts.__file,
-                scopeId: copts._scopeId,
-                // @TODO: 之后这几个应该可以放在外边做
-                source: copts.__source,
-                script: copts.__script,
-                style: copts.__style,
-                template: copts.__template,
-            }) });
-        },
-        // 每次切换页面，从这里开始
-        onRoute(to, from) {
-            setTimeout(() => {
-                this.reset();
-                this.updateContext();
+            this.oldContextVM = this.contextVM;
+            this.contextVM = undefined;
+            this.contextDepth = 0;
+            this.subVM = undefined;
+            console.log('Find context:', this.appVM.$route.matched, this.contextPath);
+            utils.walkInstance(this.appVM, (nodeVM) => {
+                const data = nodeVM.$vnode.data;
+                if (data.routerView) {
+                    if (this.appVM.$route.matched[data.routerViewDepth].path === this.contextPath) {
+                        this.contextVM = nodeVM;
+                        this.contextDepth = data.routerViewDepth;
+                    } else if (this.contextVM && this.contextDepth === data.routerViewDepth - 1) {
+                        this.subVM = nodeVM;
+                    }
+                }
             });
+
+            this.updateStyle();
+
+            // copts = copts || this.contextVM.constructor.options;
+            // !lastChanged &&
+            // this.send({ command: 'initContext', copts: JSON.stringify({
+            //     file: copts.__file,
+            //     scopeId: copts._scopeId,
+            //     // @TODO: 之后这几个应该可以放在外边做
+            //     source: copts.__source,
+            //     script: copts.__script,
+            //     style: copts.__style,
+            //     template: copts.__template,
+            // }) });
+        },
+        /**
+         * 更新样式
+         * @on
+         * - updateContext
+         * - scroll
+         * - resize
+         */
+        updateStyle() {
+            this.$refs.hover.computeStyle();
+            this.$refs.selected.computeStyle();
+            this.computedMaskStyle();
+        },
+        /**
+         * 重新计算 Mask 样式
+         */
+        computedMaskStyle() {
+            this.maskStyle = {};
+            if (this.contextVM) {
+                const contextRect = utils.getVisibleRect(this.contextVM.$el);
+                contextRect.left -= 20;
+                contextRect.top -= 20;
+                contextRect.right += 20;
+                contextRect.bottom += 20;
+                contextRect.width += 40;
+                contextRect.height += 40;
+                this.maskStyle = {
+                    clipPath: `polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+                        ${contextRect.left}px ${contextRect.top}px,
+                        ${contextRect.left}px ${contextRect.bottom}px,
+                        ${contextRect.right}px ${contextRect.bottom}px,
+                        ${contextRect.right}px ${contextRect.top}px,
+                        ${contextRect.left}px ${contextRect.top}px, 0 0)
+                    `,
+                };
+            }
+            this.subMaskStyle = {};
+            if (this.subVM) {
+                const subRect = utils.getVisibleRect(this.subVM.$el);
+                // subRect.left += 20;
+                // subRect.top += 20;
+                // subRect.right -= 20;
+                // subRect.bottom -= 20;
+                // subRect.width -= 40;
+                // subRect.height -= 40;
+                this.subMaskStyle = {
+                    clipPath: `polygon(${subRect.left}px ${subRect.top}px,
+                        ${subRect.right}px ${subRect.top}px,
+                        ${subRect.right}px ${subRect.bottom}px,
+                        ${subRect.left}px ${subRect.bottom}px,
+                        ${subRect.left}px ${subRect.top}px)
+                    `,
+                };
+            }
         },
         onDSlotSend(data) {
             this.send(data);
@@ -344,6 +480,10 @@ export default {
             console.info('[vusion:designer] Send: ' + dataString); // (dataString.length > 100 ? dataString.slice(0, 100) + '...' : dataString));
             window.parent.postMessage({ protocol: 'vusion', sender: 'designer', data }, '*');
         },
+        sendCommand(command, ...args) {
+            console.info('[vusion:designer] Send Command: ' + command + ' ' + JSON.stringify(args));
+            window.parent.postMessage({ protocol: 'vusion', sender: 'designer', command, args }, '*');
+        },
         onMessage(e) {
             if (!e.data)
                 return;
@@ -356,8 +496,10 @@ export default {
                 this.onVusionMessage(e);
         },
         onVusionMessage(e) {
-            if (e.data.sender === 'designer')
+            if (e.data.sender === 'designer') // 排除自身
                 return;
+            if (e.data.command)
+                return this[e.data.command](...e.data.args);
 
             const data = e.data.data;
             if (data.command === 'selectNode') {
@@ -418,5 +560,15 @@ export default {
 
 :global #app > div:not([class]) {
     padding-top: 30px;
+}
+
+.mask {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99999000;
+    background: rgba(0,0,0,0.5);
 }
 </style>

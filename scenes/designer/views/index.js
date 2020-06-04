@@ -1,15 +1,6 @@
 import Vue from 'vue';
-
-import VueRouter from 'vue-router';
-Vue.use(VueRouter);
-
 import './dragEvents';
-
-import './designer.css';
-import '@/global/styles/theme.css';
-import '@/global/page';
-import '@/views/dashboard/library'; // @TODO
-import '@/global/styles/index.css';
+// import './designer.css';
 
 import Helper from './helper.vue';
 
@@ -25,26 +16,26 @@ requires.keys().forEach((key) => {
         options.install(Vue, name);
 });
 
-import $designer from './empty';
-Vue.prototype.$designer = $designer;
-Vue.prototype.NODE_ENV = process.env.NODE_ENV;
-if (process.env.NODE_ENV === 'development')
-    window.$designer = $designer; // 方便开发时调试
+const div = document.createElement('div');
+document.body.append(div);
+new Vue(Helper).$mount(div);
 
-const router = new VueRouter({
-    // mode: $docs.mode,
-    // base: $docs.base,
-    routes: $designer.routes,
-    scrollBehavior: (to, from, savedPosition) => savedPosition || { x: 0, y: 0 },
-});
+// import $designer from './empty';
+// Vue.prototype.$designer = $designer;
+// Vue.prototype.NODE_ENV = process.env.NODE_ENV;
+// if (process.env.NODE_ENV === 'development')
+//     window.$designer = $designer; // 方便开发时调试
 
-const appVM = new Vue({
-    router,
-}).$mount('#app');
+// const router = new VueRouter({
+//     // mode: $docs.mode,
+//     // base: $docs.base,
+//     routes: $designer.routes,
+//     scrollBehavior: (to, from, savedPosition) => savedPosition || { x: 0, y: 0 },
+// });
 
-const helperVM = new Vue({
-    render: (h) => h(Helper),
-}).$mount('#helper');
+// const appVM = new Vue({
+//     router,
+// }).$mount('#app');
 
-helperVM.appVM = appVM;
-router.afterEach((to, from) => helperVM.$emit('route', to, from));
+// helperVM.appVM = appVM;
+// router.afterEach((to, from) => helperVM.$emit('route', to, from));

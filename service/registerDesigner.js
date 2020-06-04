@@ -3,54 +3,6 @@ const path = require('path');
 const HTMLPlugin = require('html-webpack-plugin');
 const autoLoaderPath = require.resolve('../scenes/designer/loaders/auto-loader');
 
-// markdown-it
-const iterator = require('markdown-it-for-inline');
-const uslug = require('uslug');
-const uslugify = (s) => uslug(s);
-
-function chainMarkdown(config, rule) {
-    return rule.use('cache-loader')
-        .loader('cache-loader')
-        .options(config.module.rule('vue').use('cache-loader').get('options'))
-        .end()
-        .use('vue-loader')
-        .loader('vue-loader')
-        .options(config.module.rule('vue').use('vue-loader').get('options'))
-        .end()
-        .use('@vusion/md-vue-loader')
-        .loader('@vusion/md-vue-loader')
-        .options({
-            wrapper: 'u-article',
-            plugins: [
-                require('markdown-it-ins'),
-                require('markdown-it-mark'),
-                require('markdown-it-abbr'),
-                require('markdown-it-deflist'),
-                [require('markdown-it-anchor'), {
-                    slugify: uslugify,
-                    permalink: true,
-                    permalinkClass: 'heading-anchor',
-                    permalinkSymbol: '#',
-                }],
-                // require('markdown-it-container'),
-                [iterator, 'link_converter', 'link_open', (tokens, idx) => {
-                    tokens[idx].tag = 'u-link';
-                    const aIndex = tokens[idx].attrIndex('href');
-                    if (aIndex >= 0) {
-                        const attr = tokens[idx].attrs[aIndex];
-                        if (attr[1].startsWith('#')) {
-                            tokens[idx].attrPush([':to', `{hash: '${attr[1]}'}`]);
-                            tokens[idx].attrs.splice(aIndex, 1);
-                        }
-                    }
-                }],
-                [iterator, 'link_converter', 'link_close', (tokens, idx) => tokens[idx].tag = 'u-link'],
-            ],
-            showCodeLineCount: 5,
-        })
-        .end();
-}
-
 function readAndWriteFile(filePath, newRelativePath = '', handler) {
     let content = fs.readFileSync(filePath, 'utf8');
     content = handler(content);
@@ -62,17 +14,6 @@ function readAndWriteFile(filePath, newRelativePath = '', handler) {
 module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
     if (args._[0] === 'designer') {
         process.env.DESIGNER = true;
-        Object.keys(vueConfig.pages).forEach((page) => {
-            delete vueConfig.pages[page];
-        });
-        vueConfig.pages.designer = {
-            entry: require.resolve('../scenes/designer/views/index.js'),
-            filename: 'index.html',
-            template: path.resolve(require.resolve('../scenes/designer/views/index.js'), '../index.html'),
-            chunks: 'all',
-            hash: true,
-        };
-
         vueConfig.devServer.open = false;
     }
 
@@ -90,23 +31,18 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
         vueConfig.runtimeCompiler = true;
         vueConfig.productionSourceMap = false;
 
-        // vueConfig.publicPath = vusionConfig.docs && vusionConfig.docs.base ? vusionConfig.docs.base : '';
-        // vueConfig.outputDir = 'public';
-        // vueConfig.productionSourceMap = false;
-
         api.chainWebpack((config) => {
+            const entryPath = require.resolve('../scenes/designer/views/index.js');
+            const entryKeys = Object.keys(config.entryPoints.entries());
+            entryKeys.forEach((key) => config.entry(key).add(entryPath));
+
             // config.devtool('eval');
 
-            // Make sure vue & vue-router unique
-            config.resolve.alias
-                .set('vue$', path.resolve(process.cwd(), 'node_modules/vue/dist/vue.esm.js'))
-                .set('vue-router$', path.resolve(process.cwd(), 'node_modules/vue-router/dist/vue-router.esm.js'));
-
-            config.module.rule('designer-config')
-                .test(/vue-cli-plugin-vusion[\\/]scenes[\\/]designer[\\/]views[\\/]empty\.js$/)
-                .use('auto-loader')
-                .loader(autoLoaderPath)
-                .options(vusionConfig);
+            // config.module.rule('designer-config')
+            //     .test(/vue-cli-plugin-vusion[\\/]scenes[\\/]designer[\\/]views[\\/]empty\.js$/)
+            //     .use('auto-loader')
+            //     .loader(autoLoaderPath)
+            //     .options(vusionConfig);
 
             //     const defineOptions = {
             //         type: vusionConfig.type,
@@ -116,27 +52,10 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             //         DOCS_IMPORTS_PATH: fs.existsSync(docsImportsPath) ? JSON.stringify(docsImportsPath) : undefined,
             //     };
 
-            //     config.module.rule('doc-entry')
-            //         .test(/@vusion[\\/]doc-loader[\\/]views[\\/]index\.js$/)
-            //         .use('entry-loader')
-            //         .loader(entryLoaderPath)
-            //         .options(defineOptions);
-
             // 很多 loader 与 Plugin 有结合，所以 thread-loader 不能开启
             config.module.rule('js').uses.delete('thread-loader');
-
+            // dev 和 designer server 同时跑好像会有问题
             config.module.rule('vue').uses.delete('cache-loader');
-
-            // Eslint 需要删除 @vue/cli-plugin-eslint
-            // chainMarkdown(config, config.module.rule('markdown').test(/\.md$/));
-
-            // 嫌麻烦，先关了！
-            config.optimization.splitChunks({
-                cacheGroups: {
-                    vendors: false,
-                    default: false,
-                },
-            });
 
             config.module.rule('vue').use('vue-loader').tap((options) => {
                 // options.compiler = require('../scenes/designer/fork/build');
@@ -161,17 +80,17 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 .replace(/(ast = parse\(template\.trim\(\), options\);)\s+(if|optimize)/g, `$1
                 (options.plugins || []).forEach((plugin) => plugin(ast, options, exports));\n$2`)
                 .replace('exports.compile = compile;\nexports.compileToFunctions', 'exports.compile = compile;\nexports.generate = generate;\nexports.compileToFunctions')
-                .replace('exports.ssrCompile = compile$1;\nexports.ssrCompileToFunctions', 'exports.ssrCompile = compile$1;\nexports.ssrGenerate = generate$1;\nexports.ssrCompileToFunctions')
-                .replace(/(if \(options\) \{)(\s+if \(process)/, `$1
-                if (options.filename) {
-                    if (!options.filename.endsWith('.vue'))
-                        options.filename = require('path').dirname(options.filename);
-                    if (options.filename.endsWith('.vue')) {
-                        const vusion = require('vusion-api');
-                        options.vueFile = new vusion.VueFile(options.filename);
-                    }
-                }
-                $2`));
+                .replace('exports.ssrCompile = compile$1;\nexports.ssrCompileToFunctions', 'exports.ssrCompile = compile$1;\nexports.ssrGenerate = generate$1;\nexports.ssrCompileToFunctions'));
+            // .replace(/(if \(options\) \{)(\s+if \(process)/, `$1
+            // if (options.filename) {
+            //     if (!options.filename.endsWith('.vue'))
+            //         options.filename = require('path').dirname(options.filename);
+            //     if (options.filename.endsWith('.vue')) {
+            //         const vusion = require('vusion-api');
+            //         options.vueFile = new vusion.VueFile(options.filename);
+            //     }
+            // }
+            // $2`));
             //             .replace('// _scopedId\n', `  if (el.nodePath) {
             //     segments.push({ type: RAW, value: ' vusion-node-path="' + el.nodePath + '"' });
             // }\n`));
@@ -188,6 +107,9 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             const vueLoaderPath = require.resolve('vue-loader');
             // const templateLoaderPath = path.resolve(vueLoaderPath, '../loaders/templateLoader.js');
             // readAndWriteFile(templateLoaderPath, '', (content) => content
+            //     .replace('scopeId: query.scoped ? `data-v-${id}` : null,\n    comments', 'scopeId: query.scoped ? `data-v-${id}` : null,\n'
+            //     + `  filename: require('path').relative(loaderContext.rootContext, this.resourcePath),`
+            //     + '\n    comments'));
             //     .replace('scopeId: query.scoped ? `data-v-${id}` : null,', 'scopeId: `data-v-${id}`,\n  filename: this.resourcePath,'));
 
             readAndWriteFile(vueLoaderPath, '', (content) => content
