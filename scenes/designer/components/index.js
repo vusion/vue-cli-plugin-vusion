@@ -3,3 +3,4 @@ export { default as DText } from './d-text.vue';
 export { default as DSkeleton } from './d-skeleton.vue';
 export { default as DLoading } from './d-loading.vue';
 export { default as DHighlighter } from './d-highlighter.vue';
+export { default as DProgress } from './d-progress.vue';

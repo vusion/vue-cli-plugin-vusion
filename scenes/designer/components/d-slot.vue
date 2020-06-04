@@ -158,18 +158,16 @@ export default {
             Array.from(dataTransfer.items).forEach((item) => console.info('[drop]', item.type, item.kind, dataTransfer.getData(item.type)));
 
             const code = dataTransfer.getData('text/plain');
-            if (!code || !code.includes('<template>'))
-                return;
-
-            // if (code.includes('<script>') || code.includes('<style>'))
+            const nodeData = dataTransfer.getData('application/json') || "{}";
             this.send({
                 command: 'addCode',
                 position: this.position,
                 code,
                 nodePath: this.nodeInfo.nodePath,
                 scopeId: this.nodeInfo.scopeId,
+                nodeData,
             });
-
+            
             this.close();
         },
     },
