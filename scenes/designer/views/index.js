@@ -25,17 +25,3 @@ new Vue(Helper).$mount(div);
 // Vue.prototype.NODE_ENV = process.env.NODE_ENV;
 // if (process.env.NODE_ENV === 'development')
 //     window.$designer = $designer; // 方便开发时调试
-
-// const router = new VueRouter({
-//     // mode: $docs.mode,
-//     // base: $docs.base,
-//     routes: $designer.routes,
-//     scrollBehavior: (to, from, savedPosition) => savedPosition || { x: 0, y: 0 },
-// });
-
-// const appVM = new Vue({
-//     router,
-// }).$mount('#app');
-
-// helperVM.appVM = appVM;
-// router.afterEach((to, from) => helperVM.$emit('route', to, from));

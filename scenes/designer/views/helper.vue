@@ -2,8 +2,8 @@
 <div>
     <d-highlighter ref="hover" :info="hover"></d-highlighter>
     <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
-    <div v-show="contextVM" :class="$style.mask" :style="maskStyle"></div>
-    <div v-show="subVM" :class="$style.mask" :style="subMaskStyle"></div>
+    <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
+    <div v-show="subVM" :class="$style.mask" :style="subMaskStyle" @click="selectContextView"></div>
 </div>
 </template>
 
@@ -45,6 +45,7 @@ export default {
             oldContextVM: undefined,
             contextVM: undefined,
             contextDepth: 0,
+            oldSubVM: undefined,
             subVM: undefined,
             hover: {},
             selected: {},
@@ -215,7 +216,7 @@ export default {
             this.onNavigate(to);
         },
         /**
-         * onNavigate 导航变更时触发
+         * onNavigate 导航变更时触发，即 contextPath 改变
          * @on
          * - 页面每次加载
          * - 路由跳转
@@ -236,6 +237,10 @@ export default {
                 this.updateContext();
             });
         },
+        /**
+         * @on
+         * - onNavigate 导航变更时触发，即 contextPath 改变
+         */
         reset() {
             this.hover = {};
             this.selected = {};
@@ -292,10 +297,8 @@ export default {
         },
         /**
          * 更新上下文实例信息
-         *  @on
-         *  - onNavigate 导航变更时触发
-         *   - 页面每次加载
-         *   - 路由跳转
+         * @on
+         * - onNavigate 导航变更时触发，即 contextPath 改变
          * - reload
          * - rerender
          */
@@ -303,6 +306,7 @@ export default {
             this.oldContextVM = this.contextVM;
             this.contextVM = undefined;
             this.contextDepth = 0;
+            this.oldSubVM = this.subVM;
             this.subVM = undefined;
             console.log('Find context:', this.appVM.$route.matched, this.contextPath);
             utils.walkInstance(this.appVM, (nodeVM) => {
@@ -317,6 +321,10 @@ export default {
                 }
             });
 
+            this.oldContextVM && this.oldContextVM.$el.removeAttribute('vusion-context-vm');
+            this.contextVM && this.contextVM.$el.setAttribute('vusion-context-vm', '');
+            this.oldSubVM && this.oldSubVM.$el.removeAttribute('vusion-sub-vm');
+            this.subVM && this.subVM.$el.setAttribute('vusion-context-vm', '');
             this.updateStyle();
 
             // copts = copts || this.contextVM.constructor.options;
@@ -385,24 +393,11 @@ export default {
                 };
             }
         },
-        onDSlotSend(data) {
-            this.send(data);
-        },
-        onDSlotModeChange($event) {
-            this.$nextTick(() => {
-                this.$refs.hover.computeStyle();
-                this.$refs.selected.computeStyle();
-            });
-        },
-        cancelEvent(e, nodeInfo) {
-            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+        cancelEvent(e) {
+            if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
-            if (!nodeInfo) {
-                nodeInfo = this.getNodeInfo(e.target);
-                if (this.isDesignerComponent(e.target))
-                    return;
-            }
-
+            if (this.isDesignerComponent(e.target)) // d-component 不拦截
+                return;
             e.stopImmediatePropagation();
             e.preventDefault();
         },
@@ -410,33 +405,36 @@ export default {
             e.preventDefault();
         },
         onMouseOver(e) {
-            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+            if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
+            if (this.isDesignerComponent(e.target)) // d-component 不拦截
+                return;
+            this.cancelEvent(e);
+
             const nodeInfo = this.getNodeInfo(e.target);
-            if (this.isDesignerComponent(e.target))
-                return;
-            this.cancelEvent(e, nodeInfo);
             this.hover = nodeInfo;
         },
         onMouseLeave(e) {
-            if (!this.contextVM || !this.contextVM.$el.contains(e.target))
+            if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
+                return;
+            if (this.isDesignerComponent(e.target)) // d-component 不拦截
                 return;
             this.cancelEvent(e);
 
             this.hover = {};
         },
         onClick(e) {
-            if (!this.contextVM || !this.contextVM.$el.contains(e.target)) {
-                this.send({
-                    command: 'selectContext',
-                });
+            if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
+            if (this.isDesignerComponent(e.target))
+                return;
+            this.cancelEvent(e);
+
+            if (!(this.contextVM && this.contextVM.$el.contains(e.target))) { // 不在 contextVM 中，视为选中 contextView
+                return this.selectContextView();
             }
 
             const nodeInfo = this.getNodeInfo(e.target);
-            if (this.isDesignerComponent(e.target))
-                return;
-            this.cancelEvent(e, nodeInfo);
             // if (nodeInfo.el === this.selected.el)
             //     return;
             this.select(nodeInfo);
@@ -452,6 +450,19 @@ export default {
             setTimeout(() => {
                 nodeInfo.el && this.$refs.selected.$el.focus();
             });
+        },
+        select(nodeInfo) {
+            if (nodeInfo.el === this.selected.el)
+                return;
+
+            this.selected = nodeInfo;
+        },
+        /**
+         * 不选具体组件，只选页面
+         */
+        selectContextView() {
+            this.select({});
+            this.sendCommand('selectContextView');
         },
         createDSlot(options) {
             const Ctor = Vue.component('d-slot');
@@ -469,11 +480,11 @@ export default {
             });
             return dSlot;
         },
-        select(nodeInfo) {
-            if (nodeInfo.el === this.selected.el)
-                return;
-
-            this.selected = nodeInfo;
+        onDSlotSend(data) {
+            this.send(data);
+        },
+        onDSlotModeChange($event) {
+            this.$nextTick(() => this.updateStyle());
         },
         send(data) {
             const dataString = JSON.stringify(data);
@@ -558,8 +569,20 @@ export default {
     cursor: default !important;
 }
 
-:global #app > div:not([class]) {
+/* :global #app > div:not([class]) {
     padding-top: 30px;
+} */
+
+:global #app [class^="d-slot_"], :global #app [vusion-sub-vm] [class^="d-slot_"] {
+    display: none;
+}
+
+:global #app [vusion-context-vm] [class^="d-slot_"] {
+    display: block;
+}
+
+:global #app [vusion-context-vm] [class^="d-slot_"][display="inline"] {
+    display: inline-block;
 }
 
 .mask {
@@ -569,6 +592,6 @@ export default {
     left: 0;
     right: 0;
     z-index: 99999000;
-    background: rgba(0,0,0,0.5);
+    background: hsla(216, 60%, 15%, 0.25);
 }
 </style>
