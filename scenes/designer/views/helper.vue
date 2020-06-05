@@ -1,5 +1,5 @@
 <template>
-<div>
+<div id="helper">
     <d-highlighter ref="hover" :info="hover"></d-highlighter>
     <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
     <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
@@ -131,6 +131,7 @@ export default {
             }
 
             this.appVM.$on('d-slot:send', this.onDSlotSend);
+            this.appVM.$on('d-slot:sendCommand', this.onDSlotSendCommand);
             this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
 
             // this.router.afterEach((to, from) => this.onRoute(to, from));
@@ -145,7 +146,13 @@ export default {
 
         api.onRerender = api.onReload = (id, options, live) => {
             setTimeout(() => {
-                !live && this.updateContext(options);
+                if (!live) {
+                    this.sendCommand('updateContext');
+                    this.updateContext(options);
+                } else {
+                    this.computedMaskStyle();
+                }
+
                 const oldHover = this.hover;
                 if (oldHover) {
                     const el = document.querySelector(`[vusion-node-path="${oldHover.nodePath}"]`);
@@ -200,6 +207,7 @@ export default {
         window.removeEventListener('message', this.onMessage);
 
         this.appVM.$off('d-slot:send', this.onDSlotSend);
+        this.appVM.$off('d-slot:sendCommand', this.onDSlotSendCommand);
         this.appVM.$off('d-slot:mode-change', this.onDSlotModeChange);
     },
     methods: {
@@ -324,20 +332,10 @@ export default {
             this.oldContextVM && this.oldContextVM.$el.removeAttribute('vusion-context-vm');
             this.contextVM && this.contextVM.$el.setAttribute('vusion-context-vm', '');
             this.oldSubVM && this.oldSubVM.$el.removeAttribute('vusion-sub-vm');
-            this.subVM && this.subVM.$el.setAttribute('vusion-context-vm', '');
+            this.subVM && this.subVM.$el.setAttribute('vusion-sub-vm', '');
             this.updateStyle();
 
             // copts = copts || this.contextVM.constructor.options;
-            // !lastChanged &&
-            // this.send({ command: 'initContext', copts: JSON.stringify({
-            //     file: copts.__file,
-            //     scopeId: copts._scopeId,
-            //     // @TODO: 之后这几个应该可以放在外边做
-            //     source: copts.__source,
-            //     script: copts.__script,
-            //     style: copts.__style,
-            //     template: copts.__template,
-            // }) });
         },
         /**
          * 更新样式
@@ -468,23 +466,22 @@ export default {
             const Ctor = Vue.component('d-slot');
             const el = document.createElement('div');
             const dSlot = new Ctor(options);
-            dSlot.$on('d-slot:send', (data) => this.send(data));
+            dSlot.$on('d-slot:send', this.onDSlotSend);
+            dSlot.$on('d-slot:sendCommand', this.onDSlotSendCommand);
             dSlot.$mount(el);
             el.__vue__ = dSlot;
             dSlot.$parent = this;
-            dSlot.$on('d-slot:mode-change', ($event) => {
-                this.$nextTick(() => {
-                    this.$refs.hover.computeStyle();
-                    this.$refs.selected.computeStyle();
-                });
-            });
+            dSlot.$on('d-slot:mode-change', this.onDSlotModeChange);
             return dSlot;
         },
         onDSlotSend(data) {
             this.send(data);
         },
+        onDSlotSendCommand(...args) {
+            this.sendCommand(...args);
+        },
         onDSlotModeChange($event) {
-            this.$nextTick(() => this.updateStyle());
+            setTimeout(() => this.updateStyle());
         },
         send(data) {
             const dataString = JSON.stringify(data);
@@ -573,16 +570,20 @@ export default {
     padding-top: 30px;
 } */
 
-:global #app [class^="d-slot_"], :global #app [vusion-sub-vm] [class^="d-slot_"] {
+:global #app [class^="d-slot_"][position] {
     display: none;
 }
 
-:global #app [vusion-context-vm] [class^="d-slot_"] {
+:global #app [vusion-context-vm] [class^="d-slot_"][position] {
     display: block;
 }
 
-:global #app [vusion-context-vm] [class^="d-slot_"][display="inline"] {
+:global #app [vusion-context-vm] [class^="d-slot_"][position][display="inline"] {
     display: inline-block;
+}
+
+:global #app [vusion-sub-vm] [class^="d-slot_"][position][class] {
+    display: none;
 }
 
 .mask {

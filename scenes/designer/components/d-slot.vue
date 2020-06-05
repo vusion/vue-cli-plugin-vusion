@@ -11,7 +11,7 @@
             <div v-if="mode !== 'layout'" :class="$style.mode">
                 <div :class="$style.close" @click="close()"></div>
                 <u-linear-layout :class="$style.actions" direction="vertical" layout="block" gap="small">
-                    <u-text color="primary" style="font-weight: bold">请将需要添加的组件或区块拖拽到这里</u-text>
+                    <u-text color="primary" style="font-weight: bold">⬅︎ 请将需要添加的组件或区块拖拽到这里</u-text>
                     <div>或者你可以快捷选择以下功能：</div>
                     <!-- <u-button size="small">描述列表组</u-button> -->
                     <u-button size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
@@ -132,7 +132,7 @@ export default {
         onClickAdd() {
             this.expanded = true;
             this.mode = 'add';
-            this.send({ command: 'readyToAdd', file: this.file, nodePath: this.nodePath });
+            this.sendCommand('readyToAdd');
         },
         select(type) {
             this.send({
@@ -146,6 +146,9 @@ export default {
         send(data) {
             return this.$root.$emit('d-slot:send', data);
         },
+        sendCommand(...args) {
+            return this.$root.$emit('d-slot:sendCommand', ...args);
+        },
         onDragOver(e) {
             this.dragover = true;
         },
@@ -158,7 +161,7 @@ export default {
             Array.from(dataTransfer.items).forEach((item) => console.info('[drop]', item.type, item.kind, dataTransfer.getData(item.type)));
 
             const code = dataTransfer.getData('text/plain');
-            const nodeData = dataTransfer.getData('application/json') || "{}";
+            const nodeData = dataTransfer.getData('application/json') || '{}';
             this.send({
                 command: 'addCode',
                 position: this.position,
@@ -167,7 +170,7 @@ export default {
                 scopeId: this.nodeInfo.scopeId,
                 nodeData,
             });
-            
+
             this.close();
         },
     },
