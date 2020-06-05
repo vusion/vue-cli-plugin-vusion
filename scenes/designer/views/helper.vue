@@ -122,13 +122,20 @@ export default {
     mounted() {
         // appVM 的实体是在 router 中的，所以需要延时获取
         setTimeout(() => {
-            const appEl = document.getElementById('app');
-            this.appVM = appEl.__vue__;
-            this.router = this.appVM.$router;
-
-            if (!this.appVM || !this.router) {
-                return console.error('[vusion:designer] Cannot find appVM');
+            const children = Array.from(document.body.children);
+            let appVM;
+            for (const el of children) {
+                if (el.__vue__ && el.__vue__.$options.name === 'app') {
+                    appVM = el.__vue__;
+                    break;
+                }
             }
+            if (!appVM)
+                return console.error('[vusion:designer] Cannot find appVM');
+
+            appVM.$el.setAttribute('root-app', '');
+            this.appVM = appVM;
+            this.router = this.appVM.$router;
 
             this.appVM.$on('d-slot:send', this.onDSlotSend);
             this.appVM.$on('d-slot:sendCommand', this.onDSlotSendCommand);
@@ -562,27 +569,27 @@ export default {
 </script>
 
 <style module>
-:global #app * {
+[root-app] * {
     cursor: default !important;
 }
 
-/* :global #app > div:not([class]) {
+/* [root-app] > div:not([class]) {
     padding-top: 30px;
 } */
 
-:global #app [class^="d-slot_"][position] {
+[root-app] [class^="d-slot_"][position] {
     display: none;
 }
 
-:global #app [vusion-context-vm] [class^="d-slot_"][position] {
+[root-app] [vusion-context-vm] [class^="d-slot_"][position] {
     display: block;
 }
 
-:global #app [vusion-context-vm] [class^="d-slot_"][position][display="inline"] {
+[root-app] [vusion-context-vm] [class^="d-slot_"][position][display="inline"] {
     display: inline-block;
 }
 
-:global #app [vusion-sub-vm] [class^="d-slot_"][position][class] {
+[root-app] [vusion-sub-vm] [class^="d-slot_"][position][class] {
     display: none;
 }
 

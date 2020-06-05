@@ -233,7 +233,7 @@ export default {
     background: hsla(213, 77%, 80%, 0.3);
 }
 
-:global(#app) .init {
+[root-app] .init {
     cursor: cell !important;
 }
 
