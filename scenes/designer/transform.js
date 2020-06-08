@@ -36,13 +36,15 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             el.attrs = [];
 
         // 没有特别好的方法，scopeId 是 vue.runtime 实现的，vusion-node-path 目前只能通过添加属性解决
-        el.attrsList.push({ name: 'vusion-node-path', value: info.route });
-        el.attrsMap['vusion-node-path'] = info.route;
-        const attr = { name: 'vusion-node-path', value: JSON.stringify(info.route) };
-        el.attrs.push(attr);
-        el.rawAttrsMap['vusion-node-path'] = attr;
-        // 为了添加属性，只能全部开启 false
-        el.plain = false;
+        if (!el.attrsMap.hasOwnProperty('vusion-node-path') && !el.attrsMap.hasOwnProperty(':vusion-node-path')) {
+            el.attrsList.push({ name: 'vusion-node-path', value: info.route });
+            el.attrsMap['vusion-node-path'] = info.route;
+            const attr = { name: 'vusion-node-path', value: JSON.stringify(info.route) };
+            el.attrs.push(attr);
+            el.rawAttrsMap['vusion-node-path'] = attr;
+            // 为了添加属性，只能全部开启 false
+            el.plain = false;
+        }
     });
 
     traverse.call({ ast }, (info) => {
