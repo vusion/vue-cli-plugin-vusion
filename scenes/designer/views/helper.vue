@@ -28,7 +28,7 @@ let lastChanged = 0;
     api.reload = function (id, options, live) {
         // const component = window.__VUE_HOT_MAP__[id];
         oldReload(id, options);
-        // oldRerender(id, options);
+        oldRerender(id, options);
         if (!live)
             lastChanged--;
         api.onReload && api.onReload(id, options, live);
@@ -81,7 +81,7 @@ export default {
             }
 
             if (selected && selected.el) {
-                if (getComputedStyle(selected.el).display.includes('inline')) {
+                if (getComputedStyle(selected.el).display !== 'block') {
                     // dSlot.display = 'inline';
                     return;
                 }
@@ -280,7 +280,7 @@ export default {
                 return {};
 
             const scopeId = this.contextVM.$options._scopeId;
-            while (node && !node.hasAttribute(scopeId))
+            while (node && !node.hasAttribute(scopeId) && !node.hasAttribute('vusion-scope-id'))
                 node = node.parentElement;
 
             if (!node)
@@ -325,6 +325,8 @@ export default {
             this.subVM = undefined;
             console.log('Find context:', this.appVM.$route.matched, this.contextPath);
             utils.walkInstance(this.appVM, (nodeVM) => {
+                if (!nodeVM.$vnode)
+                    return;
                 const data = nodeVM.$vnode.data;
                 if (data.routerView) {
                     if (this.appVM.$route.matched[data.routerViewDepth].path === this.contextPath) {
@@ -518,7 +520,8 @@ export default {
 
             const data = e.data.data;
             if (data.command === 'selectNode') {
-                const el = document.querySelector(`[vusion-node-path="${data.nodePath}"]`);
+                const scopeId = this.contextVM.$options._scopeId;
+                const el = document.querySelector(`[${scopeId}][vusion-node-path="${data.nodePath}"], [vusion-scope-id="${scopeId}"][vusion-node-path="${data.nodePath}"]`);
                 const nodeInfo = this.getNodeInfo(el);
                 this.select(nodeInfo);
             } else if (data.command === 'rerender') {
