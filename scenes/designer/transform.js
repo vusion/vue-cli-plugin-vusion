@@ -5,6 +5,16 @@ const TemplateHandler = require('vusion-api/out/fs/TemplateHandler').default;
  */
 exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     const traverse = TemplateHandler.prototype.traverse;
+
+    //slot为#方式或者scope方式时处理
+    traverse.call({ ast }, (info) => {
+        const el = info.node;
+        if (el.type === 1 && el.scopedSlots && !el.children.length) {
+            Object.keys(el.scopedSlots).forEach((item) => {
+                el.children.push(el.scopedSlots[item]);
+            });
+        }
+    });
     traverse.call({ ast }, (info) => {
         const el = info.node;
         el.nodePath = info.route;
@@ -56,6 +66,13 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     <d-slot tag="${el.tag}" display="${display}" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${el.nodePath}' }"></d-slot>
     </div>`, subOptions).ast;
             children.push(...tmp.children);
+        }
+    });
+    // 删除slot为#方式或者scope方式时添加的节点，不然webpack会报错
+    traverse.call({ ast }, (info) => {
+        const el = info.node;
+        if (el.type === 1 && el.scopedSlots && el.children.length) {
+            el.children = [];
         }
     });
 /* <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
