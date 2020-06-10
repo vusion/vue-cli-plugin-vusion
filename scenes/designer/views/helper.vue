@@ -1,5 +1,5 @@
 <template>
-<div id="helper">
+<div>
     <d-highlighter ref="hover" :info="hover"></d-highlighter>
     <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
     <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
@@ -222,6 +222,8 @@ export default {
          * routePath 为 ViewPath 格式
          */
         navigate(routePath, replace = true) {
+            if (!this.router)
+                return;
             const [backend, to] = routePath.replace(/\/$/, '').split('#');
             if (replace)
                 this.router.replace(to);
@@ -566,6 +568,15 @@ export default {
             }, true);
 
             lastChanged += 2;
+        },
+        run(expression, self) {
+            return Function(`with (${self}) { return ${expression} }`).call(this);
+        },
+        request(expression, self) {
+            this.run(expression, self)
+                .then((res) => {
+                    this.send({ type: 'response', res });
+                });
         },
     },
 };
