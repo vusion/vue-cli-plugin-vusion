@@ -57,9 +57,9 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             // dev 和 designer server 同时跑好像会有问题
             config.module.rule('js').uses.delete('cache-loader');
             config.module.rule('vue').uses.delete('cache-loader');
-
             config.module.rule('vue').use('vue-loader').tap((options) => {
                 // options.compiler = require('../scenes/designer/fork/build');
+                options.cacheDirectory = options.cacheDirectory.replace('.cache', '.decache');
                 options.compilerOptions.plugins = [require('../scenes/designer/transform').compilerPlugin];
                 return options;
             });
