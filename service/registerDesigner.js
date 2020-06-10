@@ -55,6 +55,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             // 很多 loader 与 Plugin 有结合，所以 thread-loader 不能开启
             config.module.rule('js').uses.delete('thread-loader');
             // dev 和 designer server 同时跑好像会有问题
+            config.module.rule('js').uses.delete('cache-loader');
             config.module.rule('vue').uses.delete('cache-loader');
 
             config.module.rule('vue').use('vue-loader').tap((options) => {

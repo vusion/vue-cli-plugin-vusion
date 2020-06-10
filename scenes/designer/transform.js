@@ -6,15 +6,6 @@ const TemplateHandler = require('vusion-api/out/fs/TemplateHandler').default;
 exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     const traverse = TemplateHandler.prototype.traverse;
 
-    //slot为#方式或者scope方式时处理
-    traverse.call({ ast }, (info) => {
-        const el = info.node;
-        if (el.type === 1 && el.scopedSlots && !el.children.length) {
-            Object.keys(el.scopedSlots).forEach((item) => {
-                el.children.push(el.scopedSlots[item]);
-            });
-        }
-    });
     traverse.call({ ast }, (info) => {
         const el = info.node;
         el.nodePath = info.route;
@@ -45,6 +36,17 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             // 为了添加属性，只能全部开启 false
             el.plain = false;
         }
+        // 打包之后
+        if (!el.attrsMap.hasOwnProperty('vusion-scope-id') && !el.attrsMap.hasOwnProperty(':vusion-scope-id')) {
+            const shortScopeId = options.scopeId.replace(/^data-v-/, '');
+            el.attrsList.push({ name: 'vusion-scope-id', value: shortScopeId });
+            el.attrsMap['vusion-scope-id'] = shortScopeId;
+            const attr = { name: 'vusion-scope-id', value: JSON.stringify(shortScopeId) };
+            el.attrs.push(attr);
+            el.rawAttrsMap['vusion-scope-id'] = attr;
+            // 为了添加属性，只能全部开启 false
+            el.plain = false;
+        }
     });
 
     traverse.call({ ast }, (info) => {
@@ -70,13 +72,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             children.push(...tmp.children);
         }
     });
-    // 删除slot为#方式或者scope方式时添加的节点，不然webpack会报错
-    traverse.call({ ast }, (info) => {
-        const el = info.node;
-        if (el.type === 1 && el.scopedSlots && el.children.length) {
-            el.children = [];
-        }
-    });
+
 /* <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton> */
 };

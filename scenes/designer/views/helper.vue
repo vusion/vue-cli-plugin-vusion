@@ -282,7 +282,7 @@ export default {
                 return {};
 
             const scopeId = this.contextVM.$options._scopeId;
-            while (node && !node.hasAttribute(scopeId) && !node.hasAttribute('vusion-scope-id'))
+            while (node && !node.hasAttribute(scopeId) && 'data-v-' + node.getAttribute('vusion-scope-id') !== scopeId)
                 node = node.parentElement;
 
             if (!node)
@@ -522,7 +522,7 @@ export default {
 
             const data = e.data.data;
             if (data.command === 'selectNode') {
-                const scopeId = this.contextVM.$options._scopeId;
+                const scopeId = this.contextVM.$options._scopeId || '';
                 const el = document.querySelector(`[${scopeId}][vusion-node-path="${data.nodePath}"], [vusion-scope-id="${scopeId}"][vusion-node-path="${data.nodePath}"]`);
                 const nodeInfo = this.getNodeInfo(el);
                 this.select(nodeInfo);
@@ -540,7 +540,7 @@ export default {
             }
         },
         rerender(data) {
-            const scopeId = this.contextVM.$options._scopeId;
+            const scopeId = this.contextVM.$options._scopeId || '';
             const options = {
                 scopeId,
                 whitespace: 'condense',
