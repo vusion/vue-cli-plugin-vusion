@@ -1,7 +1,7 @@
 {
   "name": "vue-cli-plugin-vusion",
   "description": "Vue CLI Plugin for Vusion Projects",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "author": "wt911122 <452663934@qq.com>",
   "main": "index.js",
   "scripts": {
@@ -35,7 +35,7 @@
     "@vusion/md-vue-loader": "^1.4.0",
     "@vusion/mini-css-extract-plugin": "^0.8.5",
     "@vusion/postcss-calc": "^7.0.3",
-    "@vusion/routes-loader": "^0.2.2",
+    "@vusion/routes-loader": "^0.3.0",
     "babel-loader": "^8.0.6",
     "codesandbox": "^2.1.12",
     "color": "^3.1.2",
@@ -70,7 +70,7 @@
     "uslug": "^1.0.4",
     "vue-component-analyzer": "^0.2.0",
     "vue-router": "^3.0.1",
-    "vusion-api": "^0.6.16",
+    "vusion-api": "^0.6.19",
     "vusion-loader": "^0.5.1",
     "vusion-utils": "^0.4.8"
   },
