@@ -25,3 +25,18 @@ new Vue(Helper).$mount(div);
 // Vue.prototype.NODE_ENV = process.env.NODE_ENV;
 // if (process.env.NODE_ENV === 'development')
 //     window.$designer = $designer; // 方便开发时调试
+
+window.addEventListener('message', (e) => {
+    const data = e.data;
+    const protocol = data.protocol;
+    if (protocol === 'health') {
+        if (parent) {
+            parent.postMessage({
+                protocol: 'health',
+                data: {
+                    href: location.href,
+                },
+            }, '*');
+        }
+    }
+});

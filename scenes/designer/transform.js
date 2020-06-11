@@ -37,16 +37,16 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             el.plain = false;
         }
         // 打包之后
-        if (!el.attrsMap.hasOwnProperty('vusion-scope-id') && !el.attrsMap.hasOwnProperty(':vusion-scope-id')) {
-            const shortScopeId = options.scopeId.replace(/^data-v-/, '');
-            el.attrsList.push({ name: 'vusion-scope-id', value: shortScopeId });
-            el.attrsMap['vusion-scope-id'] = shortScopeId;
-            const attr = { name: 'vusion-scope-id', value: JSON.stringify(shortScopeId) };
-            el.attrs.push(attr);
-            el.rawAttrsMap['vusion-scope-id'] = attr;
-            // 为了添加属性，只能全部开启 false
-            el.plain = false;
-        }
+        // if (!el.attrsMap.hasOwnProperty('vusion-scope-id') && !el.attrsMap.hasOwnProperty(':vusion-scope-id')) {
+        //     const shortScopeId = options.scopeId.replace(/^data-v-/, '');
+        //     el.attrsList.push({ name: 'vusion-scope-id', value: shortScopeId });
+        //     el.attrsMap['vusion-scope-id'] = shortScopeId;
+        //     const attr = { name: 'vusion-scope-id', value: JSON.stringify(shortScopeId) };
+        //     el.attrs.push(attr);
+        //     el.rawAttrsMap['vusion-scope-id'] = attr;
+        //     // 为了添加属性，只能全部开启 false
+        //     el.plain = false;
+        // }
     });
 
     traverse.call({ ast }, (info) => {

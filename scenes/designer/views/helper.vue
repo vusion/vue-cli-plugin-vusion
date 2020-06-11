@@ -81,41 +81,51 @@ export default {
             }
 
             if (selected && selected.el) {
-                if (getComputedStyle(selected.el).display !== 'block') {
+                const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
+                if (!(display === 'block' || display === 'inline')) {
                     // dSlot.display = 'inline';
                     return;
                 }
                 // const tag = nodeInfo.tag;
                 const slots = [];
-                if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
-                    const appendSlot = this.createDSlot({
-                        propsData: {
-                            position: 'append',
-                            nodeInfo: selected,
-                        },
-                    });
-                    selected.el.append(appendSlot.$el);
-                    slots.push(appendSlot);
+
+                if (display === 'block' || (display === 'inline' && selected.tag === 'u-form-item')) {
+                    if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
+                        const appendSlot = this.createDSlot({
+                            propsData: {
+                                display,
+                                position: 'append',
+                                nodeInfo: selected,
+                            },
+                        });
+                        selected.el.append(appendSlot.$el);
+                        slots.push(appendSlot);
+                    }
                 }
-                if (selected.el !== this.contextVM.$el) {
-                    const insertBeforeSlot = this.createDSlot({
-                        propsData: {
-                            position: 'insertBefore',
-                            nodeInfo: selected,
-                        },
-                    });
-                    selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
-                    slots.push(insertBeforeSlot);
-                    const insertAfterSlot = this.createDSlot({
-                        propsData: {
-                            position: 'insertAfter',
-                            nodeInfo: selected,
-                        },
-                    });
-                    selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
-                    slots.push(insertAfterSlot);
+                if (display === 'block') {
+                    if (selected.el !== this.contextVM.$el) {
+                        const insertBeforeSlot = this.createDSlot({
+                            propsData: {
+                                display,
+                                position: 'insertBefore',
+                                nodeInfo: selected,
+                            },
+                        });
+                        selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
+                        slots.push(insertBeforeSlot);
+                        const insertAfterSlot = this.createDSlot({
+                            propsData: {
+                                display,
+                                position: 'insertAfter',
+                                nodeInfo: selected,
+                            },
+                        });
+                        selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
+                        slots.push(insertAfterSlot);
+                    }
                 }
-                this.slotsMap.set(selected, slots);
+
+                slots.length && this.slotsMap.set(selected, slots);
             }
         },
     },
@@ -141,7 +151,7 @@ export default {
             this.appVM.$on('d-slot:sendCommand', this.onDSlotSendCommand);
             this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
 
-            // this.router.afterEach((to, from) => this.onRoute(to, from));
+            this.router.afterEach((to, from) => this.onNavigate(to.path));
             this.onNavigate();
 
             this.sendCommand('ready', {
@@ -149,7 +159,7 @@ export default {
             });
 
             console.info('[vusion:designer] Helper ready');
-        });
+        }, 200);
 
         api.onRerender = api.onReload = (id, options, live) => {
             setTimeout(() => {
@@ -230,7 +240,7 @@ export default {
             else
                 this.router.push(to);
 
-            this.onNavigate(to);
+            // this.onNavigate(to);
         },
         /**
          * onNavigate 导航变更时触发，即 contextPath 改变
@@ -239,15 +249,15 @@ export default {
          * - 路由跳转
          * 目前只处理 history 模式
          */
-        onNavigate(contextPath = '') {
-            // if (contextPath !== undefined)
-            this.contextPath = contextPath;
-            // else {
-            //     const cap = location.pathname.match(/^\/.+?\//);
-            //     if (!cap)
-            //         return;
-            //     this.contextPath = location.pathname.slice(cap[0].length - 1);
-            // }
+        onNavigate(contextPath) {
+            if (contextPath !== undefined)
+                this.contextPath = contextPath;
+            else {
+                const cap = location.pathname.match(/^\/.+?\//);
+                if (!cap)
+                    return;
+                this.contextPath = location.pathname.slice(cap[0].length - 1);
+            }
 
             setTimeout(() => {
                 this.reset();
@@ -282,7 +292,7 @@ export default {
                 return {};
 
             const scopeId = this.contextVM.$options._scopeId;
-            while (node && !node.hasAttribute(scopeId) && 'data-v-' + node.getAttribute('vusion-scope-id') !== scopeId)
+            while (node && !node.hasAttribute(scopeId) && node.getAttribute('vusion-scope-id') !== scopeId)
                 node = node.parentElement;
 
             if (!node)
@@ -340,10 +350,10 @@ export default {
                 }
             });
 
-            this.oldContextVM && this.oldContextVM.$el.removeAttribute('vusion-context-vm');
-            this.contextVM && this.contextVM.$el.setAttribute('vusion-context-vm', '');
-            this.oldSubVM && this.oldSubVM.$el.removeAttribute('vusion-sub-vm');
-            this.subVM && this.subVM.$el.setAttribute('vusion-sub-vm', '');
+            this.oldContextVM && this.oldContextVM.$el && this.oldContextVM.$el.removeAttribute('vusion-context-vm');
+            this.contextVM && this.contextVM.$el && this.contextVM.$el.setAttribute('vusion-context-vm', '');
+            this.oldSubVM && this.oldSubVM.$el && this.oldSubVM.$el.removeAttribute('vusion-sub-vm');
+            this.subVM && this.subVM.$el && this.subVM.$el.setAttribute('vusion-sub-vm', '');
             this.updateStyle();
 
             // copts = copts || this.contextVM.constructor.options;
