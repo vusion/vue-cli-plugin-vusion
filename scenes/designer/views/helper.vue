@@ -151,7 +151,7 @@ export default {
             this.appVM.$on('d-slot:sendCommand', this.onDSlotSendCommand);
             this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
 
-            this.router.afterEach((to, from) => this.onNavigate(to.path));
+            // this.router.afterEach((to, from) => this.onNavigate(to.path));
             this.onNavigate();
 
             this.sendCommand('ready', {
@@ -240,7 +240,7 @@ export default {
             else
                 this.router.push(to);
 
-            // this.onNavigate(to);
+            this.onNavigate(to);
         },
         /**
          * onNavigate 导航变更时触发，即 contextPath 改变
