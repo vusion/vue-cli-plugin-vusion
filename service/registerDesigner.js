@@ -125,7 +125,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
     }
     $2`));
 
-            // console.log(config.toString());
+            // fs.writeFileSync('./test.log', config.toString());
             // process.exit(0);
         //     config.plugin('define-docs')
         //         .use(webpack.DefinePlugin, [defineOptions]);
