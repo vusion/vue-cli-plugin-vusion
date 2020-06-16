@@ -22,9 +22,9 @@ requires.keys().forEach((key) => {
     Vue.component(name, requires(key).default);
 });
 
-export default ($docs, Components) => {
+export default ($docs, Components, NODE_ENV) => {
     Vue.prototype.$docs = $docs;
-    Vue.prototype.NODE_ENV = process.env.NODE_ENV;
+    Vue.prototype.NODE_ENV = NODE_ENV;
     if (process.env.NODE_ENV === 'development')
         window.$docs = $docs; // 方便开发时调试
 
