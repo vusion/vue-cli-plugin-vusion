@@ -11,8 +11,8 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         el.nodePath = info.route;
         if (el.type !== 1) {
             return;
-            // if (el.parent && el.parent.tag === 'd-text')
-            //     return;
+            if (el.parent && el.parent.tag === 'd-text')
+                return;
 
             // el.type = 1;
             // el.tag = 'd-text';
@@ -71,7 +71,34 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     </div>`, subOptions).ast;
             children.push(...tmp.children);
         }
+
     });
+
+    const depthTraverse = (ast) => {
+        let stack = [];
+        stack.push(ast.ast);
+        let node;
+        while(stack.length){
+            node = stack.pop();
+            if((node.tag && node.tag.startsWith('d-')) || (node.attrsMap && node.attrsMap.class && node.attrsMap.class.startsWith('d-')))
+                continue;
+            const children = node.children = node.children || [];
+            const texts = children.filter((item) => item.type === 3);
+            if(texts.length){
+                texts.forEach((text)=>{
+                    const tmp = compiler.compile(`<d-text text="${text.text}" nodePath="${text.nodePath}"></d-text>`).ast;
+                    Object.assign(text, tmp);
+                });
+            }
+            if(children.length){
+                for (let i = children.length - 1; i >= 0; i--) {
+                    if(children[i].tag!=='d-text')
+                        stack.push(children[i]);
+                }
+            }
+        }
+    }
+    depthTraverse({ ast });
 
 /* <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton> */
