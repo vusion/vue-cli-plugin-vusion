@@ -82,23 +82,39 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             node = stack.pop();
             if((node.tag && node.tag.startsWith('d-')) || (node.attrsMap && node.attrsMap.class && node.attrsMap.class.startsWith('d-')))
                 continue;
-            const children = node.children = node.children || [];
+            let children = node.children = node.children || [];
+            if(node.scopedSlots){
+                children = children.concat(Object.keys(node.scopedSlots).map((key) => node.scopedSlots[key]));
+            }
             const texts = children.filter((item) => item.type === 3);
             if(texts.length){
                 texts.forEach((text)=>{
                     const tmp = compiler.compile(`<d-text text="${text.text}" nodePath="${text.nodePath}"></d-text>`).ast;
+                    tmp.parent = node;
                     Object.assign(text, tmp);
+                });
+            }
+
+            const expressions = children.filter((item) => item.type === 2);
+            if(expressions.length) {
+                expressions.forEach((expression)=>{
+                    const tmp = compiler.compile(`<d-expression nodePath="${expression.nodePath}" name="${expression.text}">${expression.text}</d-expression>`).ast;
+                    tmp.parent = node;
+                    Object.assign(expression, tmp);
                 });
             }
             if(children.length){
                 for (let i = children.length - 1; i >= 0; i--) {
-                    if(children[i].tag!=='d-text')
+                    if(children[i].tag && !children[i].tag.startsWith('d-'))
                         stack.push(children[i]);
                 }
             }
         }
     }
-    depthTraverse({ ast });
+
+    if(options && !/.\/*d-.*/.test(options.filename)){
+        depthTraverse({ ast });
+    }
 
 /* <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton> */

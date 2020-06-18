@@ -31,8 +31,13 @@ export default {
 </script>
 
 <style module>
+.root{
+    display: inline-block;
+}
 .root:focus{
     outline: 1px dashed #4a88e8;
-    padding: 0 2px;
+}
+.root:empty{
+    width: 10px;
 }
 </style>
