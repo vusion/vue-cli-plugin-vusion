@@ -1,5 +1,5 @@
 <template>
-<span :class="$style.root" contenteditable="true" tabindex="1" @blur="onBlur" @keydown="onKeyDown">{{ text }}</span>
+<span :class="$style.root" contenteditable="true" tabindex="1" @blur="onBlur" @keydown="onKeyDown" @click="cancelEvent">{{ text }}</span>
 </template>
 
 <script>
@@ -10,6 +10,10 @@ export default {
         nodePath: String,
     },
     methods:{
+        cancelEvent(event){
+            event.stopImmediatePropagation();
+            event.preventDefault();
+        },
         onBlur(event){
             this.send({
                 command: 'saveText',
@@ -19,7 +23,7 @@ export default {
         },
         onKeyDown(event){
             if(event.keyCode === 13){
-                event.preventDefault();
+                this.cancelEvent(event);
                 this.onBlur(event);
             }
         },

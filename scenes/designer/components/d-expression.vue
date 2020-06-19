@@ -1,5 +1,5 @@
 <template>
-<span :class="$style.root" tabindex="0" @focus="onFocus">
+<span :class="$style.root" tabindex="0" @focus="onFocus" @click="cancelEvent">
     <span v-if="!editable" key="noEdit" :class="$style.noeidt">
         <slot></slot>
     </span>
@@ -20,6 +20,10 @@ export default {
         }
     },
     methods:{
+        cancelEvent(event){
+            event.stopImmediatePropagation();
+            event.preventDefault();
+        },
         onFocus(event){
             this.editable = true;
             this.$nextTick(() => {
@@ -36,13 +40,14 @@ export default {
         },
         onKeyDown(event){
             if(event.keyCode === 13){
-                event.preventDefault();
+                this.cancelEvent(event);
                 this.onBlur(event);
             }
         },
         send(data) {
             return this.$root.$emit('d-slot:send', data);
         },
+        
     }
 };
 </script>
