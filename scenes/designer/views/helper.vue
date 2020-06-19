@@ -597,6 +597,10 @@ export default {
     cursor: default !important;
 }
 
+iframe {
+    pointer-events: none;
+}
+
 /* [root-app] > div:not([class]) {
     padding-top: 30px;
 } */
