@@ -102,6 +102,16 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                     tmp.parent = node;
                     Object.assign(expression, tmp);
                 });
+                const subOptions = {
+                    scopeId: options.scopeId,
+                    whitespace: 'condense',
+                };
+                const tmp = compiler.compile(`
+                    <div>
+                    <d-slot tag="${node.tag}" display="block" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${node.nodePath}' }"></d-slot>
+                    </div>`, subOptions).ast;
+                children.push(...tmp.children);
+
             }
             if(children.length){
                 for (let i = children.length - 1; i >= 0; i--) {
