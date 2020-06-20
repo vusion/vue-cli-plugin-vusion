@@ -1,6 +1,7 @@
 <template>
 <div v-show="rectStyle" :class="$style.root" :mode="mode" :style="rectStyle"
-    :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp">
+    :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp"
+    draggable="true" @dragstart="onDragStart($event)" @dragend="onDragEnd($event)">
     <div :class="$style.bar">
         <span :class="$style.tag">{{ info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
@@ -81,6 +82,18 @@ export default {
                 scopeId: nodeInfo.scopeId,
                 nodePath: nodeInfo.nodePath,
             });
+        },
+        onDragStart(e) {
+            e.dataTransfer.effectAllowed = 'copyMove';
+            e.dataTransfer.setDragImage(this.info.el, 0, 0);
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                nodePath: this.info.nodePath,
+                command: 'changeNode',
+            }));
+            this.$emit('dragstart');
+        },
+        onDragEnd(e) {
+            this.$emit('dragend');
         },
     },
 };

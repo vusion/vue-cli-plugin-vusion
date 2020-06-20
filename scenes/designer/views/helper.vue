@@ -1,9 +1,10 @@
 <template>
 <div>
     <d-highlighter ref="hover" :info="hover"></d-highlighter>
-    <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
+    <d-highlighter ref="selected" mode="selected" :info="selected" @dragstart="dragging=true" @dragend="onDragEnd"></d-highlighter>
     <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
     <div v-show="subVM" :class="$style.mask" :style="subMaskStyle" @click="selectContextView"></div>
+    <d-drag ref="drag" :info="targetNode" :target-position="targetPosition"></d-drag>
 </div>
 </template>
 
@@ -13,6 +14,7 @@ import { compilerPlugin } from '../transform';
 import api from 'vue-hot-reload-api';
 import Vue from 'vue';
 import * as utils from '../utils';
+import throttle from 'lodash/throttle';
 
 let lastChanged = 0;
 {
@@ -52,6 +54,9 @@ export default {
             slotsMap: new WeakMap(),
             maskStyle: {},
             subMaskStyle: {},
+            dragging: false,
+            targetNode: {},
+            targetPosition: {},
         };
     },
     watch: {
@@ -206,6 +211,10 @@ export default {
         window.addEventListener('resize', this.updateStyle);
 
         window.addEventListener('message', this.onMessage);
+
+        window.addEventListener('dragover', this.onDragOver);
+
+        this.throttleHandlerDrag = throttle(this.handlerDrag, 300);
     },
     destroyed() {
         window.removeEventListener('mouseover', this.elementMouseOver, true);
@@ -222,6 +231,8 @@ export default {
         window.addEventListener('resize', this.updateStyle);
 
         window.removeEventListener('message', this.onMessage);
+
+        window.removeEventListener('dragover', this.onDragOver);
 
         this.appVM.$off('d-slot:send', this.onDSlotSend);
         this.appVM.$off('d-slot:sendCommand', this.onDSlotSendCommand);
@@ -320,6 +331,7 @@ export default {
                 tag,
                 scopeId,
                 nodePath: node.getAttribute('vusion-node-path'),
+                parentNodePath: node.getAttribute('vusion-parent-node-path'),
             };
         },
         /**
@@ -413,6 +425,8 @@ export default {
             }
         },
         cancelEvent(e) {
+            if (this.dragging)
+                return;
             if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
             if (this.isDesignerComponent(e.target)) // d-component 不拦截
@@ -587,6 +601,37 @@ export default {
                 .then((res) => {
                     this.send({ type: 'response', res });
                 });
+        },
+        onDragOver(event) {
+            event.preventDefault();
+            this.throttleHandlerDrag(event);
+            return true;
+        },
+        onDragEnd(event) {
+            this.dragging = false;
+            this.targetNode = {};
+        },
+        handlerDrag(event) {
+            const node = this.getNodeInfo(event.target);
+            if (this.isDropComponent(event.target)) {
+                return;
+            }
+            if (Object.keys(node).length && this.targetNode !== node) {
+                this.targetNode = node;
+                this.targetPosition = {
+                    x: event.x,
+                    y: event.y,
+                };
+            }
+        },
+        isDropComponent(node) {
+            let vue = this.getRelatedVue(node);
+            while (vue) {
+                if (vue.$options.name && (vue.$options.name.startsWith('d-drag') || vue.$options.name.startsWith('d-slot')))
+                    return true;
+                vue = vue.$parent;
+            }
+            return false;
         },
     },
 };

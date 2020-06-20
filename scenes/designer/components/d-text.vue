@@ -1,5 +1,5 @@
 <template>
-<span :class="$style.root" contenteditable="true" tabindex="1" @blur="onBlur" @keydown="onKeyDown" @click="cancelEvent">{{ text }}</span>
+<span :class="$style.root" contenteditable="true" tabindex="1" @blur="onBlur" @keydown="onKeyDown" @click="cancelEvent" :vusion-node-path="nodePath" :vusion-parent-node-path="parentNodePath">{{ text }}</span>
 </template>
 
 <script>
@@ -8,21 +8,22 @@ export default {
         type: Number,
         text: String,
         nodePath: String,
+        parentNodePath: String,
     },
-    methods:{
-        cancelEvent(event){
+    methods: {
+        cancelEvent(event) {
             event.stopImmediatePropagation();
             event.preventDefault();
         },
-        onBlur(event){
+        onBlur(event) {
             this.send({
                 command: 'saveText',
                 nodePath: this.nodePath,
                 value: event.target.innerText,
             });
         },
-        onKeyDown(event){
-            if(event.keyCode === 13){
+        onKeyDown(event) {
+            if (event.keyCode === 13) {
                 this.cancelEvent(event);
                 this.onBlur(event);
             }
@@ -30,7 +31,7 @@ export default {
         send(data) {
             return this.$root.$emit('d-slot:send', data);
         },
-    }
+    },
 };
 </script>
 
