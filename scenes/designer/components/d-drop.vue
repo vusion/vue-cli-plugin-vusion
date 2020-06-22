@@ -1,12 +1,14 @@
 <template>
-<div v-show="rectStyle"
-    :class="$style.root"
-    :style="rectStyle"
-    :dragover="dragover"
-    @dragover.prevent="onDragOver"
-    @dragleave.prevent="onDragLeave"
-    @drop.prevent="onDrop">
-    <div :class="$style.drop"></div>
+<div v-show="rectStyle" :class="$style.root" :style="rectStyle">
+    <div :class="$style.mask" :style="maskStyle"></div>
+    <div ref="dropNode"
+        :class="$style.drop"
+        :style="dragNodeStyle"
+        :dragover="dragover"
+        @dragover.prevent="onDragOver"
+        @dragleave.prevent="onDragLeave"
+        @drop.prevent="onDrop">
+    </div>
 </div>
 </template>
 
@@ -22,6 +24,8 @@ export default {
             dragover: false,
             rectStyle: undefined,
             position: 'insertBefore',
+            dragNodeStyle: undefined,
+            maskStyle: undefined,
         };
     },
     watch: {
@@ -37,40 +41,51 @@ export default {
             const el = this.info.el;
             if (el && el.nodeType === 1) {
                 const rect = utils.getVisibleRect(el);
-                const nodeRect = utils.getVisibleRect(this.$el);
                 const nodeStyle = getComputedStyle(el);
                 if (this.targetPosition.y >= rect.top && this.targetPosition.y <= rect.top + rect.height && this.targetPosition.x >= rect.left && this.targetPosition.x <= rect.left + rect.width) {
                     const display = (nodeStyle.display || '').replace(/-block$/, '');
+                    this.rectStyle = {
+                        left: rect.left + 'px',
+                        top: rect.top + 'px',
+                    };
+                    this.maskStyle = {
+                        width: rect.width + 'px',
+                        height: rect.height + 'px',
+                    };
                     if (display === 'block') {
-                        this.rectStyle = {
-                            left: rect.left + 'px',
+                        this.dragNodeStyle = {
                             width: rect.width + 'px',
+                            height: '20px',
                         };
                         if (this.targetPosition.y >= rect.top && this.targetPosition.y <= rect.top + rect.height / 2) {
-                            this.rectStyle.top = rect.top - nodeRect.height + 'px';
                             this.position = 'insertBefore';
+                            this.dragNodeStyle.top = '-20px';
                         } else {
-                            this.rectStyle.top = rect.top + rect.height + nodeRect.height + 'px';
                             this.position = 'insertAfter';
+                            this.dragNodeStyle.top = rect.height + 'px';
                         }
                     } else if (display === 'inline') {
-                        this.rectStyle = {
-                            top: rect.top + 'px',
+                        this.dragNodeStyle = {
+                            width: '20px',
                             height: rect.height + 'px',
                         };
                         if (this.targetPosition.x >= rect.left && this.targetPosition.x <= rect.left + rect.width / 2) {
-                            this.rectStyle.left = rect.left - nodeRect.width + 'px';
                             this.position = 'insertBefore';
+                            this.dragNodeStyle.left = '-20px';
                         } else {
-                            this.rectStyle.left = rect.left + rect.width + 'px';
                             this.position = 'insertAfter';
+                            this.dragNodeStyle.left = rect.width + 'px';
                         }
                     }
                 } else {
                     this.rectStyle = undefined;
+                    this.maskStyle = undefined;
+                    this.dragNodeStyle = undefined;
                 }
             } else {
                 this.rectStyle = undefined;
+                this.maskStyle = undefined;
+                this.dragNodeStyle = undefined;
             }
         },
         onDragOver(e) {
@@ -92,17 +107,18 @@ export default {
                     command: 'changeNode',
                     originPath: nodeData.nodePath,
                     targetPath: this.info.nodePath,
-                    parentTargetPath: this.info.parentNodePath,
+                    parentNodePath: this.info.parentNodePath,
                     position: this.position,
                 });
             } else {
                 this.$parent.send({
-                    command: nodeData.command,
+                    command: 'addCode',
                     position: this.position,
                     code,
                     nodePath: this.info.nodePath,
+                    parentNodePath: this.info.parentNodePath,
                     scopeId: this.info.scopeId,
-                    nodeData,
+                    nodeData: JSON.stringify(nodeData),
                 });
             }
         },
@@ -113,16 +129,29 @@ export default {
 <style module>
 .root{
     position: fixed;
-    top: 0;
-    left: 0;
     min-width: 20px;
     min-height: 20px;
     z-index: 99999999;
-    background: hsla(213, 77%, 80%, 0.6);
-    /* outline-offset:  -1px;
-    pointer-events: none; */
 }
-.root[dragover]{
+.mask{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99999999;
+    border: 1px solid white;
+    outline: 1px dashed #4a88e8;
+    outline-offset:  -1px;
+    pointer-events: none;
+}
+.drop{
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: hsla(213, 77%, 80%, 0.6);
+}
+.drop[dragover]{
     background: hsla(213, 77%, 80%);
 }
 </style>

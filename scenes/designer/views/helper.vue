@@ -4,7 +4,7 @@
     <d-highlighter ref="selected" mode="selected" :info="selected" @dragstart="dragging=true" @dragend="onDragEnd"></d-highlighter>
     <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
     <div v-show="subVM" :class="$style.mask" :style="subMaskStyle" @click="selectContextView"></div>
-    <d-drag ref="drag" :info="targetNode" :target-position="targetPosition"></d-drag>
+    <d-drop ref="drop" :info="targetNode" :target-position="targetPosition"></d-drop>
 </div>
 </template>
 
@@ -212,7 +212,8 @@ export default {
 
         window.addEventListener('message', this.onMessage);
 
-        window.addEventListener('dragover', this.onDragOver);
+        document.body.addEventListener('dragover', this.onDragOver);
+        document.body.addEventListener('dragend', this.onDragEnd);
 
         this.throttleHandlerDrag = throttle(this.handlerDrag, 300);
     },
@@ -232,7 +233,8 @@ export default {
 
         window.removeEventListener('message', this.onMessage);
 
-        window.removeEventListener('dragover', this.onDragOver);
+        document.body.removeEventListener('dragover', this.onDragOver);
+        document.body.addEventremoveEventListenerListener('dragleave', this.onDragEnd);
 
         this.appVM.$off('d-slot:send', this.onDSlotSend);
         this.appVM.$off('d-slot:sendCommand', this.onDSlotSendCommand);
@@ -604,6 +606,7 @@ export default {
         },
         onDragOver(event) {
             event.preventDefault();
+            this.dragging = true;
             this.throttleHandlerDrag(event);
             return true;
         },
@@ -614,6 +617,10 @@ export default {
         handlerDrag(event) {
             const node = this.getNodeInfo(event.target);
             if (this.isDropComponent(event.target)) {
+                return;
+            }
+            if (!this.dragging) {
+                this.targetNode = {};
                 return;
             }
             if (Object.keys(node).length && this.targetNode !== node) {
@@ -627,7 +634,7 @@ export default {
         isDropComponent(node) {
             let vue = this.getRelatedVue(node);
             while (vue) {
-                if (vue.$options.name && (vue.$options.name.startsWith('d-drag') || vue.$options.name.startsWith('d-slot')))
+                if (vue.$options.name && (vue.$options.name.startsWith('d-drop') || vue.$options.name.startsWith('d-slot')))
                     return true;
                 vue = vue.$parent;
             }

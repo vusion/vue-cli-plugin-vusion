@@ -6,10 +6,14 @@ function createEvent(type, pe) {
     dataTransfer.effectAllowed = pe.dataTransfer.effectAllowed;
     pe.dataTransfer.items.forEach((item) => dataTransfer.setData(item.type, item.content));
 
-    const dragEvent = new DragEvent(type, {
+    const eventInit = {
         dataTransfer,
-    });
-    dragKeys.forEach((key) => dragEvent[key] = pe[key]);
+        bubbles: true,
+    };
+    dragKeys.forEach((key) => eventInit[key] = pe[key]);
+
+    const dragEvent = new DragEvent(type, eventInit);
+    // dragKeys.forEach((key) => dragEvent[key] = pe[key]);
 
     return dragEvent;
 }
