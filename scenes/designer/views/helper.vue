@@ -443,8 +443,17 @@ export default {
         onMouseOver(e) {
             if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
-            if (this.isDesignerComponent(e.target)) // d-component 不拦截
+            if (this.isDesignerComponent(e.target)) { // d-component 不拦截
+                if (e.target.className && e.target.className.startsWith('d-text')) {
+                    const nodeRect = utils.getVisibleRect(e.target);
+                    const parentRect = utils.getVisibleRect(e.target.parentElement);
+                    if (nodeRect.width === parentRect.width || nodeRect.height === parentRect.height) {
+                        const nodeInfo = this.getNodeInfo(e.target.parentElement);
+                        this.hover = nodeInfo;
+                    }
+                }
                 return;
+            }
             this.cancelEvent(e);
 
             const nodeInfo = this.getNodeInfo(e.target);
@@ -462,8 +471,24 @@ export default {
         onClick(e) {
             if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
-            if (this.isDesignerComponent(e.target))
+            if (this.isDesignerComponent(e.target)) {
+                if (e.target.className && e.target.className.startsWith('d-text')) {
+                    const nodeRect = utils.getVisibleRect(e.target);
+                    const parentRect = utils.getVisibleRect(e.target.parentElement);
+                    if (nodeRect.width === parentRect.width || nodeRect.height === parentRect.height) {
+                        const nodeInfo = this.getNodeInfo(e.target.parentElement);
+                        this.select(nodeInfo);
+                        this.send({
+                            command: 'selectNode',
+                            type: nodeInfo.type,
+                            tag: nodeInfo.tag,
+                            scopeId: nodeInfo.scopeId,
+                            nodePath: nodeInfo.nodePath,
+                        });
+                    }
+                }
                 return;
+            }
             this.cancelEvent(e);
 
             if (!(this.contextVM && this.contextVM.$el.contains(e.target))) { // 不在 contextVM 中，视为选中 contextView
