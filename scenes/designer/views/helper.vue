@@ -85,53 +85,53 @@ export default {
                 this.slotsMap.delete(old);
             }
 
-            if (selected && selected.el) {
-                const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
-                if (!(display === 'block' || display === 'inline')) {
-                    // dSlot.display = 'inline';
-                    return;
-                }
-                // const tag = nodeInfo.tag;
-                const slots = [];
+            // if (selected && selected.el) {
+            //     const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
+            //     if (!(display === 'block' || display === 'inline')) {
+            //         // dSlot.display = 'inline';
+            //         return;
+            //     }
+            //     // const tag = nodeInfo.tag;
+            //     const slots = [];
 
-                if (display === 'block' || (display === 'inline' && selected.tag === 'u-form-item')) {
-                    if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
-                        const appendSlot = this.createDSlot({
-                            propsData: {
-                                display,
-                                position: 'append',
-                                nodeInfo: selected,
-                            },
-                        });
-                        selected.el.append(appendSlot.$el);
-                        slots.push(appendSlot);
-                    }
-                }
-                if (display === 'block') {
-                    if (selected.el !== this.contextVM.$el) {
-                        const insertBeforeSlot = this.createDSlot({
-                            propsData: {
-                                display,
-                                position: 'insertBefore',
-                                nodeInfo: selected,
-                            },
-                        });
-                        selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
-                        slots.push(insertBeforeSlot);
-                        const insertAfterSlot = this.createDSlot({
-                            propsData: {
-                                display,
-                                position: 'insertAfter',
-                                nodeInfo: selected,
-                            },
-                        });
-                        selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
-                        slots.push(insertAfterSlot);
-                    }
-                }
+            //     if (display === 'block' || (display === 'inline' && selected.tag === 'u-form-item')) {
+            //         if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
+            //             const appendSlot = this.createDSlot({
+            //                 propsData: {
+            //                     display,
+            //                     position: 'append',
+            //                     nodeInfo: selected,
+            //                 },
+            //             });
+            //             selected.el.append(appendSlot.$el);
+            //             slots.push(appendSlot);
+            //         }
+            //     }
+            //     if (display === 'block') {
+            //         if (selected.el !== this.contextVM.$el) {
+            //             const insertBeforeSlot = this.createDSlot({
+            //                 propsData: {
+            //                     display,
+            //                     position: 'insertBefore',
+            //                     nodeInfo: selected,
+            //                 },
+            //             });
+            //             selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
+            //             slots.push(insertBeforeSlot);
+            //             const insertAfterSlot = this.createDSlot({
+            //                 propsData: {
+            //                     display,
+            //                     position: 'insertAfter',
+            //                     nodeInfo: selected,
+            //                 },
+            //             });
+            //             selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
+            //             slots.push(insertAfterSlot);
+            //         }
+            //     }
 
-                slots.length && this.slotsMap.set(selected, slots);
-            }
+            //     slots.length && this.slotsMap.set(selected, slots);
+            // }
         },
     },
     mounted() {
