@@ -6,10 +6,14 @@ function createEvent(type, pe) {
     dataTransfer.effectAllowed = pe.dataTransfer.effectAllowed;
     pe.dataTransfer.items.forEach((item) => dataTransfer.setData(item.type, item.content));
 
-    const dragEvent = new DragEvent(type, {
+    const eventInit = {
         dataTransfer,
-    });
-    dragKeys.forEach((key) => dragEvent[key] = pe[key]);
+        bubbles: true,
+    };
+    dragKeys.forEach((key) => eventInit[key] = pe[key]);
+
+    const dragEvent = new DragEvent(type, eventInit);
+    // dragKeys.forEach((key) => dragEvent[key] = pe[key]);
 
     return dragEvent;
 }
@@ -24,30 +28,39 @@ window.addEventListener('message', (e) => {
     // 在 drag 时，不会响应鼠标事件，因此只能根据 drag 相关事件处理
     const targets = document.elementsFromPoint(plainEvent.clientX, plainEvent.clientY);
     if (e.data.type === 'dragover') {
-        lastTargets.forEach((target) => {
-            if (!targets.includes(target))
-                target.dispatchEvent(createEvent('dragleave', plainEvent));
-        });
-        targets.forEach((target) => {
-            if (lastTargets.includes(target))
-                target.dispatchEvent(createEvent('dragover', plainEvent));
-            else
-                target.dispatchEvent(createEvent('dragenter', plainEvent));
-        });
+        // lastTargets.forEach((target) => {
+        //     if (!targets.includes(target))
+        //         target.dispatchEvent(createEvent('dragleave', plainEvent));
+        // });
+        // targets.forEach((target) => {
+        //     if (lastTargets.includes(target))
+        //         target.dispatchEvent(createEvent('dragover', plainEvent));
+        //     else
+        //         target.dispatchEvent(createEvent('dragenter', plainEvent));
+        // });
+        if (lastTargets[0] && !targets.includes(lastTargets[0]))
+            lastTargets[0].dispatchEvent(createEvent('dragleave', plainEvent));
+        if (targets[0] && lastTargets.includes(targets[0]))
+            targets[0].dispatchEvent(createEvent('dragover', plainEvent));
+        else if (targets[0])
+            targets[0].dispatchEvent(createEvent('dragenter', plainEvent));
 
         lastTargets = targets;
     } else if (e.data.type === 'dragleave') {
-        lastTargets.forEach((target) => {
-            target.dispatchEvent(createEvent('dragleave', plainEvent));
-        });
+        // lastTargets.forEach((target) => {
+        //     target.dispatchEvent(createEvent('dragleave', plainEvent));
+        // });
+        lastTargets[0] && lastTargets[0].dispatchEvent(createEvent('dragleave', plainEvent));
         lastTargets = [];
     } else if (e.data.type === 'drop') {
-        targets.forEach((target) => {
-            const ev = createEvent('drop', plainEvent);
+        // targets.forEach((target) => {
+        //     const ev = createEvent('drop', plainEvent);
 
-            console.log(JSON.stringify(plainEvent));
-            target.dispatchEvent(ev);
-        });
+        //     console.log(JSON.stringify(plainEvent));
+        //     target.dispatchEvent(ev);
+        // });
+        const ev = createEvent('drop', plainEvent);
+        targets[0] && targets[0].dispatchEvent(ev);
         lastTargets = [];
     }
 });

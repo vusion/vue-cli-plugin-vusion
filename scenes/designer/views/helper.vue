@@ -1,9 +1,10 @@
 <template>
 <div>
     <d-highlighter ref="hover" :info="hover"></d-highlighter>
-    <d-highlighter ref="selected" mode="selected" :info="selected"></d-highlighter>
+    <d-highlighter ref="selected" mode="selected" :info="selected" @dragstart="dragging=true" @dragend="onDragEnd"></d-highlighter>
     <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
     <div v-show="subVM" :class="$style.mask" :style="subMaskStyle" @click="selectContextView"></div>
+    <d-drop ref="drop" :info="targetNode" :target-position="targetPosition"></d-drop>
 </div>
 </template>
 
@@ -13,6 +14,7 @@ import { compilerPlugin } from '../transform';
 import api from 'vue-hot-reload-api';
 import Vue from 'vue';
 import * as utils from '../utils';
+import throttle from 'lodash/throttle';
 
 let lastChanged = 0;
 {
@@ -52,6 +54,9 @@ export default {
             slotsMap: new WeakMap(),
             maskStyle: {},
             subMaskStyle: {},
+            dragging: false,
+            targetNode: {},
+            targetPosition: {},
         };
     },
     watch: {
@@ -80,53 +85,53 @@ export default {
                 this.slotsMap.delete(old);
             }
 
-            if (selected && selected.el) {
-                const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
-                if (!(display === 'block' || display === 'inline')) {
-                    // dSlot.display = 'inline';
-                    return;
-                }
-                // const tag = nodeInfo.tag;
-                const slots = [];
+            // if (selected && selected.el) {
+            //     const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
+            //     if (!(display === 'block' || display === 'inline')) {
+            //         // dSlot.display = 'inline';
+            //         return;
+            //     }
+            //     // const tag = nodeInfo.tag;
+            //     const slots = [];
 
-                if (display === 'block' || (display === 'inline' && selected.tag === 'u-form-item')) {
-                    if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
-                        const appendSlot = this.createDSlot({
-                            propsData: {
-                                display,
-                                position: 'append',
-                                nodeInfo: selected,
-                            },
-                        });
-                        selected.el.append(appendSlot.$el);
-                        slots.push(appendSlot);
-                    }
-                }
-                if (display === 'block') {
-                    if (selected.el !== this.contextVM.$el) {
-                        const insertBeforeSlot = this.createDSlot({
-                            propsData: {
-                                display,
-                                position: 'insertBefore',
-                                nodeInfo: selected,
-                            },
-                        });
-                        selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
-                        slots.push(insertBeforeSlot);
-                        const insertAfterSlot = this.createDSlot({
-                            propsData: {
-                                display,
-                                position: 'insertAfter',
-                                nodeInfo: selected,
-                            },
-                        });
-                        selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
-                        slots.push(insertAfterSlot);
-                    }
-                }
+            //     if (display === 'block' || (display === 'inline' && selected.tag === 'u-form-item')) {
+            //         if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
+            //             const appendSlot = this.createDSlot({
+            //                 propsData: {
+            //                     display,
+            //                     position: 'append',
+            //                     nodeInfo: selected,
+            //                 },
+            //             });
+            //             selected.el.append(appendSlot.$el);
+            //             slots.push(appendSlot);
+            //         }
+            //     }
+            //     if (display === 'block') {
+            //         if (selected.el !== this.contextVM.$el) {
+            //             const insertBeforeSlot = this.createDSlot({
+            //                 propsData: {
+            //                     display,
+            //                     position: 'insertBefore',
+            //                     nodeInfo: selected,
+            //                 },
+            //             });
+            //             selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
+            //             slots.push(insertBeforeSlot);
+            //             const insertAfterSlot = this.createDSlot({
+            //                 propsData: {
+            //                     display,
+            //                     position: 'insertAfter',
+            //                     nodeInfo: selected,
+            //                 },
+            //             });
+            //             selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
+            //             slots.push(insertAfterSlot);
+            //         }
+            //     }
 
-                slots.length && this.slotsMap.set(selected, slots);
-            }
+            //     slots.length && this.slotsMap.set(selected, slots);
+            // }
         },
     },
     mounted() {
@@ -206,6 +211,11 @@ export default {
         window.addEventListener('resize', this.updateStyle);
 
         window.addEventListener('message', this.onMessage);
+
+        document.body.addEventListener('dragover', this.onDragOver);
+        document.body.addEventListener('drop', this.onDragEnd);
+
+        this.throttleHandlerDrag = throttle(this.handlerDrag, 300);
     },
     destroyed() {
         window.removeEventListener('mouseover', this.elementMouseOver, true);
@@ -222,6 +232,9 @@ export default {
         window.addEventListener('resize', this.updateStyle);
 
         window.removeEventListener('message', this.onMessage);
+
+        document.body.removeEventListener('dragover', this.onDragOver);
+        document.body.removeEventListener('drop', this.onDragEnd);
 
         this.appVM.$off('d-slot:send', this.onDSlotSend);
         this.appVM.$off('d-slot:sendCommand', this.onDSlotSendCommand);
@@ -320,6 +333,7 @@ export default {
                 tag,
                 scopeId,
                 nodePath: node.getAttribute('vusion-node-path'),
+                parentNodePath: node.getAttribute('vusion-parent-node-path'),
             };
         },
         /**
@@ -368,6 +382,7 @@ export default {
         updateStyle() {
             this.$refs.hover.computeStyle();
             this.$refs.selected.computeStyle();
+            this.$refs.drop.computeStyle();
             this.computedMaskStyle();
         },
         /**
@@ -413,6 +428,8 @@ export default {
             }
         },
         cancelEvent(e) {
+            if (this.dragging)
+                return;
             if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
             if (this.isDesignerComponent(e.target)) // d-component 不拦截
@@ -426,8 +443,17 @@ export default {
         onMouseOver(e) {
             if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
-            if (this.isDesignerComponent(e.target)) // d-component 不拦截
+            if (this.isDesignerComponent(e.target)) { // d-component 不拦截
+                if (e.target.className && e.target.className.startsWith('d-text')) {
+                    const nodeRect = utils.getVisibleRect(e.target);
+                    const parentRect = utils.getVisibleRect(e.target.parentElement);
+                    if (nodeRect.width === parentRect.width || nodeRect.height === parentRect.height) {
+                        const nodeInfo = this.getNodeInfo(e.target.parentElement);
+                        this.hover = nodeInfo;
+                    }
+                }
                 return;
+            }
             this.cancelEvent(e);
 
             const nodeInfo = this.getNodeInfo(e.target);
@@ -445,8 +471,24 @@ export default {
         onClick(e) {
             if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
                 return;
-            if (this.isDesignerComponent(e.target))
+            if (this.isDesignerComponent(e.target)) {
+                if (e.target.className && e.target.className.startsWith('d-text')) {
+                    const nodeRect = utils.getVisibleRect(e.target);
+                    const parentRect = utils.getVisibleRect(e.target.parentElement);
+                    if (nodeRect.width === parentRect.width || nodeRect.height === parentRect.height) {
+                        const nodeInfo = this.getNodeInfo(e.target.parentElement);
+                        this.select(nodeInfo);
+                        this.send({
+                            command: 'selectNode',
+                            type: nodeInfo.type,
+                            tag: nodeInfo.tag,
+                            scopeId: nodeInfo.scopeId,
+                            nodePath: nodeInfo.nodePath,
+                        });
+                    }
+                }
                 return;
+            }
             this.cancelEvent(e);
 
             if (!(this.contextVM && this.contextVM.$el.contains(e.target))) { // 不在 contextVM 中，视为选中 contextView
@@ -587,6 +629,45 @@ export default {
                 .then((res) => {
                     this.send({ type: 'response', res });
                 });
+        },
+        onDragOver(event) {
+            event.preventDefault();
+            this.dragging = true;
+            this.throttleHandlerDrag(event);
+            return true;
+        },
+        onDragEnd(event) {
+            this.dragging = false;
+            this.targetNode = {};
+        },
+        handlerDrag(event) {
+            if (this.isDropComponent(event.target)) {
+                return;
+            }
+            if (!this.dragging) {
+                this.targetNode = {};
+                return;
+            }
+            const node = this.getNodeInfo(event.target);
+            this.targetPosition = {
+                x: event.x,
+                y: event.y,
+            };
+            if (Object.keys(node).length
+                && (this.targetNode.nodePath !== node.nodePath
+                || this.targetNode.scopeId !== node.scopeId
+                || this.targetNode.tag !== node.tag)) {
+                this.targetNode = node;
+            }
+        },
+        isDropComponent(node) {
+            let vue = this.getRelatedVue(node);
+            while (vue) {
+                if (vue.$options.name && (vue.$options.name.startsWith('d-drop') || vue.$options.name.startsWith('d-slot')))
+                    return true;
+                vue = vue.$parent;
+            }
+            return false;
         },
     },
 };
