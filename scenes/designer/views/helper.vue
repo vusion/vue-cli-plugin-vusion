@@ -213,7 +213,7 @@ export default {
         window.addEventListener('message', this.onMessage);
 
         document.body.addEventListener('dragover', this.onDragOver);
-        document.body.addEventListener('dragend', this.onDragEnd);
+        document.body.addEventListener('drop', this.onDragEnd);
 
         this.throttleHandlerDrag = throttle(this.handlerDrag, 300);
     },
@@ -234,7 +234,7 @@ export default {
         window.removeEventListener('message', this.onMessage);
 
         document.body.removeEventListener('dragover', this.onDragOver);
-        document.body.addEventremoveEventListenerListener('dragleave', this.onDragEnd);
+        document.body.removeEventListener('drop', this.onDragEnd);
 
         this.appVM.$off('d-slot:send', this.onDSlotSend);
         this.appVM.$off('d-slot:sendCommand', this.onDSlotSendCommand);
@@ -382,6 +382,7 @@ export default {
         updateStyle() {
             this.$refs.hover.computeStyle();
             this.$refs.selected.computeStyle();
+            this.$refs.drop.computeStyle();
             this.computedMaskStyle();
         },
         /**

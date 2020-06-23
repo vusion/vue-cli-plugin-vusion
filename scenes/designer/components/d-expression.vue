@@ -17,20 +17,20 @@ export default {
     data() {
         return {
             editable: false,
-        }
+        };
     },
-    methods:{
-        cancelEvent(event){
+    methods: {
+        cancelEvent(event) {
             event.stopImmediatePropagation();
             event.preventDefault();
         },
-        onFocus(event){
+        onFocus(event) {
             this.editable = true;
             this.$nextTick(() => {
                 this.$refs.editbox && (this.$refs.editbox.focus());
             });
         },
-        onBlur(event){
+        onBlur(event) {
             this.send({
                 command: 'saveText',
                 nodePath: this.nodePath,
@@ -38,8 +38,8 @@ export default {
             });
             this.editable = false;
         },
-        onKeyDown(event){
-            if(event.keyCode === 13){
+        onKeyDown(event) {
+            if (event.keyCode === 13) {
                 this.cancelEvent(event);
                 this.onBlur(event);
             }
@@ -47,8 +47,8 @@ export default {
         send(data) {
             return this.$root.$emit('d-slot:send', data);
         },
-        
-    }
+
+    },
 };
 </script>
 

@@ -46,12 +46,14 @@ window.addEventListener('message', (e) => {
         });
         lastTargets = [];
     } else if (e.data.type === 'drop') {
-        targets.forEach((target) => {
-            const ev = createEvent('drop', plainEvent);
+        // targets.forEach((target) => {
+        //     const ev = createEvent('drop', plainEvent);
 
-            console.log(JSON.stringify(plainEvent));
-            target.dispatchEvent(ev);
-        });
+        //     console.log(JSON.stringify(plainEvent));
+        //     target.dispatchEvent(ev);
+        // });
+        const ev = createEvent('drop', plainEvent);
+        targets[0].dispatchEvent(ev);
         lastTargets = [];
     }
 });

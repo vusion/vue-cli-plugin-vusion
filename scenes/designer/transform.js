@@ -92,24 +92,16 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                 });
             }
 
-            // 使用弹窗方式，该方式先注释
-            // const expressions = children.filter((item) => item.type === 2);
-            // if (expressions.length) {
-            //     expressions.forEach((expression) => {
-            //         const tmp = compiler.compile(`<d-expression nodePath="${expression.nodePath}" name="${expression.text}">${expression.text}</d-expression>`).ast;
-            //         tmp.parent = node;
-            //         Object.assign(expression, tmp);
-            //     });
-            //     const subOptions = {
-            //         scopeId: options.scopeId,
-            //         whitespace: 'condense',
-            //     };
-            //     const tmp = compiler.compile(`
-            //         <div>
-            //         <d-slot tag="${node.tag}" display="block" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${node.nodePath}' }"></d-slot>
-            //         </div>`, subOptions).ast;
-            //     children.push(...tmp.children);
-            // }
+            // 表达式处添加占位，用于添加节点操作
+            const expressions = children.filter((item) => item.type === 2);
+            if (expressions.length) {
+                expressions.forEach((expression) => {
+                    const tmp = compiler.compile(`<d-placeholder nodePath="${expression.nodePath}" parentNodePath="${node.nodePath}">${expression.text}</d-placeholder>`).ast;
+                    tmp.parent = node;
+                    Object.assign(expression, tmp);
+                });
+            }
+
             if (children.length) {
                 for (let i = children.length - 1; i >= 0; i--) {
                     if (children[i].tag && !children[i].tag.startsWith('d-'))
