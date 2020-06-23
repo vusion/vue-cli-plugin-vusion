@@ -35,6 +35,12 @@ export default {
             },
             immediate: true,
         },
+        targetPosition: {
+            handler(info) {
+                this.computeStyle();
+            },
+            immediate: true,
+        },
     },
     methods: {
         computeStyle() {
@@ -103,6 +109,9 @@ export default {
             const code = dataTransfer.getData('text/plain');
             const nodeData = JSON.parse(dataTransfer.getData('application/json') || '{}');
             if (nodeData && nodeData.command === 'changeNode') {
+                // 父拖到子里面，不允许，返回
+                if (this.info.nodePath.startsWith(nodeData.nodePath))
+                    return;
                 this.$parent.send({
                     command: 'changeNode',
                     originPath: nodeData.nodePath,

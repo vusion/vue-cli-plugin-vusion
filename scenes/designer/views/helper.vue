@@ -641,7 +641,6 @@ export default {
             this.targetNode = {};
         },
         handlerDrag(event) {
-            const node = this.getNodeInfo(event.target);
             if (this.isDropComponent(event.target)) {
                 return;
             }
@@ -649,12 +648,16 @@ export default {
                 this.targetNode = {};
                 return;
             }
-            if (Object.keys(node).length && this.targetNode !== node) {
+            const node = this.getNodeInfo(event.target);
+            this.targetPosition = {
+                x: event.x,
+                y: event.y,
+            };
+            if (Object.keys(node).length
+                && (this.targetNode.nodePath !== node.nodePath
+                || this.targetNode.scopeId !== node.scopeId
+                || this.targetNode.tag !== node.tag)) {
                 this.targetNode = node;
-                this.targetPosition = {
-                    x: event.x,
-                    y: event.y,
-                };
             }
         },
         isDropComponent(node) {
