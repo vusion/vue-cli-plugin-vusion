@@ -57,7 +57,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
 
         // @TODO: 如果全部去掉多文件 Vue 的话，就不需要这个 loader 了
         config.module.rule('vue')
-            .test(/\.vue([\\/]index\.js)?$/)
+            .test((filePath) => /\.vue$/.test(filePath) || /\.vue[\\/]index\.js$/.test(filePath) && !fs.existsSync(path.join(filePath, '../index.vue')))
             .use('vusion-loader')
             .loader('vusion-loader');
 

@@ -104,8 +104,8 @@ export default {
         },
     },
     created() {
-        this.dispatch(this.$options.name, 'add-node-vm', this);
-        !this.parentVM && this.dispatch(this.$options.rootName, 'add-node-vm', this);
+        this.$dispatch(this.$options.name, 'add-node-vm', this);
+        !this.parentVM && this.$dispatch(this.$options.rootName, 'add-node-vm', this);
 
         this.$on('add-node-vm', (nodeVM) => {
             nodeVM.rootVM = this.rootVM;
@@ -122,8 +122,8 @@ export default {
         });
     },
     destroyed() {
-        this.dispatch(this.$options.rootName, 'remove-node-vm', this);
-        this.dispatch(this.$options.name, 'remove-node-vm', this);
+        this.$dispatch(this.$options.rootName, 'remove-node-vm', this);
+        this.$dispatch(this.$options.name, 'remove-node-vm', this);
     },
     methods: {
         toggle(expanded) {
