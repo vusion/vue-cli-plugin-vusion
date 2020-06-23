@@ -6,7 +6,7 @@ Vue.use(VueRouter);
 import CodeExamplePlugin from './CodeExamplePlugin';
 Vue.use(CodeExamplePlugin);
 
-import { install } from 'vusion-utils';
+import { install } from '@vusion/utils';
 
 // 自动注册本地组件
 const requires = require.context('../components/', true, /\.vue$/);

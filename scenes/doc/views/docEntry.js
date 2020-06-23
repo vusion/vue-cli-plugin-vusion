@@ -6,7 +6,7 @@ Vue.use(VueRouter);
 import CodeExamplePlugin from './CodeExamplePlugin';
 Vue.use(CodeExamplePlugin);
 
-import { install } from 'vusion-utils';
+import { install } from '@vusion/utils';
 
 import 'themeCSS';
 import '../styles/vue-package.css';

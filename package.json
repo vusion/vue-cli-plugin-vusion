@@ -36,6 +36,7 @@
     "@vusion/mini-css-extract-plugin": "^0.8.5",
     "@vusion/postcss-calc": "^7.0.3",
     "@vusion/routes-loader": "^0.3.0",
+    "@vusion/utils": "^0.4.8",
     "babel-loader": "^8.0.6",
     "codesandbox": "^2.1.12",
     "color": "^3.1.2",
@@ -71,8 +72,7 @@
     "vue-component-analyzer": "^0.2.0",
     "vue-router": "^3.0.1",
     "vusion-api": "^0.6.21",
-    "vusion-loader": "^0.5.1",
-    "vusion-utils": "^0.4.8"
+    "vusion-loader": "^0.5.1"
   },
   "devDependencies": {
     "@vue/cli-test-utils": "^4.2.3",

@@ -89,17 +89,17 @@ export default {
                                 lint: 'vue-cli-service lint',
                             },
                             dependencies: {
-                                'vusion-utils': 'latest',
+                                '@vusion/utils': 'latest',
                                 vue: '^2.6.10',
                                 'vue-template-compiler': '^2.6.10',
-                                'cloud-ui.vusion': '^0.6.14',
+                                'cloud-ui.vusion': '^0.9.0',
                             },
                             devDependencies: {
                                 '@vue/babel-preset-app': '^3.11.0',
                                 '@vue/cli-plugin-babel': '4.1.1',
                                 '@vue/cli-plugin-eslint': '4.1.1',
                                 '@vue/cli-service': '4.1.1',
-                                'vue-cli-plugin-vusion': '^0.9.4',
+                                'vue-cli-plugin-vusion': '^0.10.0',
                                 'babel-eslint': '^10.0.3',
                                 eslint: '^6.7.2',
                                 'eslint-plugin-vue': '^6.0.1',
@@ -118,7 +118,7 @@ import "cloud-ui.vusion/src/styles/theme.css";
 import "cloud-ui.vusion/dist-raw/index.css";
 import * as CloudUI from "cloud-ui.vusion/dist-raw/index.js";
 import Main from "./App.vue";
-import { install } from "vusion-utils";
+import { install } from "@vusion/utils";
 install(Vue, CloudUI);
 const Ctor = Vue.extend(Main);
 new Ctor().$mount("#app");`,
