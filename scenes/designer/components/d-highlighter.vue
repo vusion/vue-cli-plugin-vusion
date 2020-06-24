@@ -85,7 +85,18 @@ export default {
         },
         onDragStart(e) {
             e.dataTransfer.effectAllowed = 'copyMove';
-            e.dataTransfer.setDragImage(this.info.el, 0, 0);
+            this.crt = this.info.el.cloneNode(true);
+            const nodeStyle = getComputedStyle(this.info.el);
+            this.crt.style.backgroundColor = nodeStyle.backgroundColor === 'rgba(0, 0, 0, 0)' ? 'white' : nodeStyle.backgroundColor;
+            this.crt.style.position = 'absolute';
+            this.crt.style.zIndex = -999;
+            this.crt.style.top = -999 + 'px';
+            this.crt.style.left = -999 + 'px';
+            this.crt.style.width = nodeStyle.width;
+            this.crt.style.height = nodeStyle.height;
+            this.canvas2Image(this.crt);
+            document.body.appendChild(this.crt);
+            e.dataTransfer.setDragImage(this.crt, 0, 0);
             e.dataTransfer.setData('application/json', JSON.stringify({
                 nodePath: this.info.nodePath,
                 command: 'changeNode',
@@ -93,7 +104,40 @@ export default {
             this.$emit('dragstart');
         },
         onDragEnd(e) {
+            document.body.removeChild(this.crt);
             this.$emit('dragend');
+        },
+        canvas2Image(node) {
+            const canvas = Array.from(this.info.el.getElementsByTagName('canvas'));
+            const canvasCopy = Array.from(node.getElementsByTagName('canvas'));
+            if (!canvas.length)
+                return;
+            const stack = [];
+            stack.push(node);
+            let tempNode;
+            while (stack.length) {
+                tempNode = stack.pop();
+                const children = tempNode.childNodes || [];
+                if (children.length) {
+                    for (let i = children.length - 1; i >= 0; i--) {
+                        if (children[i].nodeType === 1 && children[i].tagName !== 'CANVAS')
+                            stack.push(children[i]);
+                    }
+                }
+                for (let i = children.length - 1; i >= 0; i--) {
+                    if (children[i].tagName === 'CANVAS') {
+                        const index = canvasCopy.indexOf(children[i]);
+                        const image = new Image();
+                        image.src = canvas[index].toDataURL('image/png');
+                        children[i].style.display = 'none';
+                        if (i === children.length - 1) {
+                            tempNode.appendChild(image);
+                        } else {
+                            tempNode.insertBefore(image, children[i].nextSibling);
+                        }
+                    }
+                }
+            }
         },
     },
 };
