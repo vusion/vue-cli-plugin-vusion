@@ -111,7 +111,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         }
     };
 
-    if (options && !/.\/*d-.*/.test(options.filename)) {
+    if (options && !/\/d-[a-zA-Z0-9-_]+\.vue/.test(options.filename)) {
         depthTraverse({ ast });
     }
 

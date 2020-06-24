@@ -177,6 +177,10 @@ export default {
     pointer-events: auto;
 }
 
+.tag {
+    cursor: move;
+}
+
 .icon {
     margin-left: 4px;
     opacity: 0.5;
