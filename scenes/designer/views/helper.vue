@@ -294,7 +294,7 @@ export default {
             let vue = this.getRelatedVue(node);
             // console.log(vue && vue.$options.name, vue.$root && vue.$root.$options.name);
             while (vue) {
-                if (vue.$options.name && vue.$options.name.startsWith('d-'))
+                if (vue.$options.name && vue.$options.name.startsWith('d-') && !vue.$options.name.startsWith('d-routerview'))
                     return true;
                 vue = vue.$parent;
             }
@@ -441,8 +441,15 @@ export default {
             e.preventDefault();
         },
         onMouseOver(e) {
-            if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
+            if (this.$el.contains(e.target)) { // helperVM 中的事件不拦截、不处理
+                if (this.isInSubMask(event)) {
+                    const nodeInfo = this.getNodeInfo(this.subVM.$el.parentElement);
+                    this.hover = nodeInfo;
+                } else {
+                    this.hover = {};
+                }
                 return;
+            }
             if (this.isDesignerComponent(e.target)) { // d-component 不拦截
                 if (e.target.className && e.target.className.startsWith('d-text')) {
                     const nodeRect = utils.getVisibleRect(e.target);
@@ -521,9 +528,14 @@ export default {
         /**
          * 不选具体组件，只选页面
          */
-        selectContextView() {
-            this.select({});
-            this.sendCommand('selectContextView');
+        selectContextView(event) {
+            if (this.isInSubMask(event)) {
+                const nodeInfo = this.getNodeInfo(this.subVM.$el.parentElement);
+                this.select(nodeInfo);
+            } else {
+                this.select({});
+                this.sendCommand('selectContextView');
+            }
         },
         createDSlot(options) {
             const Ctor = Vue.component('d-slot');
@@ -648,7 +660,11 @@ export default {
                 this.targetNode = {};
                 return;
             }
-            const node = this.getNodeInfo(event.target);
+            let target = event.target;
+            if (this.isInSubMask(event)) {
+                target = this.subVM.$el.parentElement;
+            }
+            const node = this.getNodeInfo(target);
             this.targetPosition = {
                 x: event.x,
                 y: event.y,
@@ -668,6 +684,16 @@ export default {
                 vue = vue.$parent;
             }
             return false;
+        },
+        isInSubMask(event) {
+            if (!this.subVM || !this.subVM.$el.parentElement || !this.subVM.$el.parentElement.hasAttribute('router-view'))
+                return;
+            const subRect = utils.getVisibleRect(this.subVM.$el.parentElement);
+            if (event.x >= subRect.left && event.x <= subRect.right && event.y >= subRect.top && event.y <= subRect.bottom) {
+                return true;
+            } else {
+                return false;
+            }
         },
     },
 };
