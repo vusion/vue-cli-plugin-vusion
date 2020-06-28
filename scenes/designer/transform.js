@@ -102,6 +102,16 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                 });
             }
 
+            const routes = children.filter((item) => item.type === 1 && item.tag === 'router-view');
+            if (routes.length) {
+                routes.forEach((route) => {
+                    const tmp = compiler.compile(`<d-routerview nodePath="${route.nodePath}"></d-routerview>`).ast;
+                    tmp.parent = node;
+                    const index = children.indexOf(route);
+                    ~index && children.splice(index, 1, tmp);
+                });
+            }
+
             if (children.length) {
                 for (let i = children.length - 1; i >= 0; i--) {
                     if (children[i].tag && !children[i].tag.startsWith('d-'))
