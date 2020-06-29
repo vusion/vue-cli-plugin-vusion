@@ -215,6 +215,10 @@ export default {
         document.body.addEventListener('dragover', this.onDragOver);
         document.body.addEventListener('drop', this.onDragEnd);
 
+        Vue.config.errorHandler = (err, vm, info) => {
+            this.send({ command: 'problems', data: err + ' in ' + vm.$route.fullPath });
+        };
+
         this.throttleHandlerDrag = throttle(this.handlerDrag, 300);
     },
     destroyed() {
@@ -605,6 +609,10 @@ export default {
                     this.send({ command: 'loading', status: true });
             } else if (e.data.type === 'webpackOk') {
                 this.send({ command: 'loading', status: false });
+            } else if (e.data.type === 'webpackErrors') {
+                this.send({ command: 'problems', data: e.data.data });
+                const overlay = document.getElementById('webpack-dev-server-client-overlay');
+                overlay && (overlay.style.display = 'none');
             }
         },
         rerender(data) {
@@ -690,7 +698,7 @@ export default {
             return false;
         },
         isInSubMask(event) {
-            if (!this.subVM || !this.subVM.$el.parentElement || !this.subVM.$el.parentElement.hasAttribute('router-view'))
+            if (!event || !this.subVM || !this.subVM.$el.parentElement || !this.subVM.$el.parentElement.hasAttribute('router-view'))
                 return;
             const subRect = utils.getVisibleRect(this.subVM.$el.parentElement);
             if (event.x >= subRect.left && event.x <= subRect.right && event.y >= subRect.top && event.y <= subRect.bottom) {
