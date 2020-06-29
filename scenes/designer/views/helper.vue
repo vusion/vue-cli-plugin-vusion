@@ -327,13 +327,17 @@ export default {
             // if (tag.startsWith('d-'))
             //     return {};
 
+            let parentNodePath;
+            if (node.hasAttribute('vusion-parent-node-path')) {
+                parentNodePath = node.getAttribute('vusion-parent-node-path') || '/';
+            }
             return {
                 el: node,
                 type,
                 tag,
                 scopeId,
                 nodePath: node.getAttribute('vusion-node-path'),
-                parentNodePath: node.getAttribute('vusion-parent-node-path'),
+                parentNodePath,
             };
         },
         /**
