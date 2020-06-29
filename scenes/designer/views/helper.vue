@@ -57,6 +57,7 @@ export default {
             dragging: false,
             targetNode: {},
             targetPosition: {},
+            requests: new Map(),
         };
     },
     watch: {
@@ -266,18 +267,19 @@ export default {
          * - 路由跳转
          * 目前只处理 history 模式
          */
-        onNavigate(contextPath) {
+        async onNavigate(contextPath) {
             if (contextPath !== undefined)
-                this.contextPath = contextPath;
+                this.contextPath = await new Promise((res) => setTimeout(() => res(contextPath)));
             else {
-                const cap = location.pathname.match(/^\/.+?\//);
-                this.contextPath = cap ? location.pathname.slice(cap[0].length - 1) : '';
+                const routePath = await this.execCommand('getContextViewRoute');
+                const [backend, to] = routePath.replace(/\/$/, '').split('#');
+                this.contextPath = to;
+                // const cap = location.pathname.match(/^\/.+?\//);
+                // this.contextPath = cap ? location.pathname.slice(cap[0].length - 1) : '';
             }
 
-            setTimeout(() => {
-                this.reset();
-                this.updateContext();
-            });
+            this.reset();
+            this.updateContext();
         },
         /**
          * @on
@@ -573,6 +575,20 @@ export default {
             console.info('[vusion:designer] Send Command: ' + command + ' ' + JSON.stringify(args));
             window.parent.postMessage({ protocol: 'vusion', sender: 'designer', command, args }, '*');
         },
+        /**
+         * 双向通信
+         */
+        execCommand(command, ...args) {
+            const message = { id: +new Date(), protocol: 'vusion', sender: 'designer', type: 'request', command, args };
+            window.parent.postMessage(message, '*');
+            return new Promise((res, rej) => {
+                this.requests.set(message.id, Object.assign({ res, rej }, message));
+                setTimeout(() => {
+                    this.requests.delete(message.id);
+                    rej(Object.assign({ error: 'Timeout' }, message));
+                }, 200);
+            });
+        },
         onMessage(e) {
             if (!e.data)
                 return;
@@ -587,6 +603,11 @@ export default {
         onVusionMessage(e) {
             if (e.data.sender === 'designer') // 排除自身
                 return;
+            if (e.data.type === 'response') {
+                const message = this.requests.get(e.data.id);
+                console.info('[vusion:designer] Exec command: ' + e.data.command + ' ' + e.data.result);
+                return message.res(e.data.result);
+            }
             if (e.data.command)
                 return this[e.data.command](...e.data.args);
 
@@ -609,8 +630,8 @@ export default {
                 this.send({ command: 'loading', status: false });
             } else if (e.data.type === 'webpackErrors') {
                 this.send({ command: 'problems', data: e.data.data });
-                const overlay = document.getElementById('webpack-dev-server-client-overlay');
-                overlay && (overlay.style.display = 'none');
+                // const overlay = document.getElementById('webpack-dev-server-client-overlay');
+                // overlay && (overlay.style.display = 'none');
             }
         },
         rerender(data) {
@@ -710,6 +731,11 @@ export default {
 </script>
 
 <style module>
+html {
+    padding: 20px;
+    background: #111217;
+}
+
 [root-app], [root-app] * {
     cursor: default !important;
 }

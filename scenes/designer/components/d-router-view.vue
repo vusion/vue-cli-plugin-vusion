@@ -4,6 +4,7 @@
 
 <script>
 export default {
+    name: 'd-router-view',
     props: {
         nodePath: String,
     },

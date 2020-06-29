@@ -76,7 +76,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
         api.chainWebpack((config) => {
             const entryPath = require.resolve('../scenes/designer/views/index.js');
             const entryKeys = Object.keys(config.entryPoints.entries());
-            entryKeys.forEach((key) => config.entry(key).add(entryPath));
+            entryKeys.forEach((key) => config.entry(key).prepend(entryPath));
 
             // config.devtool('eval');
 

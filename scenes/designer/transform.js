@@ -47,6 +47,9 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         // }
     });
 
+    if (options && /\/d-[a-zA-Z0-9-_]+\.vue$|\/helper\.vue$/.test(options.filename))
+        return;
+
     traverse.call({ ast }, (info) => {
         const el = info.node;
         if (el.tag === 'u-linear-layout' || el.tag === 'u-grid-layout-column') {
@@ -70,20 +73,20 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             children.push(...tmp.children);
         }
 
-        if (el.tag === 'div' && (!el.children || !el.children.length || el.children[0].tag === 'router-view')) {
-            const children = el.children = el.children || [];
+        //     if (el.tag === 'div' && (!el.children || !el.children.length || el.children[0].tag === 'router-view')) {
+        //         const children = el.children = el.children || [];
 
-            const subOptions = {
-                scopeId: options.scopeId,
-                whitespace: 'condense',
-            };
+        //         const subOptions = {
+        //             scopeId: options.scopeId,
+        //             whitespace: 'condense',
+        //         };
 
-            const tmp = compiler.compile(`
-    <div>
-    <d-slot tag="${el.tag}" display="block" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${el.nodePath}' }"></d-slot>
-    </div>`, subOptions).ast;
-            children.push(...tmp.children);
-        }
+    //         const tmp = compiler.compile(`
+    // <div>
+    // <d-slot tag="u-linear-layout" display="block" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${el.nodePath}' }"></d-slot>
+    // </div>`, subOptions).ast;
+    //         children.push(...tmp.children);
+    //     }
     });
 
     const depthTraverse = (ast) => {
@@ -136,9 +139,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         }
     };
 
-    if (options && !/\/d-[a-zA-Z0-9-_]+\.vue/.test(options.filename)) {
-        depthTraverse({ ast });
-    }
+    depthTraverse({ ast });
 
 /* <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton>
 <d-skeleton ${el.attrsMap.direction === 'vertical' ? '' : 'display="inline"'}></d-skeleton> */
