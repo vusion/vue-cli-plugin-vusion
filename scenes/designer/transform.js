@@ -69,6 +69,21 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     </div>`, subOptions).ast;
             children.push(...tmp.children);
         }
+
+        if (el.tag === 'div' && (!el.children || !el.children.length || el.children[0].tag === 'router-view')) {
+            const children = el.children = el.children || [];
+
+            const subOptions = {
+                scopeId: options.scopeId,
+                whitespace: 'condense',
+            };
+
+            const tmp = compiler.compile(`
+    <div>
+    <d-slot tag="${el.tag}" display="block" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${el.nodePath}' }"></d-slot>
+    </div>`, subOptions).ast;
+            children.push(...tmp.children);
+        }
     });
 
     const depthTraverse = (ast) => {

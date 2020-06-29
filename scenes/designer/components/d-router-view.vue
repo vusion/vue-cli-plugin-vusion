@@ -1,5 +1,5 @@
 <template>
-<div :vusion-node-path="nodePath" router-view><router-view></router-view></div>
+<div :class="$style.root" :vusion-node-path="nodePath" router-view><router-view></router-view></div>
 </template>
 
 <script>
@@ -9,3 +9,9 @@ export default {
     },
 };
 </script>
+
+<style module>
+.root:empty {
+    min-height: 20px;
+}
+</style>

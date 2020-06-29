@@ -271,9 +271,7 @@ export default {
                 this.contextPath = contextPath;
             else {
                 const cap = location.pathname.match(/^\/.+?\//);
-                if (!cap)
-                    return;
-                this.contextPath = location.pathname.slice(cap[0].length - 1);
+                this.contextPath = cap ? location.pathname.slice(cap[0].length - 1) : '';
             }
 
             setTimeout(() => {
@@ -712,7 +710,7 @@ export default {
 </script>
 
 <style module>
-[root-app] * {
+[root-app], [root-app] * {
     cursor: default !important;
 }
 
@@ -728,15 +726,15 @@ iframe {
     display: none;
 }
 
-[root-app] [vusion-context-vm] [class^="d-slot_"][position] {
+[root-app][vusion-context-vm] [class^="d-slot_"][position], [root-app] [vusion-context-vm] [class^="d-slot_"][position] {
     display: block;
 }
 
-[root-app] [vusion-context-vm] [class^="d-slot_"][position][display="inline"] {
+[root-app][vusion-context-vm] [class^="d-slot_"][position][display="inline"], [root-app] [vusion-context-vm] [class^="d-slot_"][position][display="inline"] {
     display: inline-block;
 }
 
-[root-app] [vusion-sub-vm] [class^="d-slot_"][position][class] {
+[root-app][vusion-sub-vm] [class^="d-slot_"][position][class], [root-app] [vusion-sub-vm] [class^="d-slot_"][position][class] {
     display: none;
 }
 
