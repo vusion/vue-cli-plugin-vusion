@@ -16,6 +16,7 @@ module.exports = function (loaderContext, localIdentName, localName, options) {
         .replace(/\.vue[\\/]/g, '_')
         .replace(/\.vue$/g, '')
         .replace(/_module\.css$/, '')
+        .replace(/_index\.css$/, '')
         .replace('_index', '');
     const vueName = path.basename(tmpPath);
     localIdentName = localIdentName.replace(/\[name\]/gi, vueName);
