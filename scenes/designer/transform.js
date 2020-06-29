@@ -105,7 +105,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             const routes = children.filter((item) => item.type === 1 && item.tag === 'router-view');
             if (routes.length) {
                 routes.forEach((route) => {
-                    const tmp = compiler.compile(`<d-routerview nodePath="${route.nodePath}"></d-routerview>`).ast;
+                    const tmp = compiler.compile(`<d-router-view nodePath="${route.nodePath}"></d-router-view>`).ast;
                     tmp.parent = node;
                     const index = children.indexOf(route);
                     ~index && children.splice(index, 1, tmp);

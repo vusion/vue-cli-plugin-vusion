@@ -298,7 +298,7 @@ export default {
             let vue = this.getRelatedVue(node);
             // console.log(vue && vue.$options.name, vue.$root && vue.$root.$options.name);
             while (vue) {
-                if (vue.$options.name && vue.$options.name.startsWith('d-') && !vue.$options.name.startsWith('d-routerview'))
+                if (vue.$options.name && vue.$options.name.startsWith('d-') && !vue.$options.name.startsWith('d-router-view'))
                     return true;
                 vue = vue.$parent;
             }
