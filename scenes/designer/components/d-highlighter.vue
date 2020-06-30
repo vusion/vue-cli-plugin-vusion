@@ -1,5 +1,5 @@
 <template>
-<div v-show="rectStyle" :class="$style.root" :mode="mode" :style="rectStyle"
+<div v-show="rectStyle" :class="$style.root" :mode="mode" :tag="info.tag" :style="rectStyle"
     :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp"
     draggable="true" @dragstart="onDragStart($event)" @dragend="onDragEnd($event)">
     <div :class="$style.bar">
@@ -198,5 +198,13 @@ export default {
 
 .icon[role="duplicate"]::before {
     icon-font: url('../assets/add_to_photos.svg');
+}
+
+.root[tag="d-router-view"] {
+    outline-color: #8acd4e;
+}
+
+.root[tag="d-router-view"] .bar {
+    background: #8acd4e;
 }
 </style>

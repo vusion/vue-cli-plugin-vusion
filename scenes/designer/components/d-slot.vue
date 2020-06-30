@@ -244,7 +244,7 @@ export default {
 }
 
 .root[type="layout"] {
-    padding: 4px;
+    padding: 0;
 }
 
 .root[type="layout"] .wrap {

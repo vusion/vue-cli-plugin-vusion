@@ -624,6 +624,7 @@ export default {
         onWebpackMessage(e) {
             if (e.data.type === 'webpackInvalid') {
                 // console.log('[vusion:designer] lastChanged:', lastChanged);
+                this.send({ command: 'hotReload', status: true });
                 if (!lastChanged)
                     this.send({ command: 'loading', status: true });
             } else if (e.data.type === 'webpackOk') {
@@ -738,6 +739,10 @@ html {
 
 [root-app], [root-app] * {
     cursor: default !important;
+}
+
+div:empty:not([class]) {
+    min-height: 20px;
 }
 
 iframe {
