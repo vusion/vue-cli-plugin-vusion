@@ -488,19 +488,15 @@ export default {
                 return;
             if (this.isDesignerComponent(e.target)) {
                 if (e.target.className && e.target.className.startsWith('d-text')) {
-                    const nodeRect = utils.getVisibleRect(e.target);
-                    const parentRect = utils.getVisibleRect(e.target.parentElement);
-                    if (nodeRect.width === parentRect.width || nodeRect.height === parentRect.height) {
-                        const nodeInfo = this.getNodeInfo(e.target.parentElement);
-                        this.select(nodeInfo);
-                        this.send({
-                            command: 'selectNode',
-                            type: nodeInfo.type,
-                            tag: nodeInfo.tag,
-                            scopeId: nodeInfo.scopeId,
-                            nodePath: nodeInfo.nodePath,
-                        });
-                    }
+                    const nodeInfo = this.getNodeInfo(e.target.parentElement);
+                    this.select(nodeInfo);
+                    this.send({
+                        command: 'selectNode',
+                        type: nodeInfo.type,
+                        tag: nodeInfo.tag,
+                        scopeId: nodeInfo.scopeId,
+                        nodePath: nodeInfo.nodePath,
+                    });
                 }
                 return;
             }

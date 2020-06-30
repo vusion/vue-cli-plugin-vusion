@@ -39,7 +39,8 @@ export default {
 .root:focus{
     outline: 1px dashed #4a88e8;
 }
-.root:empty{
-    width: 10px;
+.root:empty:before{
+    content:'X';
+    opacity: 0;
 }
 </style>
