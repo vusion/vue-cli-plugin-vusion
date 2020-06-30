@@ -1,7 +1,7 @@
 <template>
 <div :class="$style.root" :type="type" :display="display" :position="position" :expanded="expanded"
     :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop">
-    <div :class="$style.wrap">
+    <div :class="$style.wrap" @transitionend="onTransitionEnd" @webkitTransitionEnd="onTransitionEnd">
         <template v-if="!expanded">
             <div :class="$style.init" v-if="type === 'layout'" :dragover="dragover" :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
             <div :class="$style.init" v-else :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
@@ -172,6 +172,9 @@ export default {
             });
 
             this.close();
+        },
+        onTransitionEnd() {
+            this.$root.$emit('d-slot:mode-change');
         },
     },
 };
