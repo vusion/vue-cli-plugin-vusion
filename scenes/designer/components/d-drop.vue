@@ -15,6 +15,7 @@
 <script>
 import * as utils from '../utils';
 export default {
+    name: 'd-drop',
     props: {
         info: Object,
         targetPosition: Object,

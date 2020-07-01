@@ -6,6 +6,7 @@
 
 <script>
 export default {
+    name: 'd-progress',
     props: {
         name: String,
     },

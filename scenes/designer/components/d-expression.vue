@@ -9,6 +9,7 @@
 
 <script>
 export default {
+    name: 'd-expression',
     props: {
         type: Number,
         name: String,

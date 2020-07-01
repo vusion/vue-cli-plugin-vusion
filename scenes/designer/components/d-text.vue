@@ -4,6 +4,7 @@
 
 <script>
 export default {
+    name: 'd-text',
     props: {
         type: Number,
         text: String,

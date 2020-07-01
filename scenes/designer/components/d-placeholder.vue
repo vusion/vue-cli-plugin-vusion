@@ -4,6 +4,7 @@
 
 <script>
 export default {
+    name: 'd-placeholder',
     props: {
         text: String,
         nodePath: String,
