@@ -58,6 +58,7 @@ export default {
             targetNode: {},
             targetPosition: {},
             requests: new Map(),
+            externalComponentsAPI: {},
         };
     },
     watch: {
@@ -159,6 +160,10 @@ export default {
 
             // this.router.afterEach((to, from) => this.onNavigate(to.path));
             this.onNavigate();
+
+            this.getExternalComponentsAPI();
+
+            appVM.$forceUpdate();
 
             this.sendCommand('ready', {
                 routerMode: this.router.options.mode,
@@ -722,6 +727,10 @@ export default {
             } else {
                 return false;
             }
+        },
+        async getExternalComponentsAPI() {
+            this.externalComponentsAPI = await this.execCommand('getExternalComponentsAPI');
+            Vue.prototype.ComponentsAPI = this.externalComponentsAPI;
         },
     },
 };

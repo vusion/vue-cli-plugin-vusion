@@ -5,7 +5,6 @@ const TemplateHandler = require('vusion-api/out/fs/TemplateHandler').default;
  */
 exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     const traverse = TemplateHandler.prototype.traverse;
-
     traverse.call({ ast }, (info) => {
         const el = info.node;
         el.nodePath = info.route;
@@ -127,6 +126,24 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                     tmp.parent = node;
                     const index = children.indexOf(route);
                     ~index && children.splice(index, 1, tmp);
+                });
+            }
+
+            const noChildren = children.filter((item) => item.type === 1 && !item.tag.startsWith('d-') && (!item.children || !item.children.length));
+            if (noChildren.length) {
+                noChildren.forEach((tempNode) => {
+                    tempNode.children = tempNode.children || [];
+
+                    const subOptions = {
+                        scopeId: options.scopeId,
+                        whitespace: 'condense',
+                    };
+
+                    const tmp = compiler.compile(`
+            <div>
+            <d-slot tag="u-linear-layout" display="block" slotName="default" nodeTag="${tempNode.tag}" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${tempNode.nodePath}' }"></d-slot>
+            </div>`, subOptions).ast;
+                    tempNode.children.push(...tmp.children);
                 });
             }
 

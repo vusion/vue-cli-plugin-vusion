@@ -1,6 +1,7 @@
 <template>
 <div :class="$style.root" :type="type" :display="display" :position="position" :expanded="expanded"
-    :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop">
+    :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
+    v-if="isShow">
     <div :class="$style.wrap" @transitionend="onTransitionEnd" @webkitTransitionEnd="onTransitionEnd">
         <template v-if="!expanded">
             <div :class="$style.init" v-if="type === 'layout'" :dragover="dragover" :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
@@ -13,7 +14,8 @@
                 <u-linear-layout :class="$style.actions" direction="vertical" layout="block" gap="small">
                     <u-text color="primary" style="font-weight: bold">⬅︎ 请将需要添加的组件或区块拖拽到这里</u-text>
                     <div>或者你可以快捷选择以下功能：</div>
-                    <!-- <u-button size="small">描述列表组</u-button> -->
+                    <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
+                    <u-button size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
                     <u-button size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
                 </u-linear-layout>
                 <!-- <span draggable="true" :class="$style.button" role="add" title="添加物料" :color="mode === 'add' ? 'primary' : ''"></span> -->
@@ -91,6 +93,7 @@
 </template>
 
 <script>
+import Vue from 'vue';
 export default {
     name: 'd-slot',
     props: {
@@ -98,6 +101,8 @@ export default {
         display: { type: String, default: 'block' },
         position: { type: String, default: 'append' },
         nodeInfo: Object,
+        slotName: String,
+        nodeTag: String,
     },
     data() {
         return {
@@ -109,6 +114,10 @@ export default {
                 insertBefore: '在前面插入',
                 insertAfter: '在后面插入',
             },
+            NORMAL_TEMPLATE: {
+                text: '<template> <span>文字</span> </template>',
+                expression: "<template> <span>{{'value'}}</span> </template>",
+            },
         };
     },
     computed: {
@@ -117,6 +126,17 @@ export default {
                 return 'layout';
             else
                 return 'default';
+        },
+        isShow() {
+            if (this.slotName && Vue.prototype.ComponentsAPI) {
+                console.log(Vue.prototype.ComponentsAPI);
+                const cloudui = Vue.prototype.ComponentsAPI[this.nodeTag];
+                const slots = cloudui && cloudui.slots || [];
+                const slot = slots.find((item) => item.name === this.slotName);
+                return !slot || slot['quick-add'] !== 'never';
+            } else {
+                return true;
+            }
         },
     },
     created() {
@@ -175,6 +195,18 @@ export default {
         },
         onTransitionEnd() {
             this.$root.$emit('d-slot:mode-change');
+        },
+        addNormalTemplate(type) {
+            this.send({
+                command: 'addCode',
+                position: this.position,
+                code: this.NORMAL_TEMPLATE[type],
+                nodePath: this.nodeInfo.nodePath,
+                scopeId: this.nodeInfo.scopeId,
+                nodeData: JSON.stringify({
+                    command: 'addBaseComponent',
+                }),
+            });
         },
     },
 };
