@@ -49,6 +49,7 @@
     "http-proxy-middleware": "^0.19.1",
     "husky": "^3.0.4",
     "icon-font-loader": "^3.0.0",
+    "import-fresh": "^3.2.1",
     "loader-utils": "^1.2.3",
     "markdown-it-abbr": "^1.0.4",
     "markdown-it-anchor": "^5.2.4",
