@@ -3,12 +3,12 @@
     :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
     v-if="isShow">
     <div :class="$style.wrap" @transitionend="onTransitionEnd" @webkitTransitionEnd="onTransitionEnd">
-        <template v-if="!expanded">
-            <div :class="$style.init" v-if="type === 'layout'" :dragover="dragover" :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
-            <div :class="$style.init" v-else :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
-                :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
-        </template>
-        <template v-else>
+        <!-- <template v-if="!expanded"> -->
+        <div :class="$style.init" v-if="type === 'layout'" :dragover="dragover" :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
+        <div :class="$style.init" v-else :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
+            :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
+        <!-- </template> -->
+        <u-popup ref="popup" :class="$style.popup">
             <div v-if="mode !== 'layout'" :class="$style.mode">
                 <div :class="$style.close" @click="close()"></div>
                 <u-linear-layout :class="$style.actions" direction="vertical" layout="block" gap="small">
@@ -87,7 +87,7 @@
                     </div>
                 </div>
             </div>
-        </template>
+        </u-popup>
     </div>
 </div>
 </template>
@@ -146,8 +146,9 @@ export default {
     },
     methods: {
         close() {
-            this.expanded = false;
+            // this.expanded = false;
             this.mode = '';
+            this.$refs.popup.close();
         },
         onClickAdd() {
             this.expanded = true;
@@ -252,6 +253,10 @@ export default {
 
 .root[expanded][dragover] .wrap {
     background: hsla(216, 77%, 60%, 0.6);
+}
+
+.root[dragover] .popup {
+    background: hsla(216, 77%, 80%);
 }
 
 .root[display="inline"] {
@@ -419,5 +424,13 @@ export default {
 .close::after {
     font-size: 28px;
     content: '×';
+}
+
+.popup {
+    background: hsla(213, 77%, 90%);
+    z-index: 99999999;
+}
+.popup > [class^="u-popup_arrow_"]{
+    border-bottom-color: hsla(213, 77%, 90%);
 }
 </style>
