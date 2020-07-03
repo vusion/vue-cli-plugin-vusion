@@ -15,6 +15,7 @@ import api from 'vue-hot-reload-api';
 import Vue from 'vue';
 import * as utils from '../utils';
 import throttle from 'lodash/throttle';
+import { v4 as uuidv4 } from 'uuid';
 
 let lastChanged = 0;
 {
@@ -505,6 +506,14 @@ export default {
                 }
                 return;
             }
+
+            // d-slot有popup弹出，点击关闭
+            if (window.dslotPopper && window.dslotPopper.length) {
+                window.dslotPopper.forEach((item) => {
+                    item.close();
+                });
+            }
+
             this.cancelEvent(e);
 
             if (!(this.contextVM && this.contextVM.$el.contains(e.target))) { // 不在 contextVM 中，视为选中 contextView
@@ -580,7 +589,7 @@ export default {
          * 双向通信
          */
         execCommand(command, ...args) {
-            const message = { id: +new Date(), protocol: 'vusion', sender: 'designer', type: 'request', command, args };
+            const message = { id: uuidv4(), protocol: 'vusion', sender: 'designer', type: 'request', command, args };
             window.parent.postMessage(message, '*');
             return new Promise((res, rej) => {
                 this.requests.set(message.id, Object.assign({ res, rej }, message));
@@ -687,6 +696,7 @@ export default {
         },
         handlerDrag(event) {
             if (this.isDropComponent(event.target)) {
+                this.targetNode = {};
                 return;
             }
             if (!this.dragging) {
@@ -731,6 +741,7 @@ export default {
         async getExternalComponentsAPI() {
             this.externalComponentsAPI = await this.execCommand('getExternalComponentsAPI');
             Vue.prototype.ComponentsAPI = this.externalComponentsAPI;
+            window.ComponentsAPI = this.externalComponentsAPI;
         },
     },
 };

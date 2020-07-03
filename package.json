@@ -72,7 +72,8 @@
     "vue-component-analyzer": "^0.2.0",
     "vue-router": "^3.0.1",
     "vusion-api": "^0.7.14",
-    "vusion-loader": "^0.5.1"
+    "vusion-loader": "^0.5.1",
+    "uuid": "^7.0.3"
   },
   "devDependencies": {
     "@vue/cli-test-utils": "^4.2.3",
