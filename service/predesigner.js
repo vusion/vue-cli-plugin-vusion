@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-module.exports = function predesigner() {
+function predesigner() {
     function readAndWriteFile(filePath, newRelativePath = '', handler) {
         let content = fs.readFileSync(filePath, 'utf8');
         content = handler(content);
@@ -36,4 +36,7 @@ module.exports = function predesigner() {
 
     readAndWriteFile(vueLoaderPath, '', (content) => content
         .replace('const hasScoped = descriptor.styles.some(s => s.scoped)', 'const hasScoped = true'));
-};
+}
+
+module.exports = predesigner;
+!module.parent && predesigner();
