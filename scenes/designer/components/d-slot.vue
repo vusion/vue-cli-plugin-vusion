@@ -485,13 +485,19 @@ export default {
     background: hsla(213, 77%, 90%);
     z-index: 99999999;
 }
-.popup > [class^="u-popup_arrow_"]{
+.popup[x-placement^=bottom] > [class^="u-popup_arrow_"]{
     border-bottom-color: hsla(213, 77%, 90%) !important;
+}
+.popup[x-placement^=top] > [class^="u-popup_arrow_"]{
+    border-top-color: hsla(213, 77%, 90%) !important;
 }
 .popup[dragover] {
     background: hsla(216, 77%, 85%);
 }
 .popup[dragover] > [class^="u-popup_arrow_"]{
     border-bottom-color: hsla(213, 77%, 85%) !important;
+}
+.popup[x-placement^=top][dragover] > [class^="u-popup_arrow_"]{
+    border-top-color: hsla(213, 77%, 85%) !important;
 }
 </style>

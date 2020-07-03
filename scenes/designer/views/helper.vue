@@ -752,7 +752,6 @@ export default {
         async getExternalComponentsAPI() {
             this.externalComponentsAPI = await this.execCommand('getExternalComponentsAPI');
             Vue.prototype.ComponentsAPI = this.externalComponentsAPI;
-            window.ComponentsAPI = this.externalComponentsAPI;
         },
     },
 };
