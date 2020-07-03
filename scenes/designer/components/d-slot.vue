@@ -1,7 +1,7 @@
 <template>
 <div :class="$style.root" :type="type" :display="display" :position="position" :expanded="expanded"
     :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
-    v-if="isShow">
+    v-if="slotsProps.isShow">
     <div :class="$style.wrap" @transitionend="onTransitionEnd" @webkitTransitionEnd="onTransitionEnd">
         <div :class="$style.init" v-if="type === 'layout'" :dragover="dragover" :title="POSITION_TEXT[position]" @click="onClickAdd"></div>
         <div :class="$style.init" v-else :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
@@ -13,9 +13,26 @@
                     <u-linear-layout :class="$style.actions" direction="vertical" layout="block" gap="small">
                         <u-text color="primary" style="font-weight: bold">⬅︎ 请将需要添加的组件或区块拖拽到这里</u-text>
                         <div>或者你可以快捷选择以下功能：</div>
-                        <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
-                        <u-button size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
-                        <u-button size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
+                        <template v-if="slotsProps.acceptType === 'recommanded'">
+                            <u-button size="small" v-for="recommanded in slotsProps.recommandeds" :key="recommanded.name" @click="addRecommanded(recommanded)">
+                                添加{{ recommanded.title || recommanded.name }}
+                            </u-button>
+                        </template>
+                        <template v-else-if="slotsProps.acceptType === 'all'">
+                            <template v-if="slotsProps.recommandeds && slotsProps.recommandeds.length">
+                                <u-button size="small" v-for="recommanded in slotsProps.recommandeds" :key="recommanded.name" @click="addRecommanded(recommanded)">
+                                    添加{{ recommanded.title || recommanded.name }}
+                                </u-button>
+                            </template>
+                            <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
+                            <u-button size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
+                            <u-button size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
+                        </template>
+                        <template v-else>
+                            <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
+                            <u-button size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
+                            <u-button size="small" @click="mode = 'layout'" v-if="slotsProps.needLayout"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
+                        </template>
                     </u-linear-layout>
                 <!-- <span draggable="true" :class="$style.button" role="add" title="添加物料" :color="mode === 'add' ? 'primary' : ''"></span> -->
                 <!-- <span :class="$style.button" role="layout" title="添加布局" @click="mode = 'layout'"></span>
@@ -127,15 +144,29 @@ export default {
             else
                 return 'default';
         },
-        isShow() {
+        slotsProps() {
             if (this.slotName && Vue.prototype.ComponentsAPI) {
-                console.log(Vue.prototype.ComponentsAPI);
                 const cloudui = Vue.prototype.ComponentsAPI[this.nodeTag];
                 const slots = cloudui && cloudui.slots || [];
                 const slot = slots.find((item) => item.name === this.slotName);
-                return !slot || slot['quick-add'] !== 'never';
+                const acceptType = slot && slot['accept-type'] ? slot['accept-type'] : 'all';
+                let needLayout = true;
+                if (Array.isArray(acceptType)) {
+                    needLayout = acceptType.includes('block');
+                }
+                return {
+                    isShow: !slot || slot['quick-add'] !== 'never',
+                    acceptType,
+                    recommandeds: !slot ? [] : slot.recommanded,
+                    needLayout,
+                };
             } else {
-                return true;
+                return {
+                    isShow: true,
+                    acceptType: 'all',
+                    recommandeds: [],
+                    needLayout: true,
+                };
             }
         },
     },
@@ -220,6 +251,21 @@ export default {
                 const index = window.dslotPopper.indexOf(element);
                 ~index && window.dslotPopper.splice(index, 1);
             }
+        },
+        addRecommanded(recommanded) {
+            const code = recommanded.snippet;
+            if (!code)
+                return;
+            this.send({
+                command: 'addCode',
+                position: this.position,
+                code,
+                nodePath: this.nodeInfo.nodePath,
+                scopeId: this.nodeInfo.scopeId,
+                nodeData: JSON.stringify({
+                    command: 'addBaseComponent',
+                }),
+            });
         },
     },
 };

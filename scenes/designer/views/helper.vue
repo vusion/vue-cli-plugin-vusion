@@ -696,7 +696,9 @@ export default {
         },
         handlerDrag(event) {
             if (this.isDropComponent(event.target)) {
-                this.targetNode = {};
+                if (this.isDslotComponent(event.target)) {
+                    this.targetNode = {};
+                }
                 return;
             }
             if (!this.dragging) {
@@ -723,6 +725,15 @@ export default {
             let vue = this.getRelatedVue(node);
             while (vue) {
                 if (vue.$options.name && (vue.$options.name.startsWith('d-drop') || vue.$options.name.startsWith('d-slot')))
+                    return true;
+                vue = vue.$parent;
+            }
+            return false;
+        },
+        isDslotComponent(node) {
+            let vue = this.getRelatedVue(node);
+            while (vue) {
+                if (vue.$options.name && vue.$options.name.startsWith('d-slot'))
                     return true;
                 vue = vue.$parent;
             }
