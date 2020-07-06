@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const chainCSSOneOfs = require('../webpack/chainCSSOneOfs');
 const MiniCSSExtractPlugin = require('@vusion/mini-css-extract-plugin');
+const vusion = require('vusion-api');
 
 module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
     const buildCommand = api.service.commands.build;
@@ -41,25 +42,49 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 return;
             }
         }
+        const pkg = require(vusionConfig.packagePath);
 
         api.chainWebpack((config) => {
             config.entryPoints.clear();
             config.entry('index').add('./index.js');
 
+            let libraryName = vusionConfig.CamelName || 'Library';
+            if (vusionConfig.type === 'component' || vusionConfig.type === 'block') {
+                libraryName = vusion.utils.kebab2Camel(path.basename(pkg.name, '.vue'));
+                // htmlCommonOptions.title = componentName + (vusionConfig.title ? ' ' + vusionConfig.title : '') + ' - Vusion 物料平台';
+            }
+
             config.output.filename('[name].js')
                 .chunkFilename('[name].[contenthash:8].js')
-                .library(vusionConfig.CamelName || 'Library')
+                .library(libraryName)
                 .libraryTarget('umd')
                 .umdNamedDefine(true);
 
-            config.externals({
-                vue: {
-                    root: 'Vue',
-                    commonjs: 'vue',
-                    commonjs2: 'vue',
-                    amd: 'vue',
-                },
-            });
+            if (vusionConfig.type === 'component' || vusionConfig.type === 'block') {
+                config.externals({
+                    vue: {
+                        root: 'Vue',
+                        commonjs: 'vue',
+                        commonjs2: 'vue',
+                        amd: 'vue',
+                    },
+                    'cloud-ui.vusion': {
+                        root: 'CloudUI',
+                        commonjs: 'cloud-ui.vusion',
+                        commonjs2: 'cloud-ui.vusion',
+                        amd: 'cloud-ui.vusion',
+                    },
+                });
+            } else if (vusionConfig.type === 'library') {
+                config.externals({
+                    vue: {
+                        root: 'Vue',
+                        commonjs: 'vue',
+                        commonjs2: 'vue',
+                        amd: 'vue',
+                    },
+                });
+            }
 
             chainCSSOneOfs(config, (oneOf, modules) => {
                 oneOf.use('extract-css-loader')
