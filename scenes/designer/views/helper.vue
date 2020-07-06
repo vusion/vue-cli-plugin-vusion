@@ -79,14 +79,14 @@ export default {
             //     return;
             // }
 
-            if (old && this.slotsMap.has(old)) {
-                const slots = this.slotsMap.get(old);
-                slots.forEach((slot) => {
-                    slot.$el.remove();
-                    slot.$destroy();
-                });
-                this.slotsMap.delete(old);
-            }
+            // if (old && this.slotsMap.has(old)) {
+            //     const slots = this.slotsMap.get(old);
+            //     slots.forEach((slot) => {
+            //         slot.$el.remove();
+            //         slot.$destroy();
+            //     });
+            //     this.slotsMap.delete(old);
+            // }
 
             // if (selected && selected.el) {
             //     const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
@@ -341,6 +341,10 @@ export default {
             if (node.hasAttribute('vusion-parent-node-path')) {
                 parentNodePath = node.getAttribute('vusion-parent-node-path') || '/';
             }
+            let title = tag;
+            if (this.externalComponentsAPI) {
+                title = this.externalComponentsAPI[tag] && this.externalComponentsAPI[tag].title;
+            }
             return {
                 el: node,
                 type,
@@ -348,6 +352,7 @@ export default {
                 scopeId,
                 nodePath: node.getAttribute('vusion-node-path'),
                 parentNodePath,
+                title,
             };
         },
         /**

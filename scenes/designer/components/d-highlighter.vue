@@ -3,7 +3,7 @@
     :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp"
     draggable="true" @dragstart="onDragStart($event)" @dragend="onDragEnd($event)">
     <div :class="$style.bar">
-        <span :class="$style.tag">{{ info.tag }}</span>
+        <span :class="$style.tag">{{ info.title || info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
         <span :class="$style.icon" role="duplicate"></span> -->
         <span :class="$style.icon" role="duplicate" @click="duplicate"></span>
