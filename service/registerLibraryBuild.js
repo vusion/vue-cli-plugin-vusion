@@ -44,6 +44,10 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
         }
         const pkg = require(vusionConfig.packagePath);
 
+        if (vusionConfig.type === 'component' || vusionConfig.type === 'block') {
+            vueConfig.css.extract = false;
+        }
+
         api.chainWebpack((config) => {
             config.entryPoints.clear();
             config.entry('index').add('./index.js');
@@ -87,14 +91,14 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
             }
 
             chainCSSOneOfs(config, (oneOf, modules) => {
-                oneOf.use('extract-css-loader')
+                oneOf.uses.has('extract-css-loader') && oneOf.use('extract-css-loader')
                     .loader(MiniCSSExtractPlugin.loader)
                     .options({
                         publicPath: './',
                         hmr: false,
                     });
             });
-            config.plugin('extract-css')
+            config.plugins.has('extract-css') && config.plugin('extract-css')
                 .use(MiniCSSExtractPlugin, [{
                     filename: '[name].css',
                     themeFilename: 'theme-[theme].css',
@@ -103,7 +107,7 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 }]);
 
             // 关掉 url(./img/xxx) -> url(img/xxx) 的处理
-            config.plugin('optimize-css').tap(([options]) => {
+            config.plugins.has('optimize-css') && config.plugin('optimize-css').tap(([options]) => {
                 if (!options.cssnanoOptions.preset[1])
                     options.cssnanoOptions.preset[1] = {};
                 options.cssnanoOptions.preset[1].normalizeUrl = false;
