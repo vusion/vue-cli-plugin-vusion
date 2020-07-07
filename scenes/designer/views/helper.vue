@@ -79,14 +79,21 @@ export default {
             //     return;
             // }
 
-            // if (old && this.slotsMap.has(old)) {
-            //     const slots = this.slotsMap.get(old);
-            //     slots.forEach((slot) => {
-            //         slot.$el.remove();
-            //         slot.$destroy();
-            //     });
-            //     this.slotsMap.delete(old);
-            // }
+            if (old && this.slotsMap.has(old)) {
+                const slots = this.slotsMap.get(old);
+                slots.forEach((slot) => {
+                    slot.$el.remove();
+                    slot.$destroy();
+                });
+                this.slotsMap.delete(old);
+            }
+
+            if (selected && this.externalComponentsAPI) {
+                const cloudui = this.externalComponentsAPI[selected.tag];
+                const slots = cloudui && cloudui.slots || [];
+                if (slots.length)
+                    this.attribute2slot(selected);
+            }
 
             // if (selected && selected.el) {
             //     const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
@@ -787,12 +794,13 @@ export default {
         },
         editSlotAttribute(e, selected) {
             if (e.target && e.target.nodeType === 1 && e.target.hasAttribute('vusion-slot-name')) {
-                const childNodes = e.target.childNodes;
-                if (childNodes.length === 1 && childNodes[0].nodeType === 3) {
+                const childNodes = Array.from(e.target.childNodes);
+                const textNode = childNodes.filter((item) => item.nodeType === 3);
+                if (textNode.length === 1) {
                     const name = e.target.getAttribute('vusion-slot-name');
                     const dText = this.createDText({
                         propsData: {
-                            text: e.target.innerText,
+                            text: textNode[0].nodeValue,
                             nodePath: e.target.getAttribute('vusion-node-path'),
                             parentNodePath: selected.nodePath,
                             slotName: name,
@@ -805,6 +813,50 @@ export default {
                     });
                 }
             }
+        },
+        attribute2slot(selected) {
+            const el = selected.el;
+            const stack = [];
+            stack.push(el);
+            let node;
+            const slots = [];
+            while (stack.length) {
+                node = stack.pop();
+                if (!node || !node.childNodes)
+                    continue;
+                const children = Array.from(node.childNodes);
+                children.forEach((item) => {
+                    if (item.nodeType === 1
+                        && !(item.className && item.className.startsWith('d-'))
+                        && item.hasAttribute('vusion-slot-name')) {
+                        const childNodes = item.childNodes;
+                        const name = item.getAttribute('vusion-slot-name');
+                        if (!childNodes.length || (childNodes.length === 1 && childNodes[0].nodeType === 3)) {
+                            const dSlot = this.createDSlot({
+                                propsData: {
+                                    display: 'inline',
+                                    displayType: 'layout',
+                                    slotName: name,
+                                    nodeInfo: selected,
+                                    transferSlot: true,
+                                    transferValue: childNodes[0] && childNodes[0].nodeValue,
+                                },
+                            });
+                            item.appendChild(dSlot.$el);
+                            slots.push(dSlot);
+                        }
+                    }
+                });
+                if (children.length) {
+                    for (let i = children.length - 1; i >= 0; i--) {
+                        if (children[i].nodeType === 1
+                            && !(children[i].className && children[i].className.startsWith('d-'))
+                            && !children[i].hasAttribute('vusion-slot-name'))
+                            stack.push(children[i]);
+                    }
+                }
+            }
+            slots.length && this.slotsMap.set(selected, slots);
         },
     },
 };

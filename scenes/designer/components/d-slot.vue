@@ -1,5 +1,5 @@
 <template>
-<div :class="$style.root" :type="type" :display="display" :position="position" :expanded="expanded"
+<div :class="$style.root" :type="displayType||type" :display="display" :position="position" :expanded="expanded"
     :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
     v-if="slotsProps.isShow">
     <div :class="$style.wrap" @transitionend="onTransitionEnd" @webkitTransitionEnd="onTransitionEnd">
@@ -26,7 +26,7 @@
                             </template>
                             <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
                             <u-button size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
-                            <u-button size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
+                            <u-button size="small" @click="mode = 'layout'" v-if="!transferSlot"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
                         </template>
                         <template v-else>
                             <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
@@ -120,6 +120,9 @@ export default {
         nodeInfo: Object,
         slotName: String,
         nodeTag: String,
+        displayType: String,
+        transferSlot: { type: Boolean, default: false },
+        transferValue: String,
     },
     data() {
         return {
@@ -199,6 +202,15 @@ export default {
             });
         },
         send(data) {
+            if (this.transferSlot && data.code) {
+                const slotName = this.slotName;
+                let code = data.code.replace(/^<template>\s*/, '').replace(/\s*<\/template>\s*$/, '') + '\n';
+                if (this.transferValue) {
+                    code = this.transferValue + code;
+                }
+                code = `<template> <template #${slotName}> ${code} </template> </template>`;
+                data.code = code;
+            }
             return this.$root.$emit('d-slot:send', data);
         },
         sendCommand(...args) {
@@ -275,7 +287,6 @@ export default {
 .root {
     position: relative;
     user-select: none;
-    min-width: 100px;
 }
 
 .wrap {
@@ -317,7 +328,7 @@ export default {
 .root[display="inline"] {
     display: inline-block;
     vertical-align: top;
-    min-width: 160px;
+    /* min-width: 160px; */
 }
 
 .init {
