@@ -46,7 +46,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         // }
     });
 
-    if (options && /\/d-[a-zA-Z0-9-_]+\.vue$|\/helper\.vue$/.test(options.filename))
+    if (options && /\/d-[a-zA-Z0-9-_]+\.vue$|\/helper\.vue$|\/cloud-ui\/src\/components/.test(options.filename))
         return;
 
     traverse.call({ ast }, (info) => {

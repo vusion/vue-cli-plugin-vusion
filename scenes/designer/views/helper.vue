@@ -164,8 +164,6 @@ export default {
 
             this.getExternalComponentsAPI();
 
-            appVM.$forceUpdate();
-
             this.sendCommand('ready', {
                 routerMode: this.router.options.mode,
             });
@@ -223,7 +221,10 @@ export default {
         document.body.addEventListener('drop', this.onDragEnd);
 
         Vue.config.errorHandler = (err, vm, info) => {
-            this.send({ command: 'problems', data: err + ' in ' + vm.$route.fullPath });
+            if (vm && vm.$route)
+                this.send({ command: 'problems', data: err + ' in ' + vm.$route.fullPath });
+            else
+                this.send({ command: 'problems', data: err });
         };
 
         this.throttleHandlerDrag = throttle(this.handlerDrag, 300);
@@ -495,8 +496,9 @@ export default {
             this.hover = {};
         },
         onClick(e) {
-            if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
+            if (this.$el.contains(e.target)) { // helperVM 中的事件不拦截、不处理
                 return;
+            }
             if (this.isDesignerComponent(e.target)) {
                 if (e.target.className && e.target.className.startsWith('d-text')) {
                     const nodeInfo = this.getNodeInfo(e.target.parentElement);
@@ -541,6 +543,9 @@ export default {
             setTimeout(() => {
                 nodeInfo.el && this.$refs.selected.$el.focus();
             });
+
+            // slot 属性可编辑
+            this.editSlotAttribute(e, nodeInfo);
         },
         select(nodeInfo) {
             if (nodeInfo.el === this.selected.el)
@@ -559,6 +564,17 @@ export default {
                 this.select({});
                 this.sendCommand('selectContextView');
             }
+        },
+        createDText(options) {
+            const Ctor = Vue.component('d-text');
+            const el = document.createElement('span');
+            const dText = new Ctor(options);
+            dText.$on('d-slot:send', this.onDSlotSend);
+            dText.$on('d-text:blur', this.onDTextBlur);
+            dText.$mount(el);
+            el.__vue__ = dText;
+            dText.$parent = this;
+            return dText;
         },
         createDSlot(options) {
             const Ctor = Vue.component('d-slot');
@@ -580,6 +596,16 @@ export default {
         },
         onDSlotModeChange($event) {
             setTimeout(() => this.updateStyle());
+        },
+        onDTextBlur(context) {
+            setTimeout(() => {
+                const parent = context.$el.parentElement;
+                const nextSibling = context.$el.nextSibling;
+                if (parent && nextSibling) {
+                    parent.removeChild(context.$el);
+                    nextSibling.style.display = '';
+                }
+            });
         },
         send(data) {
             const dataString = JSON.stringify(data);
@@ -757,6 +783,28 @@ export default {
         async getExternalComponentsAPI() {
             this.externalComponentsAPI = await this.execCommand('getExternalComponentsAPI');
             Vue.prototype.ComponentsAPI = this.externalComponentsAPI;
+            this.appVM && this.appVM.$forceUpdate();
+        },
+        editSlotAttribute(e, selected) {
+            if (e.target && e.target.nodeType === 1 && e.target.hasAttribute('vusion-slot-name')) {
+                const childNodes = e.target.childNodes;
+                if (childNodes.length === 1 && childNodes[0].nodeType === 3) {
+                    const name = e.target.getAttribute('vusion-slot-name');
+                    const dText = this.createDText({
+                        propsData: {
+                            text: e.target.innerText,
+                            nodePath: e.target.getAttribute('vusion-node-path'),
+                            parentNodePath: selected.nodePath,
+                            slotName: name,
+                        },
+                    });
+                    e.target.parentElement.insertBefore(dText.$el, e.target);
+                    e.target.style.display = 'none';
+                    setTimeout(() => {
+                        dText.$el.focus();
+                    });
+                }
+            }
         },
     },
 };
