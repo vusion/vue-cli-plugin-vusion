@@ -6,8 +6,8 @@
         <span :class="$style.tag">{{ info.title || info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
         <span :class="$style.icon" role="duplicate"></span> -->
-        <span :class="$style.icon" role="duplicate" @click="duplicate"></span>
-        <span :class="$style.icon" role="remove" @click="remove"></span>
+        <span :class="$style.icon" title="创建副本" role="duplicate" @click="duplicate"></span>
+        <span :class="$style.icon" title="删除" role="remove" @click="remove"></span>
     </div>
 </div>
 </template>
@@ -168,7 +168,7 @@ export default {
 .bar {
     position: absolute;
     top: -20px;
-    right: -1px;
+    left: -1px;
     background: #4a88e8;
     padding: 0 4px;
     font-size: 12px;

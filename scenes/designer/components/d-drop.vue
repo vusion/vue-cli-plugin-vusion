@@ -157,11 +157,12 @@ export default {
 }
 .drop{
     position: absolute;
-    width: 20px;
-    height: 20px;
-    background: hsla(213, 77%, 80%, 0.6);
+    width: 0;
+    height: 0;
+    background: hsla(216, 77%, 60%, 0.3);
+    transition: all 0.2s;
 }
 .drop[dragover]{
-    background: hsla(213, 77%, 80%);
+    background: hsla(216, 77%, 60%, 0.6);
 }
 </style>

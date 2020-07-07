@@ -14,24 +14,24 @@
                         <u-text color="primary" style="font-weight: bold">⬅︎ 请将需要添加的组件或区块拖拽到这里</u-text>
                         <div>或者你可以快捷选择以下功能：</div>
                         <template v-if="slotsProps.acceptType === 'recommanded'">
-                            <u-button size="small" v-for="recommanded in slotsProps.recommandeds" :key="recommanded.name" @click="addRecommanded(recommanded)">
+                            <u-button :class="$style.button" size="small" v-for="recommanded in slotsProps.recommandeds" :key="recommanded.name" @click="addRecommanded(recommanded)">
                                 添加{{ recommanded.title || recommanded.name }}
                             </u-button>
                         </template>
                         <template v-else-if="slotsProps.acceptType === 'all'">
                             <template v-if="slotsProps.recommandeds && slotsProps.recommandeds.length">
-                                <u-button size="small" v-for="recommanded in slotsProps.recommandeds" :key="recommanded.name" @click="addRecommanded(recommanded)">
+                                <u-button :class="$style.button" size="small" v-for="recommanded in slotsProps.recommandeds" :key="recommanded.name" @click="addRecommanded(recommanded)">
                                     添加{{ recommanded.title || recommanded.name }}
                                 </u-button>
                             </template>
-                            <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
-                            <u-button size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
-                            <u-button size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
+                            <u-button :class="$style.button" size="small" @click="addNormalTemplate('text')">添加文字</u-button>
+                            <u-button :class="$style.button" size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
+                            <u-button :class="$style.button" size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
                         </template>
                         <template v-else>
-                            <u-button size="small" @click="addNormalTemplate('text')">添加文字</u-button>
-                            <u-button size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
-                            <u-button size="small" @click="mode = 'layout'" v-if="slotsProps.needLayout"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
+                            <u-button :class="$style.button" size="small" @click="addNormalTemplate('text')">添加文字</u-button>
+                            <u-button :class="$style.button" size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
+                            <u-button :class="$style.button" size="small" @click="mode = 'layout'" v-if="slotsProps.needLayout"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
                         </template>
                     </u-linear-layout>
                 <!-- <span draggable="true" :class="$style.button" role="add" title="添加物料" :color="mode === 'add' ? 'primary' : ''"></span> -->
@@ -307,7 +307,7 @@ export default {
     /* border: 1px solid hsla(216, 77%, 60%, 0.6); */
     cursor: initial !important;
     transition: all 0.2s;
-    background: hsla(213, 77%, 80%, 0.3);
+    background: hsla(216, 77%, 80%, 0.3);
 }
 
 .root[expanded][dragover] .wrap {
@@ -325,7 +325,7 @@ export default {
     color: hsla(216, 77%, 60%, 0.6);
     transition: all 0.2s;
     height: 100%;
-    background: hsla(213, 77%, 80%, 0.3);
+    background: hsla(216, 77%, 80%, 0.3);
 }
 
 [root-app] .init {
@@ -335,7 +335,7 @@ export default {
 .root[dragover] .init, .init:hover {
     margin-top: -4px;
     height: 200%;
-    background: hsla(213, 77%, 80%, 0.6);
+    background: hsla(216, 77%, 80%, 0.6);
 }
 
 .root[type="layout"] {
@@ -370,7 +370,7 @@ export default {
 }
 
 .root:hover .init {
-    color: hsla(216, 77%, 60%, 1);
+    color: hsla(216, 77%, 60%);
 }
 
 .h3 {
@@ -390,6 +390,14 @@ export default {
 }
 
 .button {
+    border-color: #abb3c5;
+}
+
+.button:hover {
+    border-color: var(--brand-primary);
+}
+
+/* .button {
     display: inline-block;
     background: var(--background-color-base);
     border-radius: 100px;
@@ -416,7 +424,7 @@ export default {
 
 .button::before {
     font-size: 32px;
-}
+} */
 
 .icon[name="add"]::before {
     icon-font: url('../assets/add-24px.svg');
@@ -468,12 +476,12 @@ export default {
     top: 15px;
     right: 15px;
     line-height: 1em;
-    color: #c5cbd0;
+    color: #aab3c5;
     transition: color 0.2s;
 }
 
 .close:hover {
-    color: #959da3;
+    color: #6c767d;
 }
 
 .close::after {
@@ -482,22 +490,29 @@ export default {
 }
 
 .popup {
-    background: hsla(213, 77%, 90%);
+    background: #eef1f6;
+    border-color: #abb3c5;
     z-index: 99999999;
 }
 .popup[x-placement^=bottom] > [class^="u-popup_arrow_"]{
-    border-bottom-color: hsla(213, 77%, 90%) !important;
+    border-bottom-color: #eef1f6 !important;
 }
 .popup[x-placement^=top] > [class^="u-popup_arrow_"]{
-    border-top-color: hsla(213, 77%, 90%) !important;
+    border-top-color: #eef1f6 !important;
+}
+.popup[x-placement^=bottom] > [class^="u-popup_arrow_"]::before {
+    border-bottom-color: #abb3c5 !important;
+}
+.popup[x-placement^=top] > [class^="u-popup_arrow_"]::before {
+    border-top-color: #abb3c5 !important;
 }
 .popup[dragover] {
-    background: hsla(216, 77%, 85%);
+    background: hsla(216, 77%, 90%);
 }
 .popup[dragover] > [class^="u-popup_arrow_"]{
-    border-bottom-color: hsla(213, 77%, 85%) !important;
+    border-bottom-color: hsla(216, 77%, 90%) !important;
 }
 .popup[x-placement^=top][dragover] > [class^="u-popup_arrow_"]{
-    border-top-color: hsla(213, 77%, 85%) !important;
+    border-top-color: hsla(216, 77%, 90%) !important;
 }
 </style>
