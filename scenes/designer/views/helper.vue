@@ -15,6 +15,7 @@ import api from 'vue-hot-reload-api';
 import Vue from 'vue';
 import * as utils from '../utils';
 import throttle from 'lodash/throttle';
+import { v4 as uuidv4 } from 'uuid';
 
 let lastChanged = 0;
 {
@@ -58,6 +59,7 @@ export default {
             targetNode: {},
             targetPosition: {},
             requests: new Map(),
+            externalComponentsAPI: {},
         };
     },
     watch: {
@@ -77,14 +79,14 @@ export default {
             //     return;
             // }
 
-            if (old && this.slotsMap.has(old)) {
-                const slots = this.slotsMap.get(old);
-                slots.forEach((slot) => {
-                    slot.$el.remove();
-                    slot.$destroy();
-                });
-                this.slotsMap.delete(old);
-            }
+            // if (old && this.slotsMap.has(old)) {
+            //     const slots = this.slotsMap.get(old);
+            //     slots.forEach((slot) => {
+            //         slot.$el.remove();
+            //         slot.$destroy();
+            //     });
+            //     this.slotsMap.delete(old);
+            // }
 
             // if (selected && selected.el) {
             //     const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
@@ -159,6 +161,10 @@ export default {
 
             // this.router.afterEach((to, from) => this.onNavigate(to.path));
             this.onNavigate();
+
+            this.getExternalComponentsAPI();
+
+            appVM.$forceUpdate();
 
             this.sendCommand('ready', {
                 routerMode: this.router.options.mode,
@@ -335,6 +341,10 @@ export default {
             if (node.hasAttribute('vusion-parent-node-path')) {
                 parentNodePath = node.getAttribute('vusion-parent-node-path') || '/';
             }
+            let title = tag;
+            if (this.externalComponentsAPI) {
+                title = this.externalComponentsAPI[tag] && this.externalComponentsAPI[tag].title;
+            }
             return {
                 el: node,
                 type,
@@ -342,6 +352,7 @@ export default {
                 scopeId,
                 nodePath: node.getAttribute('vusion-node-path'),
                 parentNodePath,
+                title,
             };
         },
         /**
@@ -500,6 +511,14 @@ export default {
                 }
                 return;
             }
+
+            // d-slot有popup弹出，点击关闭
+            if (window.dslotPopper && window.dslotPopper.length) {
+                window.dslotPopper.forEach((item) => {
+                    item.close();
+                });
+            }
+
             this.cancelEvent(e);
 
             if (!(this.contextVM && this.contextVM.$el.contains(e.target))) { // 不在 contextVM 中，视为选中 contextView
@@ -575,7 +594,7 @@ export default {
          * 双向通信
          */
         execCommand(command, ...args) {
-            const message = { id: +new Date(), protocol: 'vusion', sender: 'designer', type: 'request', command, args };
+            const message = { id: uuidv4(), protocol: 'vusion', sender: 'designer', type: 'request', command, args };
             window.parent.postMessage(message, '*');
             return new Promise((res, rej) => {
                 this.requests.set(message.id, Object.assign({ res, rej }, message));
@@ -682,6 +701,9 @@ export default {
         },
         handlerDrag(event) {
             if (this.isDropComponent(event.target)) {
+                if (this.isDslotComponent(event.target)) {
+                    this.targetNode = {};
+                }
                 return;
             }
             if (!this.dragging) {
@@ -713,6 +735,15 @@ export default {
             }
             return false;
         },
+        isDslotComponent(node) {
+            let vue = this.getRelatedVue(node);
+            while (vue) {
+                if (vue.$options.name && vue.$options.name.startsWith('d-slot'))
+                    return true;
+                vue = vue.$parent;
+            }
+            return false;
+        },
         isInSubMask(event) {
             if (!event || !this.subVM || !this.subVM.$el.parentElement || !this.subVM.$el.parentElement.hasAttribute('router-view'))
                 return;
@@ -722,6 +753,10 @@ export default {
             } else {
                 return false;
             }
+        },
+        async getExternalComponentsAPI() {
+            this.externalComponentsAPI = await this.execCommand('getExternalComponentsAPI');
+            Vue.prototype.ComponentsAPI = this.externalComponentsAPI;
         },
     },
 };
