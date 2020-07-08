@@ -217,13 +217,15 @@ export default {
                 }
                 code = `<template> <template #${slotName}> ${code} </template> </template>`;
                 data.code = code;
+            }
+            this.$root.$emit('d-slot:send', data);
+            if (this.transferSlot && this.slotName) {
                 this.$root.$emit('d-slot:send', {
                     command: 'deleteAttrs',
                     nodePath: this.nodeInfo.nodePath,
                     attrKey: this.slotName,
                 });
             }
-            return this.$root.$emit('d-slot:send', data);
         },
         sendCommand(...args) {
             return this.$root.$emit('d-slot:sendCommand', ...args);
