@@ -16,6 +16,7 @@ import Vue from 'vue';
 import * as utils from '../utils';
 import throttle from 'lodash/throttle';
 import { v4 as uuidv4 } from 'uuid';
+import { MPublisher } from 'cloud-ui.vusion';
 
 let lastChanged = 0;
 {
@@ -40,6 +41,10 @@ let lastChanged = 0;
 
 export default {
     name: 'helper',
+    mixins: [MPublisher],
+    publish: {
+        externalComponentsAPI: 'externalComponentsAPI',
+    },
     data() {
         return {
             // appVM: undefined,
@@ -169,7 +174,7 @@ export default {
             // this.router.afterEach((to, from) => this.onNavigate(to.path));
             this.onNavigate();
 
-            this.getExternalComponentsAPI();
+            this.getExternalLibrary();
 
             this.sendCommand('ready', {
                 routerMode: this.router.options.mode,
@@ -634,7 +639,7 @@ export default {
                 setTimeout(() => {
                     this.requests.delete(message.id);
                     rej(Object.assign({ error: 'Timeout' }, message));
-                }, 200);
+                }, 2000);
             });
         },
         onMessage(e) {
@@ -654,7 +659,7 @@ export default {
             if (e.data.type === 'response') {
                 const message = this.requests.get(e.data.id);
                 console.info('[vusion:designer] Exec command: ' + e.data.command + ' ' + e.data.result);
-                return message.res(e.data.result);
+                return message && message.res(e.data.result);
             }
             if (e.data.command)
                 return this[e.data.command](...e.data.args);
@@ -787,10 +792,10 @@ export default {
                 return false;
             }
         },
-        async getExternalComponentsAPI() {
-            this.externalComponentsAPI = await this.execCommand('getExternalComponentsAPI');
-            Vue.prototype.ComponentsAPI = this.externalComponentsAPI;
-            this.appVM && this.appVM.$forceUpdate();
+        getExternalLibrary() {
+            this.execCommand('getInit').then((res) => {
+                this.externalComponentsAPI = res.externalComponentsAPI;
+            });
         },
         editSlotAttribute(e, selected) {
             if (e.target && e.target.nodeType === 1 && e.target.hasAttribute('vusion-slot-name')) {
@@ -814,6 +819,9 @@ export default {
                 }
             }
         },
+        /**
+         * 属性转换为slot，或空的slot可添加
+         */
         attribute2slot(selected) {
             const el = selected.el;
             const stack = [];
@@ -826,18 +834,21 @@ export default {
                     continue;
                 const children = Array.from(node.childNodes);
                 children.forEach((item) => {
+                    const className = item.className && item.className.replace(/[_]/g, '-');
                     if (item.nodeType === 1
                         && !(item.className && item.className.startsWith('d-'))
+                        && (className && className.startsWith(selected.tag))
                         && item.hasAttribute('vusion-slot-name')) {
                         const childNodes = item.childNodes;
                         const name = item.getAttribute('vusion-slot-name');
                         if (!childNodes.length || (childNodes.length === 1 && childNodes[0].nodeType === 3)) {
+                            const nodeInfo = this.getNodeInfo(item);
                             const dSlot = this.createDSlot({
                                 propsData: {
                                     display: 'inline',
                                     displayType: 'layout',
                                     slotName: name,
-                                    nodeInfo: selected,
+                                    nodeInfo,
                                     transferSlot: true,
                                     transferValue: childNodes[0] && childNodes[0].nodeValue,
                                 },
@@ -849,8 +860,10 @@ export default {
                 });
                 if (children.length) {
                     for (let i = children.length - 1; i >= 0; i--) {
+                        const className = children[i].className && children[i].className.replace(/[_]/g, '-');
                         if (children[i].nodeType === 1
                             && !(children[i].className && children[i].className.startsWith('d-'))
+                            && (!className || className.startsWith(selected.tag))
                             && !children[i].hasAttribute('vusion-slot-name'))
                             stack.push(children[i]);
                     }

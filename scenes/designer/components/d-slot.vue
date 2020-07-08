@@ -110,9 +110,15 @@
 </template>
 
 <script>
-import Vue from 'vue';
+import { MSubscriber } from 'cloud-ui.vusion';
 export default {
     name: 'd-slot',
+    mixins: [MSubscriber],
+    subscribe: {
+        externalComponentsAPI(api) {
+            this.api = api;
+        },
+    },
     props: {
         tag: { type: String, default: 'div' },
         display: { type: String, default: 'block' },
@@ -138,6 +144,7 @@ export default {
                 text: '<template> 文字 </template>',
                 expression: "<template> {{ 'value' }} </template>",
             },
+            api: undefined,
         };
     },
     computed: {
@@ -148,8 +155,8 @@ export default {
                 return 'default';
         },
         slotsProps() {
-            if (this.slotName && Vue.prototype.ComponentsAPI) {
-                const cloudui = Vue.prototype.ComponentsAPI[this.nodeTag];
+            if (this.slotName && this.api) {
+                const cloudui = this.api[this.nodeTag];
                 const slots = cloudui && cloudui.slots || [];
                 const slot = slots.find((item) => item.name === this.slotName);
                 const acceptType = slot && slot['accept-type'] ? slot['accept-type'] : 'all';
@@ -210,6 +217,11 @@ export default {
                 }
                 code = `<template> <template #${slotName}> ${code} </template> </template>`;
                 data.code = code;
+                this.$root.$emit('d-slot:send', {
+                    command: 'deleteAttrs',
+                    nodePath: this.nodeInfo.nodePath,
+                    attrKey: this.slotName,
+                });
             }
             return this.$root.$emit('d-slot:send', data);
         },
@@ -254,6 +266,7 @@ export default {
                     command: 'addBaseComponent',
                 }),
             });
+            this.close();
         },
         // 用于其他地方点击时可关闭弹层
         onPopupOpen(opened, element) {
@@ -278,6 +291,7 @@ export default {
                     command: 'addBaseComponent',
                 }),
             });
+            this.close();
         },
     },
 };

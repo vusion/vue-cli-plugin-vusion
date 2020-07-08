@@ -7,7 +7,8 @@
     @click="cancelEvent"
     :vusion-node-path="nodePath"
     :vusion-parent-node-path="parentNodePath"
-    :vusion-slot-name="slotName">{{ text }}</span>
+    :vusion-slot-name="slotName"
+    ref="edit">{{ text }}</span>
 </template>
 
 <script>
@@ -47,7 +48,8 @@ export default {
         onKeyDown(event) {
             if (event.keyCode === 13) {
                 this.cancelEvent(event);
-                this.onBlur(event);
+                // this.onBlur(event);
+                this.$refs.edit.blur();
             }
         },
         send(data) {
