@@ -156,7 +156,7 @@ export default {
         },
         slotsProps() {
             if (this.slotName && this.api) {
-                const cloudui = this.api[this.nodeTag];
+                const cloudui = this.api[this.nodeTag || this.nodeInfo.tag];
                 const slots = cloudui && cloudui.slots || [];
                 const slot = slots.find((item) => item.name === this.slotName);
                 const acceptType = slot && slot['accept-type'] ? slot['accept-type'] : 'all';
@@ -281,6 +281,9 @@ export default {
             const code = recommanded.snippet;
             if (!code)
                 return;
+            if (recommanded.type === 'slot') {
+                this.transferSlot = false;
+            }
             this.send({
                 command: 'addCode',
                 position: this.position,
