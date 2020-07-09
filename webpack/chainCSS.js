@@ -30,7 +30,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
              * [icon-font-loader(, css-sprite-loader, svg-classic-sprite-loader), postcss-loader, module-class-priority-loader]
              */
             importLoaders: mode === 'production' ? 5 : 3,
-            sourceMap: vueConfig.css.sourceMap,
+            sourceMap: !!vueConfig.css.sourceMap,
         };
 
         if (vusionConfig.mode === 'raw')

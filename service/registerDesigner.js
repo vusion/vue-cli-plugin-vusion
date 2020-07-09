@@ -23,6 +23,10 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
 
         vueConfig.devServer = vueConfig.devServer || {};
         vueConfig.devServer.port = 12800;
+        vueConfig.devServer.watchOptions = Object.assign({}, vueConfig.devServer.watchOptions, {
+            poll: true,
+        });
+
         if (process.env.DESIGNER_SERVER_BEFORE_PATH) {
             try {
                 vueConfig.devServer.before = require(process.env.DESIGNER_SERVER_BEFORE_PATH);
@@ -46,7 +50,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             const entryKeys = Object.keys(config.entryPoints.entries());
             entryKeys.forEach((key) => config.entry(key).prepend(entryPath));
 
-            // config.devtool('eval');
+            config.devtool('eval');
 
             // config.module.rule('designer-config')
             //     .test(/vue-cli-plugin-vusion[\\/]scenes[\\/]designer[\\/]views[\\/]empty\.js$/)
