@@ -1,6 +1,6 @@
 <template>
 <div :class="$style.root">
-    <u-spinner :class="$style.loading"></u-spinner><u-text> {{ name }} 正在安装，请稍候...</u-text>
+    <u-spinner :class="$style.spinner"></u-spinner> 正在添加 <strong>{{ title }}</strong> {{ type }}，请稍候...
 </div>
 </template>
 
@@ -8,7 +8,8 @@
 export default {
     name: 'd-progress',
     props: {
-        name: String,
+        type: { type: String, default: '组件' },
+        title: String,
     },
 };
 </script>
@@ -18,9 +19,11 @@ export default {
     text-align: left;
     padding: 10px;
     margin: 10px 0;
-    background: #ebf2fc;
+    background: #fffae8;
+    border: 1px solid #ffeca2;
+    color: #b98000;
 }
-.loading {
+.spinner {
     margin-right: 4px;
 }
 </style>

@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const chainCSS = require('../webpack/chainCSS');
 const CopyPlugin = require('copy-webpack-plugin');
-const FixMultifileCachePlugin = require('../webpack/plugins/FixMultifileCachePlugin');
 const proxy = require('http-proxy-middleware');
 
 module.exports = function chainDefault(api, vueConfig, vusionConfig) {
@@ -55,6 +54,8 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         const resolveAlias = config.resolve.alias;
         Object.keys(alias).forEach((key) => resolveAlias.set(key, alias[key]));
 
+        config.resolve.modules.prepend('vusion_packages');
+
         // @TODO: 如果全部去掉多文件 Vue 的话，就不需要这个 loader 了
         config.module.rule('vue')
             .test((filePath) => /\.vue$/.test(filePath) || /\.vue[\\/]index\.js$/.test(filePath) && !fs.existsSync(path.join(filePath, '../index.vue')))
@@ -86,8 +87,6 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             config.module.rules.delete('js');
 
         config.plugins.delete('case-sensitive-paths');
-
-        // config.plugin('fix-multifile-cache').use(FixMultifileCachePlugin);
     });
 
     // Hack for devServer options
