@@ -1,5 +1,5 @@
 <template>
-<div :class="$style.root" :type="type" :display="display" :position="position" :expanded="expanded"
+<div :class="$style.root" :type="displayType||type" :display="display" :position="position" :expanded="expanded"
     :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
     v-if="slotsProps.isShow">
     <div :class="$style.wrap" @transitionend="onTransitionEnd" @webkitTransitionEnd="onTransitionEnd">
@@ -26,7 +26,7 @@
                             </template>
                             <u-button :class="$style.button" size="small" @click="addNormalTemplate('text')">添加文字</u-button>
                             <u-button :class="$style.button" size="small" @click="addNormalTemplate('expression')">添加表达式</u-button>
-                            <u-button :class="$style.button" size="small" @click="mode = 'layout'"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
+                            <u-button :class="$style.button" size="small" @click="mode = 'layout'" v-if="!transferSlot"><span :class="$style.icon" name="layout"></span> 添加布局</u-button>
                         </template>
                         <template v-else>
                             <u-button :class="$style.button" size="small" @click="addNormalTemplate('text')">添加文字</u-button>
@@ -110,9 +110,15 @@
 </template>
 
 <script>
-import Vue from 'vue';
+import { MSubscriber } from 'cloud-ui.vusion';
 export default {
     name: 'd-slot',
+    mixins: [MSubscriber],
+    subscribe: {
+        externalComponentsAPI(api) {
+            this.api = api;
+        },
+    },
     props: {
         tag: { type: String, default: 'div' },
         display: { type: String, default: 'block' },
@@ -120,6 +126,9 @@ export default {
         nodeInfo: Object,
         slotName: String,
         nodeTag: String,
+        displayType: String,
+        transferSlot: { type: Boolean, default: false },
+        transferValue: String,
     },
     data() {
         return {
@@ -135,6 +144,7 @@ export default {
                 text: '<template> 文字 </template>',
                 expression: "<template> {{ 'value' }} </template>",
             },
+            api: undefined,
         };
     },
     computed: {
@@ -145,8 +155,8 @@ export default {
                 return 'default';
         },
         slotsProps() {
-            if (this.slotName && Vue.prototype.ComponentsAPI) {
-                const cloudui = Vue.prototype.ComponentsAPI[this.nodeTag];
+            if (this.slotName && this.api) {
+                const cloudui = this.api[this.nodeTag || this.nodeInfo.tag];
                 const slots = cloudui && cloudui.slots || [];
                 const slot = slots.find((item) => item.name === this.slotName);
                 const acceptType = slot && slot['accept-type'] ? slot['accept-type'] : 'all';
@@ -199,7 +209,23 @@ export default {
             });
         },
         send(data) {
-            return this.$root.$emit('d-slot:send', data);
+            if (this.transferSlot && data.code) {
+                const slotName = this.slotName;
+                let code = data.code.replace(/^<template>\s*/, '').replace(/\s*<\/template>\s*$/, '') + '\n';
+                if (this.transferValue) {
+                    code = this.transferValue + code;
+                }
+                code = `<template> <template #${slotName}> ${code} </template> </template>`;
+                data.code = code;
+            }
+            this.$root.$emit('d-slot:send', data);
+            if (this.transferSlot && this.slotName) {
+                this.$root.$emit('d-slot:send', {
+                    command: 'deleteAttrs',
+                    nodePath: this.nodeInfo.nodePath,
+                    attrKey: this.slotName,
+                });
+            }
         },
         sendCommand(...args) {
             return this.$root.$emit('d-slot:sendCommand', ...args);
@@ -242,6 +268,7 @@ export default {
                     command: 'addBaseComponent',
                 }),
             });
+            this.close();
         },
         // 用于其他地方点击时可关闭弹层
         onPopupOpen(opened, element) {
@@ -256,6 +283,9 @@ export default {
             const code = recommanded.snippet;
             if (!code)
                 return;
+            if (recommanded.type === 'slot') {
+                this.transferSlot = false;
+            }
             this.send({
                 command: 'addCode',
                 position: this.position,
@@ -266,6 +296,7 @@ export default {
                     command: 'addBaseComponent',
                 }),
             });
+            this.close();
         },
     },
 };
@@ -275,7 +306,6 @@ export default {
 .root {
     position: relative;
     user-select: none;
-    min-width: 100px;
 }
 
 .wrap {
@@ -317,7 +347,7 @@ export default {
 .root[display="inline"] {
     display: inline-block;
     vertical-align: top;
-    min-width: 160px;
+    /* min-width: 160px; */
 }
 
 .init {

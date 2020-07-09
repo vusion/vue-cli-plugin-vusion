@@ -16,6 +16,7 @@ import Vue from 'vue';
 import * as utils from '../utils';
 import throttle from 'lodash/throttle';
 import { v4 as uuidv4 } from 'uuid';
+import { MPublisher } from 'cloud-ui.vusion';
 
 let lastChanged = 0;
 {
@@ -40,6 +41,10 @@ let lastChanged = 0;
 
 export default {
     name: 'helper',
+    mixins: [MPublisher],
+    publish: {
+        externalComponentsAPI: 'externalComponentsAPI',
+    },
     data() {
         return {
             // appVM: undefined,
@@ -79,14 +84,21 @@ export default {
             //     return;
             // }
 
-            // if (old && this.slotsMap.has(old)) {
-            //     const slots = this.slotsMap.get(old);
-            //     slots.forEach((slot) => {
-            //         slot.$el.remove();
-            //         slot.$destroy();
-            //     });
-            //     this.slotsMap.delete(old);
-            // }
+            if (old && this.slotsMap.has(old)) {
+                const slots = this.slotsMap.get(old);
+                slots.forEach((slot) => {
+                    slot.$el.remove();
+                    slot.$destroy();
+                });
+                this.slotsMap.delete(old);
+            }
+
+            if (selected && this.externalComponentsAPI) {
+                const cloudui = this.externalComponentsAPI[selected.tag];
+                const slots = cloudui && cloudui.slots || [];
+                if (slots.length)
+                    this.attribute2slot(selected);
+            }
 
             // if (selected && selected.el) {
             //     const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
@@ -162,9 +174,7 @@ export default {
             // this.router.afterEach((to, from) => this.onNavigate(to.path));
             this.onNavigate();
 
-            this.getExternalComponentsAPI();
-
-            appVM.$forceUpdate();
+            this.getExternalLibrary();
 
             this.sendCommand('ready', {
                 routerMode: this.router.options.mode,
@@ -223,7 +233,10 @@ export default {
         document.body.addEventListener('drop', this.onDragEnd);
 
         Vue.config.errorHandler = (err, vm, info) => {
-            this.send({ command: 'problems', data: err + ' in ' + vm.$route.fullPath });
+            if (vm && vm.$route)
+                this.send({ command: 'problems', data: err + ' in ' + vm.$route.fullPath });
+            else
+                this.send({ command: 'problems', data: err });
         };
 
         this.throttleHandlerDrag = throttle(this.handlerDrag, 300);
@@ -495,8 +508,9 @@ export default {
             this.hover = {};
         },
         onClick(e) {
-            if (this.$el.contains(e.target)) // helperVM 中的事件不拦截、不处理
+            if (this.$el.contains(e.target)) { // helperVM 中的事件不拦截、不处理
                 return;
+            }
             if (this.isDesignerComponent(e.target)) {
                 if (e.target.className && e.target.className.startsWith('d-text')) {
                     const nodeInfo = this.getNodeInfo(e.target.parentElement);
@@ -541,6 +555,9 @@ export default {
             setTimeout(() => {
                 nodeInfo.el && this.$refs.selected.$el.focus();
             });
+
+            // slot 属性可编辑
+            this.editSlotAttribute(e, nodeInfo);
         },
         select(nodeInfo) {
             if (nodeInfo.el === this.selected.el)
@@ -559,6 +576,17 @@ export default {
                 this.select({});
                 this.sendCommand('selectContextView');
             }
+        },
+        createDText(options) {
+            const Ctor = Vue.component('d-text');
+            const el = document.createElement('span');
+            const dText = new Ctor(options);
+            dText.$on('d-slot:send', this.onDSlotSend);
+            dText.$on('d-text:blur', this.onDTextBlur);
+            dText.$mount(el);
+            el.__vue__ = dText;
+            dText.$parent = this;
+            return dText;
         },
         createDSlot(options) {
             const Ctor = Vue.component('d-slot');
@@ -581,6 +609,16 @@ export default {
         onDSlotModeChange($event) {
             setTimeout(() => this.updateStyle());
         },
+        onDTextBlur(context) {
+            setTimeout(() => {
+                const parent = context.$el.parentElement;
+                const nextSibling = context.$el.nextSibling;
+                if (parent && nextSibling) {
+                    parent.removeChild(context.$el);
+                    nextSibling.style.display = '';
+                }
+            });
+        },
         send(data) {
             const dataString = JSON.stringify(data);
             console.info('[vusion:designer] Send: ' + dataString); // (dataString.length > 100 ? dataString.slice(0, 100) + '...' : dataString));
@@ -601,7 +639,7 @@ export default {
                 setTimeout(() => {
                     this.requests.delete(message.id);
                     rej(Object.assign({ error: 'Timeout' }, message));
-                }, 200);
+                }, 2000);
             });
         },
         onMessage(e) {
@@ -621,7 +659,7 @@ export default {
             if (e.data.type === 'response') {
                 const message = this.requests.get(e.data.id);
                 console.info('[vusion:designer] Exec command: ' + e.data.command + ' ' + e.data.result);
-                return message.res(e.data.result);
+                return message && message.res(e.data.result);
             }
             if (e.data.command)
                 return this[e.data.command](...e.data.args);
@@ -754,9 +792,84 @@ export default {
                 return false;
             }
         },
-        async getExternalComponentsAPI() {
-            this.externalComponentsAPI = await this.execCommand('getExternalComponentsAPI');
-            Vue.prototype.ComponentsAPI = this.externalComponentsAPI;
+        getExternalLibrary() {
+            this.execCommand('getInit').then((res) => {
+                this.externalComponentsAPI = res.externalComponentsAPI;
+            });
+        },
+        editSlotAttribute(e, selected) {
+            if (e.target && e.target.nodeType === 1 && e.target.hasAttribute('vusion-slot-name')) {
+                const childNodes = Array.from(e.target.childNodes);
+                const textNode = childNodes.filter((item) => item.nodeType === 3);
+                if (textNode.length === 1) {
+                    const name = e.target.getAttribute('vusion-slot-name');
+                    const dText = this.createDText({
+                        propsData: {
+                            text: textNode[0].nodeValue,
+                            nodePath: e.target.getAttribute('vusion-node-path'),
+                            parentNodePath: selected.nodePath,
+                            slotName: name,
+                        },
+                    });
+                    e.target.parentElement.insertBefore(dText.$el, e.target);
+                    e.target.style.display = 'none';
+                    setTimeout(() => {
+                        dText.$el.focus();
+                    });
+                }
+            }
+        },
+        /**
+         * 属性转换为slot，或空的slot可添加
+         */
+        attribute2slot(selected) {
+            const el = selected.el;
+            const stack = [];
+            stack.push(el);
+            let node;
+            const slots = [];
+            while (stack.length) {
+                node = stack.pop();
+                if (!node || !node.childNodes)
+                    continue;
+                const children = Array.from(node.childNodes);
+                children.forEach((item) => {
+                    const className = item.className && item.className.replace(/[_]/g, '-');
+                    if (item.nodeType === 1
+                        && !(item.className && item.className.startsWith('d-'))
+                        && (className && className.startsWith(selected.tag))
+                        && item.hasAttribute('vusion-slot-name')) {
+                        const childNodes = item.childNodes;
+                        const name = item.getAttribute('vusion-slot-name');
+                        if (!childNodes.length || (childNodes.length === 1 && childNodes[0].nodeType === 3)) {
+                            const nodeInfo = this.getNodeInfo(item);
+                            const dSlot = this.createDSlot({
+                                propsData: {
+                                    display: 'inline',
+                                    displayType: 'layout',
+                                    slotName: name,
+                                    nodeInfo,
+                                    transferSlot: true,
+                                    transferValue: childNodes[0] && childNodes[0].nodeValue,
+                                },
+                            });
+                            item.appendChild(dSlot.$el);
+                            slots.push(dSlot);
+                        }
+                    }
+                });
+                if (children.length) {
+                    for (let i = children.length - 1; i >= 0; i--) {
+                        const className = children[i].className && children[i].className.replace(/[_]/g, '-');
+                        if (children[i].nodeType === 1
+                            && !(children[i].className && children[i].className.startsWith('d-'))
+                            && (!className || className.startsWith(selected.tag))
+                            && !children[i].hasAttribute('vusion-slot-name'))
+                            stack.push(children[i]);
+                    }
+                }
+            }
+            slots.length && this.slotsMap.set(selected, slots);
         },
     },
 };

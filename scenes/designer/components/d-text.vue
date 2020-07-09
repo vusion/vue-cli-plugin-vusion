@@ -1,15 +1,24 @@
 <template>
-<span :class="$style.root" contenteditable="true" tabindex="1" @blur="onBlur" @keydown="onKeyDown" @click="cancelEvent" :vusion-node-path="nodePath" :vusion-parent-node-path="parentNodePath">{{ text }}</span>
+<span :class="$style.root"
+    contenteditable="true"
+    tabindex="1"
+    @blur="onBlur"
+    @keydown="onKeyDown"
+    @click="cancelEvent"
+    :vusion-node-path="nodePath"
+    :vusion-parent-node-path="parentNodePath"
+    :vusion-slot-name="slotName"
+    ref="edit">{{ text }}</span>
 </template>
 
 <script>
 export default {
     name: 'd-text',
     props: {
-        type: Number,
         text: String,
         nodePath: String,
         parentNodePath: String,
+        slotName: String,
     },
     methods: {
         cancelEvent(event) {
@@ -17,16 +26,30 @@ export default {
             event.preventDefault();
         },
         onBlur(event) {
-            this.send({
-                command: 'saveText',
-                nodePath: this.nodePath,
-                value: event.target.innerText,
-            });
+            this.$emit('d-text:blur', this);
+            const value = event.target.innerText;
+            if (value === this.text)
+                return;
+            if (this.slotName) {
+                this.send({
+                    command: 'saveAttrs',
+                    nodePath: this.parentNodePath,
+                    value,
+                    attrKey: this.slotName,
+                });
+            } else {
+                this.send({
+                    command: 'saveText',
+                    nodePath: this.nodePath,
+                    value,
+                });
+            }
         },
         onKeyDown(event) {
             if (event.keyCode === 13) {
                 this.cancelEvent(event);
-                this.onBlur(event);
+                // this.onBlur(event);
+                this.$refs.edit.blur();
             }
         },
         send(data) {
