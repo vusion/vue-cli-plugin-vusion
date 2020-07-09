@@ -43,7 +43,7 @@ export default {
     name: 'helper',
     mixins: [MPublisher],
     publish: {
-        externalComponentsAPI: 'externalComponentsAPI',
+        allNodesAPI: 'allNodesAPI',
     },
     data() {
         return {
@@ -64,7 +64,7 @@ export default {
             targetNode: {},
             targetPosition: {},
             requests: new Map(),
-            externalComponentsAPI: {},
+            allNodesAPI: {},
         };
     },
     watch: {
@@ -93,8 +93,8 @@ export default {
                 this.slotsMap.delete(old);
             }
 
-            if (selected && this.externalComponentsAPI) {
-                const cloudui = this.externalComponentsAPI[selected.tag];
+            if (selected && this.allNodesAPI) {
+                const cloudui = this.allNodesAPI[selected.tag];
                 const slots = cloudui && cloudui.slots || [];
                 if (slots.length)
                     this.attribute2slot(selected);
@@ -355,8 +355,8 @@ export default {
                 parentNodePath = node.getAttribute('vusion-parent-node-path') || '/';
             }
             let title = tag;
-            if (this.externalComponentsAPI) {
-                title = this.externalComponentsAPI[tag] && this.externalComponentsAPI[tag].title;
+            if (this.allNodesAPI) {
+                title = this.allNodesAPI[tag] && this.allNodesAPI[tag].title;
             }
             return {
                 el: node,
@@ -794,7 +794,7 @@ export default {
         },
         getExternalLibrary() {
             this.execCommand('getInit').then((res) => {
-                this.externalComponentsAPI = res.externalComponentsAPI;
+                this.allNodesAPI = res.allNodesAPI;
             });
         },
         editSlotAttribute(e, selected) {

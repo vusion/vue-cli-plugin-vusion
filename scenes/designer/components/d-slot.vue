@@ -115,7 +115,7 @@ export default {
     name: 'd-slot',
     mixins: [MSubscriber],
     subscribe: {
-        externalComponentsAPI(api) {
+        allNodesAPI(api) {
             this.api = api;
         },
     },
