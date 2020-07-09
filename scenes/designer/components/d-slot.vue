@@ -265,7 +265,7 @@ export default {
                 nodePath: this.nodeInfo.nodePath,
                 scopeId: this.nodeInfo.scopeId,
                 nodeData: JSON.stringify({
-                    command: 'addBaseComponent',
+                    command: 'addBasic',
                 }),
             });
             this.close();
@@ -293,7 +293,7 @@ export default {
                 nodePath: this.nodeInfo.nodePath,
                 scopeId: this.nodeInfo.scopeId,
                 nodeData: JSON.stringify({
-                    command: 'addBaseComponent',
+                    command: 'addBasic',
                 }),
             });
             this.close();
