@@ -23,9 +23,6 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
 
         vueConfig.devServer = vueConfig.devServer || {};
         vueConfig.devServer.port = 12800;
-        vueConfig.devServer.watchOptions = Object.assign({}, vueConfig.devServer.watchOptions, {
-            poll: true,
-        });
 
         if (process.env.DESIGNER_SERVER_BEFORE_PATH) {
             try {
