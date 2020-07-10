@@ -69,21 +69,6 @@ export default {
     },
     watch: {
         selected(selected, old) {
-            // @TODO:
-            // if (selected && old
-            //     && selected.scopeId === old.scopeId
-            //     && selected.tag === old.tag
-            //     && selected.nodePath === old.nodePath) {
-            //     const dSlot = this.slotsMap.get(old);
-            //     if (dSlot) {
-            //         this.slotsMap.delete(old);
-            //         dSlot.nodeInfo = selected;
-            //         selected.el.append(dSlot.$el);
-            //         this.slotsMap.set(selected, dSlot);
-            //     }
-            //     return;
-            // }
-
             if (old && this.slotsMap.has(old)) {
                 const slots = this.slotsMap.get(old);
                 slots.forEach((slot) => {
@@ -99,54 +84,6 @@ export default {
                 if (slots.length)
                     this.attribute2slot(selected);
             }
-
-            // if (selected && selected.el) {
-            //     const display = (getComputedStyle(selected.el).display || '').replace(/-block$/, '');
-            //     if (!(display === 'block' || display === 'inline')) {
-            //         // dSlot.display = 'inline';
-            //         return;
-            //     }
-            //     // const tag = nodeInfo.tag;
-            //     const slots = [];
-
-            //     if (display === 'block' || (display === 'inline' && selected.tag === 'u-form-item')) {
-            //         if (selected.tag !== 'u-linear-layout' && selected.tag !== 'u-grid-layout-column') {
-            //             const appendSlot = this.createDSlot({
-            //                 propsData: {
-            //                     display,
-            //                     position: 'append',
-            //                     nodeInfo: selected,
-            //                 },
-            //             });
-            //             selected.el.append(appendSlot.$el);
-            //             slots.push(appendSlot);
-            //         }
-            //     }
-            //     if (display === 'block') {
-            //         if (selected.el !== this.contextVM.$el) {
-            //             const insertBeforeSlot = this.createDSlot({
-            //                 propsData: {
-            //                     display,
-            //                     position: 'insertBefore',
-            //                     nodeInfo: selected,
-            //                 },
-            //             });
-            //             selected.el.parentElement.insertBefore(insertBeforeSlot.$el, selected.el);
-            //             slots.push(insertBeforeSlot);
-            //             const insertAfterSlot = this.createDSlot({
-            //                 propsData: {
-            //                     display,
-            //                     position: 'insertAfter',
-            //                     nodeInfo: selected,
-            //                 },
-            //             });
-            //             selected.el.parentElement.insertBefore(insertAfterSlot.$el, selected.el.nextElementSibling);
-            //             slots.push(insertAfterSlot);
-            //         }
-            //     }
-
-            //     slots.length && this.slotsMap.set(selected, slots);
-            // }
         },
     },
     mounted() {
@@ -846,11 +783,11 @@ export default {
                             const dSlot = this.createDSlot({
                                 propsData: {
                                     display: 'inline',
-                                    displayType: 'layout',
                                     slotName: name,
                                     nodeInfo,
-                                    transferSlot: true,
-                                    transferValue: childNodes[0] && childNodes[0].nodeValue,
+                                    transform: {
+                                        value: childNodes[0] && childNodes[0].nodeValue,
+                                    },
                                 },
                             });
                             item.appendChild(dSlot.$el);
@@ -897,19 +834,19 @@ iframe {
     padding-top: 30px;
 } */
 
-[root-app] [class^="d-slot_"][position] {
+[root-app] [class^="d-slot_"] {
     display: none;
 }
 
-[root-app][vusion-context-vm] [class^="d-slot_"][position], [root-app] [vusion-context-vm] [class^="d-slot_"][position] {
+[root-app][vusion-context-vm] [class^="d-slot_"], [root-app] [vusion-context-vm] [class^="d-slot_"] {
     display: block;
 }
 
-[root-app][vusion-context-vm] [class^="d-slot_"][position][display="inline"], [root-app] [vusion-context-vm] [class^="d-slot_"][position][display="inline"] {
+[root-app][vusion-context-vm] [class^="d-slot_"][display="inline"], [root-app] [vusion-context-vm] [class^="d-slot_"][display="inline"] {
     display: inline-block;
 }
 
-[root-app][vusion-sub-vm] [class^="d-slot_"][position][class], [root-app] [vusion-sub-vm] [class^="d-slot_"][position][class] {
+[root-app][vusion-sub-vm] [class^="d-slot_"][class], [root-app] [vusion-sub-vm] [class^="d-slot_"][class] {
     display: none;
 }
 
