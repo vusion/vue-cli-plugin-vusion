@@ -90,12 +90,25 @@ module.exports = function registerLibraryBuild(api, vueConfig, vusionConfig) {
                 });
             }
 
+            const cssnanoOptions = {
+                preset: ['default', {
+                    normalizeUrl: false,
+                    calc: false,
+                }],
+            };
+
             chainCSSOneOfs(config, (oneOf, modules) => {
                 oneOf.uses.has('extract-css-loader') && oneOf.use('extract-css-loader')
                     .loader(MiniCSSExtractPlugin.loader)
                     .options({
                         publicPath: './',
                         hmr: false,
+                    });
+
+                oneOf.uses.has('cssnano') && oneOf.use('cssnano')
+                    .tap((options) => {
+                        options.plugins[0] = require('cssnano')(cssnanoOptions);
+                        return options;
                     });
             });
             config.plugins.has('extract-css') && config.plugin('extract-css')

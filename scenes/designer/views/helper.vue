@@ -818,6 +818,10 @@ html {
     background: #111217;
 }
 
+body {
+    overscroll-behavior-x: none;
+}
+
 [root-app], [root-app] * {
     cursor: default !important;
 }
