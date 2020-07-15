@@ -1,6 +1,6 @@
 <template>
 <div :class="$style.root">
-    <u-spinner :class="$style.spinner"></u-spinner> 正在添加 <strong>{{ title }}</strong> {{ type }}，请稍候...
+    <u-spinner :class="$style.spinner"></u-spinner> 正在添加 <strong>{{ title }}</strong> {{ type === 'component' ? '组件' : '区块' }}，请稍候...
 </div>
 </template>
 
@@ -8,7 +8,7 @@
 export default {
     name: 'd-progress',
     props: {
-        type: { type: String, default: '组件' },
+        type: { type: String, default: 'component' },
         title: String,
     },
 };
