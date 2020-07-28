@@ -18,26 +18,28 @@ import throttle from 'lodash/throttle';
 import { v4 as uuidv4 } from 'uuid';
 import { MPublisher } from 'cloud-ui.vusion';
 
-let lastChanged = 0;
-{
-    const oldRerender = api.rerender;
-    api.rerender = function (id, options, live) {
-        oldRerender(id, options);
-        if (!live)
-            lastChanged--;
-        api.onRerender && api.onRerender(id, options, live);
-    };
+let lastChangedFile = '';
+const oldRerender = api.rerender;
+api.rerender = function (id, options, live) {
+    oldRerender(id, options);
+    if (!live && lastChangedFile === options.__file) {
+        lastChangedFile = '';
+        return;
+    }
+    api.onRerender && api.onRerender(id, options, live);
+};
 
-    const oldReload = api.reload;
-    api.reload = function (id, options, live) {
-        // const component = window.__VUE_HOT_MAP__[id];
-        oldReload(id, options);
-        oldRerender(id, options);
-        if (!live)
-            lastChanged--;
-        api.onReload && api.onReload(id, options, live);
-    };
-}
+const oldReload = api.reload;
+api.reload = function (id, options, live) {
+    // const component = window.__VUE_HOT_MAP__[id];
+    oldReload(id, options);
+    // oldRerender(id, options);
+    if (!live && lastChangedFile === options.__file) {
+        lastChangedFile = '';
+        return;
+    }
+    api.onReload && api.onReload(id, options, live);
+};
 
 export default {
     name: 'helper',
@@ -607,16 +609,12 @@ export default {
                 const el = document.querySelector(`[${scopeId}][vusion-node-path="${data.nodePath}"], [vusion-scope-id="${scopeId}"][vusion-node-path="${data.nodePath}"]`);
                 const nodeInfo = this.getNodeInfo(el);
                 this.select(nodeInfo);
-            } else if (data.command === 'rerender') {
-                this.rerender(data);
             }
         },
         onWebpackMessage(e) {
             if (e.data.type === 'webpackInvalid') {
-                // console.log('[vusion:designer] lastChanged:', lastChanged);
                 this.send({ command: 'hotReload', status: true });
-                if (!lastChanged)
-                    this.send({ command: 'loading', status: true });
+                //     this.send({ command: 'loading', status: true });
             } else if (e.data.type === 'webpackOk') {
                 this.send({ command: 'loading', status: false });
             } else if (e.data.type === 'webpackErrors') {
@@ -636,10 +634,6 @@ export default {
              * 更新 render 函数
              */
             const puppetOptions = Object.assign({
-                vueFile: {
-                    fullPath: data.file,
-                    tagName: 'test',
-                },
                 plugins: [compilerPlugin],
             }, options);
             // const puppetEl = flatted.parse(flatted.stringify(copts.__template.ast));
@@ -649,11 +643,12 @@ export default {
 
             /* eslint-disable no-new-func */
             api.rerender(scopeId.replace(/^data-v-/, ''), {
+                __file: data.__file,
                 render: new Function(result.render),
                 staticRenderFns: result.staticRenderFns.map((code) => new Function(code)),
             }, true);
 
-            lastChanged += 2;
+            lastChangedFile = data.__file;
         },
         run(expression, self) {
             return Function(`with (${self}) { return ${expression} }`).call(this);

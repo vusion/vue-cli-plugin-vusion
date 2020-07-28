@@ -35,7 +35,30 @@ function predesigner() {
     //     .replace('scopeId: query.scoped ? `data-v-${id}` : null,', 'scopeId: `data-v-${id}`,\n  filename: this.resourcePath,'));
 
     readAndWriteFile(vueLoaderPath, '', (content) => content
-        .replace('const hasScoped = descriptor.styles.some(s => s.scoped)', 'const hasScoped = true'));
+        .replace('const hasScoped = descriptor.styles.some(s => s.scoped)', 'const hasScoped = true')
+        .replace(/if \(needsHotReload\) \{[\s\S]+JSON\.stringify\(filename\)\}`\s+\}/, `// Expose filename. This is used by the devtools and Vue runtime warnings.
+    if (!isProduction) {
+        // Expose the file's full path in development, so that it can be opened
+        // from the devtools.
+        code += \`\\ncomponent.options.__file = \${JSON.stringify(rawShortFilePath.replace(/\\\\/g, '/'))}\`
+    } else if (options.exposeFilename) {
+        // Libraries can opt-in to expose their components' filenames in production builds.
+        // For security reasons, only expose the file's basename in production.
+        code += \`\\ncomponent.options.__file = \${JSON.stringify(filename)}\`
+    }
+    
+    if (needsHotReload) {
+        code += \`\\n\` + genHotReloadCode(id, hasFunctional, templateRequest, options.exposeFilename && filename)
+    }`));
+
+    const hotReloadPath = path.resolve(vueLoaderPath, '../codegen/hotReload.js');
+    readAndWriteFile(hotReloadPath, '', (content) => content
+        .replace(/\{\s+render: render,/, `{
+        \${filename ? '__file: ' + JSON.stringify(filename) + ',' : ''}
+        render: render,`)
+        .replace('(id, request)', '(id, request, filename)')
+        .replace('(id, templateRequest)', '(id, templateRequest, filename)')
+        .replace('(id, functional, templateRequest)', '(id, functional, templateRequest, filename)'));
 }
 
 module.exports = predesigner;
