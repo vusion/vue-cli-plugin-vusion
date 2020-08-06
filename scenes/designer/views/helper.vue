@@ -21,22 +21,24 @@ import { MPublisher } from 'cloud-ui.vusion';
 let lastChangedFile = '';
 const oldRerender = api.rerender;
 api.rerender = function (id, options, live) {
-    oldRerender(id, options);
     if (!live && lastChangedFile === options.__file) {
         lastChangedFile = '';
         return;
+    } else {
+        oldRerender(id, options);
     }
     api.onRerender && api.onRerender(id, options, live);
 };
 
 const oldReload = api.reload;
 api.reload = function (id, options, live) {
-    // const component = window.__VUE_HOT_MAP__[id];
-    oldReload(id, options);
-    // oldRerender(id, options);
     if (!live && lastChangedFile === options.__file) {
         lastChangedFile = '';
         return;
+    } else {
+        // const component = window.__VUE_HOT_MAP__[id];
+        oldReload(id, options);
+        // oldRerender(id, options);
     }
     api.onReload && api.onReload(id, options, live);
 };
@@ -128,12 +130,13 @@ export default {
                     this.sendCommand('updateContext');
                     this.updateContext(options);
                 } else {
+                    // this.updateContext(options);
                     this.computedMaskStyle();
                 }
 
                 const oldHover = this.hover;
                 if (oldHover) {
-                    const el = document.querySelector(`[vusion-node-path="${oldHover.nodePath}"]`);
+                    const el = document.querySelector(`[data-v-${id}] [vusion-node-path="${oldHover.nodePath}"]`);
                     const nodeInfo = this.getNodeInfo(el);
                     if (nodeInfo.el !== oldHover.el) {
                         this.hover = nodeInfo;
@@ -142,13 +145,11 @@ export default {
                 }
                 const oldSelected = this.selected;
                 if (oldSelected) {
-                    const el = document.querySelector(`[vusion-node-path="${oldSelected.nodePath}"]`);
+                    const el = document.querySelector(`[data-v-${id}] [vusion-node-path="${oldSelected.nodePath}"]`);
                     const nodeInfo = this.getNodeInfo(el);
                     this.select(nodeInfo);
                     this.$refs.selected.computeStyle();
                 }
-                // this.$refs.hover.computeStyle();
-                // this.$refs.selected.computeStyle();
             });
         };
 
