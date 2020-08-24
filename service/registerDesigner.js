@@ -1,10 +1,26 @@
 const predesigner = require('./predesigner');
+const { CallbackTask } = require('event-hooks-webpack-plugin/lib/tasks');
+const path = require('path');
 
 module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
     if (args._[0] === 'designer') {
         process.env.DESIGNER = true;
         process.env.VUE_APP_DESIGNER = true;
         vueConfig.devServer.open = false;
+
+        vueConfig.pages = {
+            designer: {
+                entry: [require.resolve('../scenes/designer/views/index.js'), require.resolve('../scenes/app/index.js')],
+                filename: 'designer.html',
+                template: path.resolve(require.resolve('../scenes/app/index.js'), '../index.html'),
+                inject: true,
+                chunks: [
+                    'chunk-vendors',
+                    'designer',
+                ],
+                chunksSortMode: 'manual',
+            },
+        };
 
         // 前置暴力替换，防止重启的问题
         predesigner();
@@ -46,11 +62,18 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
         vueConfig.productionSourceMap = false;
 
         api.chainWebpack((config) => {
-            const entryPath = require.resolve('../scenes/designer/views/index.js');
-            const entryKeys = Object.keys(config.entryPoints.entries());
-            entryKeys.forEach((key) => config.entry(key).prepend(entryPath));
-
             config.devtool('eval');
+
+            config.plugin(`designer-dll`).tap((args) => {
+                args[0].files = ['designer.html'];
+                return args;
+            });
+            config.plugin(`html-index`).tap((args) => {
+                args[0].emit = new CallbackTask((compilation, done) => {
+                    done();
+                });
+                return args;
+            });
 
             // config.module.rule('designer-config')
             //     .test(/vue-cli-plugin-vusion[\\/]scenes[\\/]designer[\\/]views[\\/]empty\.js$/)
