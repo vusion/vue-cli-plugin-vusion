@@ -17,6 +17,8 @@ import * as utils from '../utils';
 import throttle from 'lodash/throttle';
 import { v4 as uuidv4 } from 'uuid';
 import { MPublisher } from 'cloud-ui.vusion';
+import VueRouter from 'vue-router';
+// import { default as ScriptHandler } from 'vusion-api/out/fs/ScriptHandler';
 
 let lastChangedFile = '';
 const oldRerender = api.rerender;
@@ -209,15 +211,15 @@ export default {
          * routePath 为 ViewPath 格式
          */
         navigate(routePath, replace = true) {
-            if (!this.router)
-                return;
-            const [backend, to] = routePath.replace(/\/$/, '').split('#');
-            if (replace)
-                this.router.replace(to);
-            else
-                this.router.push(to);
+            // if (!this.router)
+            //     return;
+            // const [backend, to] = routePath.replace(/\/$/, '').split('#');
+            // if (replace)
+            //     this.router.replace(to);
+            // else
+            //     this.router.push(to);
 
-            this.onNavigate(to);
+            // this.onNavigate(to);
         },
         /**
          * onNavigate 导航变更时触发，即 contextPath 改变
@@ -227,18 +229,18 @@ export default {
          * 目前只处理 history 模式
          */
         async onNavigate(contextPath) {
-            if (contextPath !== undefined)
-                this.contextPath = await new Promise((res) => setTimeout(() => res(contextPath)));
-            else {
-                const routePath = await this.execCommand('getContextViewRoute');
-                const [backend, to] = routePath.replace(/\/$/, '').split('#');
-                this.contextPath = to;
-                // const cap = location.pathname.match(/^\/.+?\//);
-                // this.contextPath = cap ? location.pathname.slice(cap[0].length - 1) : '';
-            }
+            // if (contextPath !== undefined)
+            //     this.contextPath = await new Promise((res) => setTimeout(() => res(contextPath)));
+            // else {
+            //     const routePath = await this.execCommand('getContextViewRoute');
+            //     const [backend, to] = routePath.replace(/\/$/, '').split('#');
+            //     this.contextPath = to;
+            //     // const cap = location.pathname.match(/^\/.+?\//);
+            //     // this.contextPath = cap ? location.pathname.slice(cap[0].length - 1) : '';
+            // }
 
-            this.reset();
-            this.updateContext();
+            // this.reset();
+            // this.updateContext();
         },
         /**
          * @on
@@ -803,6 +805,43 @@ export default {
                 }
             }
             slots.length && this.slotsMap.set(selected, slots);
+        },
+        rerenderView(data) {
+            console.log('rerenderView', data);
+            this.parseRoutes(data.routes);
+            const root = Vue.extend({ template: '<div><router-view></router-view></div>' });
+            const routes = [data.routes];
+            routes.push({ path: '*', component: root });
+            routes[0].component = root;
+            const router = new VueRouter({ routes });
+
+            console.log('routes', routes);
+
+            this.appVM = new Vue({
+                name: 'app',
+                router,
+                template: '<router-view></router-view>',
+            }).$mount(this.appVM.$el);
+            setTimeout(() => {
+                this.appVM.$router.push('/' + data.path.join('/'));
+            }, 10);
+        },
+        parseRoutes(routes) {
+            if (!routes.children)
+                return;
+            const children = routes.children;
+            children.forEach((node) => {
+                const comp = node.component;
+                const code = this.parse(comp.code);
+                code.template = comp.template;
+                const newComp = Vue.extend(code);
+                node.component = newComp;
+                this.parseRoutes(node);
+            });
+        },
+        parse(source) {
+            const content = source.trim().replace(/export default |module\.exports +=/, '');
+            return eval('(function(){return ' + content + '})()');
         },
     },
 };
