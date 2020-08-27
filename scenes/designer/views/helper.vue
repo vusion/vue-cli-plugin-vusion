@@ -18,7 +18,7 @@ import throttle from 'lodash/throttle';
 import { v4 as uuidv4 } from 'uuid';
 import { MPublisher } from 'cloud-ui.vusion';
 import VueRouter from 'vue-router';
-// import { default as ScriptHandler } from 'vusion-api/out/fs/ScriptHandler';
+import sum from 'hash-sum';
 
 let lastChangedFile = '';
 const oldRerender = api.rerender;
@@ -807,7 +807,6 @@ export default {
             slots.length && this.slotsMap.set(selected, slots);
         },
         rerenderView(data) {
-            console.log('rerenderView', data);
             this.parseRoutes(data.routes);
             const root = Vue.extend({ template: '<div><router-view></router-view></div>' });
             const routes = [data.routes];
@@ -815,25 +814,51 @@ export default {
             routes[0].component = root;
             const router = new VueRouter({ routes });
 
-            console.log('routes', routes);
-
-            this.appVM = new Vue({
+            // 重新生成实例
+            const appVM = new Vue({
                 name: 'app',
                 router,
                 template: '<router-view></router-view>',
             }).$mount(this.appVM.$el);
+
+            const path = '/' + data.path.join('/');
+            if (this.contextPath !== path)
+                appVM.$router.push(path);
+
             setTimeout(() => {
-                this.appVM.$router.push('/' + data.path.join('/'));
-            }, 10);
+                this.appVM = appVM;
+                this.appVM.$el.setAttribute('root-app', '');
+                this.router = this.appVM.$router;
+                this.appVM.$on('d-slot:send', this.onDSlotSend);
+                this.appVM.$on('d-slot:sendCommand', this.onDSlotSendCommand);
+                this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
+
+                this.contextPath = path;
+                this.updateContext();
+                this.getHighLighter(this.contextVM.$options._scopeId);
+            }, 0);
         },
         parseRoutes(routes) {
             if (!routes.children)
                 return;
+
             const children = routes.children;
             children.forEach((node) => {
                 const comp = node.component;
                 const code = this.parse(comp.code);
-                code.template = comp.template;
+
+                const scopeId = 'data-v-' + sum(comp.vueFilePath);
+                const options = {
+                    scopeId,
+                    whitespace: 'condense',
+                };
+                const puppetOptions = Object.assign({
+                    plugins: [compilerPlugin],
+                }, options);
+                const result = compiler.compile(comp.template, puppetOptions);
+
+                code.render = new Function(result.render);
+                code._scopeId = scopeId;
                 const newComp = Vue.extend(code);
                 node.component = newComp;
                 this.parseRoutes(node);
@@ -842,6 +867,24 @@ export default {
         parse(source) {
             const content = source.trim().replace(/export default |module\.exports +=/, '');
             return eval('(function(){return ' + content + '})()');
+        },
+        getHighLighter(id) {
+            const oldHover = this.hover;
+            if (oldHover) {
+                const el = document.querySelector(`[data-v-${id}] [vusion-node-path="${oldHover.nodePath}"]`);
+                const nodeInfo = this.getNodeInfo(el);
+                if (nodeInfo.el !== oldHover.el) {
+                    this.hover = nodeInfo;
+                } else
+                    this.$refs.hover.computeStyle();
+            }
+            const oldSelected = this.selected;
+            if (oldSelected) {
+                const el = document.querySelector(`[data-v-${id}] [vusion-node-path="${oldSelected.nodePath}"]`);
+                const nodeInfo = this.getNodeInfo(el);
+                this.select(nodeInfo);
+                this.$refs.selected.computeStyle();
+            }
         },
     },
 };

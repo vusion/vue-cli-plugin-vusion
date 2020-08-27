@@ -73,7 +73,8 @@
     "vue-router": "^3.0.1",
     "vusion-api": "^0.7.23",
     "vusion-loader": "^0.5.1",
-    "uuid": "^7.0.3"
+    "uuid": "^7.0.3",
+    "hash-sum": "^1.0.2"
   },
   "devDependencies": {
     "@vue/cli-test-utils": "^4.2.3",
