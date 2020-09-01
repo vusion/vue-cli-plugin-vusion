@@ -367,9 +367,9 @@ export default {
             if (this.contextVM) {
                 const contextRect = utils.getVisibleRect(this.contextVM.$el);
                 contextRect.left -= 20;
-                contextRect.top -= 20;
+                // contextRect.top -= 20;
                 contextRect.right += 20;
-                contextRect.bottom += 20;
+                // contextRect.bottom += 20;
                 contextRect.width += 40;
                 contextRect.height += 40;
                 this.maskStyle = {
@@ -619,7 +619,8 @@ export default {
                 this.send({ command: 'hotReload', status: true });
                 //     this.send({ command: 'loading', status: true });
             } else if (e.data.type === 'webpackOk') {
-                this.send({ command: 'loading', status: false });
+                // this.send({ command: 'loading', status: false });
+                this.send({ command: 'loading', status: true });
             } else if (e.data.type === 'webpackErrors') {
                 this.send({ command: 'problems', data: e.data.data });
                 // const overlay = document.getElementById('webpack-dev-server-client-overlay');
@@ -836,6 +837,7 @@ export default {
                 this.contextPath = path;
                 this.updateContext();
                 this.getHighLighter(this.contextVM.$options._scopeId);
+                this.send({ command: 'loading', status: false });
             }, 0);
         },
         parseRoutes(routes) {
