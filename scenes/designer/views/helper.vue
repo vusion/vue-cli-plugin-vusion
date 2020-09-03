@@ -823,11 +823,7 @@ export default {
                 router,
                 template: '<router-view></router-view>',
             }).$mount(this.appVM.$el);
-
-            // const path = '/' + data.path.join('/');
-            // if (this.contextPath !== path)
-            //     appVM.$router.push(path);
-            // this.contextPath = path;
+            document.getElementById('loading').style.display = 'none';
 
             setTimeout(() => {
                 const path = '/' + data.path.join('/');
@@ -843,7 +839,8 @@ export default {
                     this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
 
                     this.updateContext();
-                    this.getHighLighter(this.contextVM.$options._scopeId);
+                    if (this.contextVM)
+                        this.getHighLighter(this.contextVM.$options._scopeId);
                 }, 0);
                 this.send({ command: 'loading', status: false });
             }, 0);

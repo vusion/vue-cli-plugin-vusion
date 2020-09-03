@@ -38,3 +38,4 @@ const app = new Vue({
     template: '<router-view></router-view>',
 });
 app.$mount('#app');
+document.getElementById('loading').style.display = 'none';
