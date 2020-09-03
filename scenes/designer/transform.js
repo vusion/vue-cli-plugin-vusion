@@ -33,6 +33,19 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             // 为了添加属性，只能全部开启 false
             el.plain = false;
         }
+
+        // 改成直接实例化页面，:class需要转换成class
+        if (el.attrsMap[':class'] && options.cssPrefix) {
+            const classValue = el.classBinding.replace(/\$style\./g, options.cssPrefix);
+            el.attrsList.push({ name: 'class', value: classValue });
+            el.attrsMap.class = classValue;
+            const attr = { name: 'class', value: JSON.stringify(classValue) };
+            el.attrs.push(attr);
+            el.rawAttrsMap.class = attr;
+            delete el.attrsMap[':class'];
+            delete el.classBinding;
+            delete el.rawAttrsMap[':class'];
+        }
         // 打包之后
         // if (!el.attrsMap.hasOwnProperty('vusion-scope-id') && !el.attrsMap.hasOwnProperty(':vusion-scope-id')) {
         //     const shortScopeId = options.scopeId.replace(/^data-v-/, '');

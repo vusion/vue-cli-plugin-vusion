@@ -44,6 +44,7 @@
     "css-sprite-loader": "^0.3.4",
     "file-loader": "^4.2.0",
     "globby": "^6.1.0",
+    "hash-sum": "^1.0.2",
     "html-webpack-plugin": "^3.2.0",
     "html-webpack-tags-plugin": "^2.0.17",
     "http-proxy-middleware": "^0.19.1",
@@ -69,12 +70,11 @@
     "semver": "^7.1.3",
     "svg-classic-sprite-loader": "^0.2.5",
     "uslug": "^1.0.4",
+    "uuid": "^7.0.3",
     "vue-component-analyzer": "^0.2.0",
     "vue-router": "^3.0.1",
     "vusion-api": "^0.7.23",
-    "vusion-loader": "^0.5.1",
-    "uuid": "^7.0.3",
-    "hash-sum": "^1.0.2"
+    "vusion-loader": "^0.5.1"
   },
   "devDependencies": {
     "@vue/cli-test-utils": "^4.2.3",

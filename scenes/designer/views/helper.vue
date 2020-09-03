@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { MPublisher } from 'cloud-ui.vusion';
 import VueRouter from 'vue-router';
 import sum from 'hash-sum';
+import { postcssParse } from './cssParse';
 
 let lastChangedFile = '';
 const oldRerender = api.rerender;
@@ -815,6 +816,7 @@ export default {
             routes[0].component = root;
             const router = new VueRouter({ routes });
 
+            this.appVM.$destroy();
             // 重新生成实例
             const appVM = new Vue({
                 name: 'app',
@@ -822,21 +824,27 @@ export default {
                 template: '<router-view></router-view>',
             }).$mount(this.appVM.$el);
 
-            const path = '/' + data.path.join('/');
-            if (this.contextPath !== path)
-                appVM.$router.push(path);
+            // const path = '/' + data.path.join('/');
+            // if (this.contextPath !== path)
+            //     appVM.$router.push(path);
+            // this.contextPath = path;
 
             setTimeout(() => {
-                this.appVM = appVM;
-                this.appVM.$el.setAttribute('root-app', '');
-                this.router = this.appVM.$router;
-                this.appVM.$on('d-slot:send', this.onDSlotSend);
-                this.appVM.$on('d-slot:sendCommand', this.onDSlotSendCommand);
-                this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
-
+                const path = '/' + data.path.join('/');
+                if (this.contextPath !== path)
+                    appVM.$router.push(path);
                 this.contextPath = path;
-                this.updateContext();
-                this.getHighLighter(this.contextVM.$options._scopeId);
+                setTimeout(() => {
+                    this.appVM = appVM;
+                    this.appVM.$el.setAttribute('root-app', '');
+                    this.router = this.appVM.$router;
+                    this.appVM.$on('d-slot:send', this.onDSlotSend);
+                    this.appVM.$on('d-slot:sendCommand', this.onDSlotSendCommand);
+                    this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
+
+                    this.updateContext();
+                    this.getHighLighter(this.contextVM.$options._scopeId);
+                }, 0);
                 this.send({ command: 'loading', status: false });
             }, 0);
         },
@@ -847,12 +855,30 @@ export default {
             const children = routes.children;
             children.forEach((node) => {
                 const comp = node.component;
-                const code = this.parse(comp.code);
+                const code = this.parse(comp.script);
 
-                const scopeId = 'data-v-' + sum(comp.vueFilePath);
+                const hash = sum(comp.vueFilePath);
+                let cssPrefix = '';
+                if (comp.style) {
+                    cssPrefix = ('' + node.path) + '_' + hash + '_';
+                    const oldStyle = document.getElementById(cssPrefix);
+                    if (oldStyle) {
+                        oldStyle.remove();
+                    }
+                    const style = document.createElement('style');
+                    style.type = 'text/css';
+                    let content = comp.style.replace('<style module>', '').replace('</style>', '');
+                    content = postcssParse(content, cssPrefix);
+                    style.innerHTML = content;
+                    style.id = cssPrefix;
+                    document.getElementsByTagName('head')[0].appendChild(style);
+                }
+
+                const scopeId = 'data-v-' + hash;
                 const options = {
                     scopeId,
                     whitespace: 'condense',
+                    cssPrefix,
                 };
                 const puppetOptions = Object.assign({
                     plugins: [compilerPlugin],
