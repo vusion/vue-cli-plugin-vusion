@@ -628,7 +628,7 @@ export default {
                 // overlay && (overlay.style.display = 'none');
             }
         },
-        rerender(data) {
+        rerenderView(data) {
             const scopeId = this.contextVM.$options._scopeId || '';
             const options = {
                 scopeId,
@@ -808,7 +808,7 @@ export default {
             }
             slots.length && this.slotsMap.set(selected, slots);
         },
-        rerenderView(data) {
+        renderView(data) {
             this.parseRoutes(data.routes);
             const root = Vue.extend({ template: '<div><router-view></router-view></div>' });
             const routes = [data.routes];
@@ -852,7 +852,7 @@ export default {
             const children = routes.children;
             children.forEach((node) => {
                 const comp = node.component;
-                const code = this.parse(comp.script);
+                const code = this.parseScript(comp.script);
 
                 const hash = sum(comp.vueFilePath);
                 let cssPrefix = '';
@@ -886,10 +886,12 @@ export default {
                 code._scopeId = scopeId;
                 const newComp = Vue.extend(code);
                 node.component = newComp;
+                window.__VUE_HOT_MAP__[hash] = null;
+                api.createRecord(hash, newComp);
                 this.parseRoutes(node);
             });
         },
-        parse(source) {
+        parseScript(source) {
             const content = source.trim().replace(/export default |module\.exports +=/, '');
             return eval('(function(){return ' + content + '})()');
         },
@@ -909,6 +911,18 @@ export default {
                 const nodeInfo = this.getNodeInfo(el);
                 this.select(nodeInfo);
                 this.$refs.selected.computeStyle();
+            }
+        },
+        reloadView(data) {
+            if (!this.contextVM)
+                return;
+            const scopeId = this.contextVM.$options._scopeId || '';
+            const id = scopeId.replace(/^data-v-/, '');
+            const components = window.__VUE_HOT_MAP__[id];
+            if (components) {
+                const options = Object.assign({}, components.options);
+                Object.assign(options, this.parseScript(data.script));
+                api.reload(id, options, true);
             }
         },
     },
