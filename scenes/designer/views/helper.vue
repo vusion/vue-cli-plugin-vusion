@@ -855,19 +855,19 @@ export default {
                 const code = this.parseScript(comp.script);
 
                 const hash = sum(comp.vueFilePath);
-                let cssPrefix = '';
+                let cssSuffix = '';
                 if (comp.style) {
-                    cssPrefix = ('' + node.path) + '_' + hash + '_';
-                    const oldStyle = document.getElementById(cssPrefix);
+                    cssSuffix = hash;
+                    const oldStyle = document.getElementById(cssSuffix);
                     if (oldStyle) {
                         oldStyle.remove();
                     }
                     const style = document.createElement('style');
                     style.type = 'text/css';
                     let content = comp.style.replace('<style module>', '').replace('</style>', '');
-                    content = postcssParse(content, cssPrefix);
+                    content = postcssParse(content, cssSuffix, comp.template);
                     style.innerHTML = content;
-                    style.id = cssPrefix;
+                    style.id = cssSuffix;
                     document.getElementsByTagName('head')[0].appendChild(style);
                 }
 
@@ -875,7 +875,7 @@ export default {
                 const options = {
                     scopeId,
                     whitespace: 'condense',
-                    cssPrefix,
+                    cssSuffix,
                 };
                 const puppetOptions = Object.assign({
                     plugins: [compilerPlugin],
