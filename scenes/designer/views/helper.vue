@@ -517,7 +517,7 @@ export default {
                 this.select(nodeInfo);
             } else {
                 this.select({});
-                this.sendCommand('selectContextView');
+                // this.sendCommand('selectContextView');
             }
         },
         createDText(options) {
@@ -730,9 +730,9 @@ export default {
             }
         },
         getExternalLibrary() {
-            this.execCommand('getInit').then((res) => {
-                this.allNodesAPI = res.allNodesAPI;
-            });
+            // this.execCommand('startInit').then(([pageNodesAPI, app]) => {
+            //     this.allNodesAPI = pageNodesAPI;
+            // });
         },
         editSlotAttribute(e, selected) {
             if (e.target && e.target.nodeType === 1 && e.target.hasAttribute('vusion-slot-name')) {
@@ -808,10 +808,10 @@ export default {
             }
             slots.length && this.slotsMap.set(selected, slots);
         },
-        rerenderView(data) {
-            this.parseRoutes(data.routes);
+        renderView(data) {
+            this.parseRoute(data.rootRoute);
             const root = Vue.extend({ template: '<div><router-view></router-view></div>' });
-            const routes = [data.routes];
+            const routes = [data.rootRoute];
             routes.push({ path: '*', component: root });
             routes[0].component = root;
             const router = new VueRouter({ routes });
@@ -826,7 +826,7 @@ export default {
             document.getElementById('loading').style.display = 'none';
 
             setTimeout(() => {
-                const path = '/' + data.path.join('/');
+                const path = data.paths.join('/');
                 if (this.contextPath !== path)
                     appVM.$router.push(path);
                 this.contextPath = path;
@@ -845,11 +845,11 @@ export default {
                 this.send({ command: 'loading', status: false });
             }, 0);
         },
-        parseRoutes(routes) {
-            if (!routes.children)
+        parseRoute(route) {
+            if (!route.children)
                 return;
 
-            const children = routes.children;
+            const children = route.children;
             children.forEach((node) => {
                 const comp = node.component;
                 const code = this.parse(comp.script);
@@ -886,7 +886,7 @@ export default {
                 code._scopeId = scopeId;
                 const newComp = Vue.extend(code);
                 node.component = newComp;
-                this.parseRoutes(node);
+                this.parseRoute(node);
             });
         },
         parse(source) {
