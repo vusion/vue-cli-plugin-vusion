@@ -1,5 +1,34 @@
 const TemplateHandler = require('vusion-api/out/fs/TemplateHandler').default;
 
+const getClassName = function (styleStr) {
+    if (/^\$style\[['"](.*)['"]\]$/g.test(styleStr)) {
+        const classNameVarName = /^\$style\[['"](.*)['"]\]$/g.exec(styleStr);
+        if (classNameVarName)
+            return classNameVarName[1];
+    } else if (/^\$style./g.test(styleStr)) {
+        const classNameVarName = styleStr.split('.')[1];
+        if (classNameVarName)
+            return classNameVarName;
+    }
+    return undefined;
+};
+
+const getClassNames = function (styleStr) {
+    if (/^\[(.*)\]$/g.test(styleStr)) {
+        let styles = /^\[(.*)\]$/g.exec(styleStr);
+        if (styles && styles[1]) {
+            styles = styles[1].split(',');
+            styles = styles.map((item) => getClassName(item.trim()));
+            return styles;
+        }
+    } else {
+        const styles = getClassName(styleStr);
+        if (styles)
+            return [styles];
+        return [];
+    }
+};
+
 /**
  * 该方法可以在两端(node, browser)运行
  */
@@ -35,16 +64,23 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
         }
 
         // 改成直接实例化页面，:class需要转换成class
-        if (el.attrsMap[':class'] && options.cssPrefix) {
-            const classValue = el.classBinding.replace(/\$style\./g, options.cssPrefix);
-            el.attrsList.push({ name: 'class', value: classValue });
-            el.attrsMap.class = classValue;
-            const attr = { name: 'class', value: JSON.stringify(classValue) };
-            el.attrs.push(attr);
-            el.rawAttrsMap.class = attr;
-            delete el.attrsMap[':class'];
-            delete el.classBinding;
-            delete el.rawAttrsMap[':class'];
+        if (el.attrsMap[':class'] && options.cssSuffix) {
+            let classNames = getClassNames(el.classBinding);
+            if (classNames.length) {
+                classNames = classNames.map((item) => `${item}_${options.cssSuffix}`);
+                let classValue = classNames.join(' ');
+                if (el.attrsMap.class) {
+                    classValue = el.attrsMap.class + ' ' + classValue;
+                }
+                el.attrsList.push({ name: 'class', value: classValue });
+                el.attrsMap.class = classValue;
+                const attr = { name: 'class', value: JSON.stringify(classValue) };
+                el.attrs.push(attr);
+                el.rawAttrsMap.class = attr;
+                delete el.attrsMap[':class'];
+                delete el.classBinding;
+                delete el.rawAttrsMap[':class'];
+            }
         }
         // 打包之后
         // if (!el.attrsMap.hasOwnProperty('vusion-scope-id') && !el.attrsMap.hasOwnProperty(':vusion-scope-id')) {

@@ -628,7 +628,7 @@ export default {
                 // overlay && (overlay.style.display = 'none');
             }
         },
-        rerender(data) {
+        rerenderView(data) {
             const scopeId = this.contextVM.$options._scopeId || '';
             const options = {
                 scopeId,
@@ -852,22 +852,22 @@ export default {
             const children = route.children;
             children.forEach((node) => {
                 const comp = node.component;
-                const code = this.parse(comp.script);
+                const code = this.parseScript(comp.script);
 
                 const hash = sum(comp.vueFilePath);
-                let cssPrefix = '';
+                let cssSuffix = '';
                 if (comp.style) {
-                    cssPrefix = ('' + node.path) + '_' + hash + '_';
-                    const oldStyle = document.getElementById(cssPrefix);
+                    cssSuffix = hash;
+                    const oldStyle = document.getElementById(cssSuffix);
                     if (oldStyle) {
                         oldStyle.remove();
                     }
                     const style = document.createElement('style');
                     style.type = 'text/css';
                     let content = comp.style.replace('<style module>', '').replace('</style>', '');
-                    content = postcssParse(content, cssPrefix);
+                    content = postcssParse(content, cssSuffix, comp.template);
                     style.innerHTML = content;
-                    style.id = cssPrefix;
+                    style.id = cssSuffix;
                     document.getElementsByTagName('head')[0].appendChild(style);
                 }
 
@@ -875,7 +875,7 @@ export default {
                 const options = {
                     scopeId,
                     whitespace: 'condense',
-                    cssPrefix,
+                    cssSuffix,
                 };
                 const puppetOptions = Object.assign({
                     plugins: [compilerPlugin],
@@ -886,10 +886,12 @@ export default {
                 code._scopeId = scopeId;
                 const newComp = Vue.extend(code);
                 node.component = newComp;
+                window.__VUE_HOT_MAP__[hash] = null;
+                api.createRecord(hash, newComp);
                 this.parseRoute(node);
             });
         },
-        parse(source) {
+        parseScript(source) {
             const content = source.trim().replace(/export default |module\.exports +=/, '');
             return eval('(function(){return ' + content + '})()');
         },
@@ -909,6 +911,18 @@ export default {
                 const nodeInfo = this.getNodeInfo(el);
                 this.select(nodeInfo);
                 this.$refs.selected.computeStyle();
+            }
+        },
+        reloadView(data) {
+            if (!this.contextVM)
+                return;
+            const scopeId = this.contextVM.$options._scopeId || '';
+            const id = scopeId.replace(/^data-v-/, '');
+            const components = window.__VUE_HOT_MAP__[id];
+            if (components) {
+                const options = Object.assign({}, components.options);
+                Object.assign(options, this.parseScript(data.script));
+                api.reload(id, options, true);
             }
         },
     },
