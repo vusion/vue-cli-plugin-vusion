@@ -116,7 +116,7 @@ export default {
             this.appVM.$on('d-slot:mode-change', this.onDSlotModeChange);
 
             // this.router.afterEach((to, from) => this.onNavigate(to.path));
-            this.onNavigate();
+            // this.onNavigate();
 
             this.getExternalLibrary();
 
@@ -630,9 +630,14 @@ export default {
         },
         rerenderView(data) {
             const scopeId = this.contextVM.$options._scopeId || '';
+            let cssSuffix = '';
+            if (data.content && data.content.style) {
+                cssSuffix = this.setStyle(data.content.style, data.content.template, scopeId.replace('data-v-', ''));
+            }
             const options = {
                 scopeId,
                 whitespace: 'condense',
+                cssSuffix,
             };
 
             /**
@@ -644,7 +649,8 @@ export default {
             // const puppetEl = flatted.parse(flatted.stringify(copts.__template.ast));
             // compilerPlugin(puppetEl, puppetOptions, compiler);
             // const result = compiler.generate(puppetEl, puppetOptions);
-            const result = compiler.compile(data.content, puppetOptions);
+            const template = data.content && data.content.template || '';
+            const result = compiler.compile(template, puppetOptions);
 
             /* eslint-disable no-new-func */
             api.rerender(scopeId.replace(/^data-v-/, ''), {
@@ -733,6 +739,9 @@ export default {
             // this.execCommand('startInit').then(([pageNodesAPI, app]) => {
             //     this.allNodesAPI = pageNodesAPI;
             // });
+        },
+        getAllNodesAPI(data) {
+            this.allNodesAPI = data.allNodesAPI;
         },
         editSlotAttribute(e, selected) {
             if (e.target && e.target.nodeType === 1 && e.target.hasAttribute('vusion-slot-name')) {
@@ -826,7 +835,8 @@ export default {
             document.getElementById('loading').style.display = 'none';
 
             setTimeout(() => {
-                const path = data.paths.join('/');
+                let path = data.paths.join('/');
+                path = path === '' ? '/' : path;
                 if (this.contextPath !== path)
                     appVM.$router.push(path);
                 this.contextPath = path;
@@ -857,18 +867,7 @@ export default {
                 const hash = sum(comp.vueFilePath);
                 let cssSuffix = '';
                 if (comp.style) {
-                    cssSuffix = hash;
-                    const oldStyle = document.getElementById(cssSuffix);
-                    if (oldStyle) {
-                        oldStyle.remove();
-                    }
-                    const style = document.createElement('style');
-                    style.type = 'text/css';
-                    let content = comp.style.replace('<style module>', '').replace('</style>', '');
-                    content = postcssParse(content, cssSuffix, comp.template);
-                    style.innerHTML = content;
-                    style.id = cssSuffix;
-                    document.getElementsByTagName('head')[0].appendChild(style);
+                    cssSuffix = this.setStyle(comp.style, comp.template, hash);
                 }
 
                 const scopeId = 'data-v-' + hash;
@@ -890,6 +889,21 @@ export default {
                 api.createRecord(hash, newComp);
                 this.parseRoute(node);
             });
+        },
+        setStyle(styleTemplate, htmlTemplate, hash) {
+            const cssSuffix = hash;
+            const oldStyle = document.getElementById(cssSuffix);
+            if (oldStyle) {
+                oldStyle.remove();
+            }
+            const style = document.createElement('style');
+            style.type = 'text/css';
+            let content = styleTemplate.replace('<style module>', '').replace('</style>', '');
+            content = postcssParse(content, cssSuffix, htmlTemplate);
+            style.innerHTML = content;
+            style.id = cssSuffix;
+            document.getElementsByTagName('head')[0].appendChild(style);
+            return cssSuffix;
         },
         parseScript(source) {
             const content = source.trim().replace(/export default |module\.exports +=/, '');
