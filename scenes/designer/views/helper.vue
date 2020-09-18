@@ -825,23 +825,25 @@ export default {
             routes[0].component = root;
             const router = new VueRouter({ routes });
 
-            this.appVM.$destroy();
+            this.appVM._router = this.appVM.$options.router = router;
+            router.init(this.appVM);
+            this.appVM.$forceUpdate();
             // 重新生成实例
-            const appVM = new Vue({
-                name: 'app',
-                router,
-                template: '<router-view></router-view>',
-            }).$mount(this.appVM.$el);
+            // const appVM = new Vue({
+            //     name: 'app',
+            //     router,
+            //     template: '<router-view></router-view>',
+            // }).$mount(this.appVM.$el);
             document.getElementById('loading').style.display = 'none';
 
             setTimeout(() => {
                 let path = data.paths.join('/');
                 path = path === '' ? '/' : path;
                 if (this.contextPath !== path)
-                    appVM.$router.push(path);
+                    this.appVM.$router.push(path);
                 this.contextPath = path;
                 setTimeout(() => {
-                    this.appVM = appVM;
+                    // this.appVM = appVM;
                     this.appVM.$el.setAttribute('root-app', '');
                     this.router = this.appVM.$router;
                     this.appVM.$on('d-slot:send', this.onDSlotSend);

@@ -14,10 +14,14 @@ installFilters(Vue, filters);
 installComponents(Vue, Components);
 
 import installServices from '@/global/features/service/install';
+import { initMiddleware } from '@/global/middleware';
+import { apolloProvider } from '@/global/features/apollo';
+import GueryStrCollect from '@/global/features/apollo/queryStrCollect';
 
 Vue.use(VueRouter);
 install(Vue, Library);
 Vue.use(installServices);
+Vue.use(GueryStrCollect);
 
 const Index = Vue.extend({
     template: `<div style="background: #111217;height:calc(100vh - 40px);position:relative;opacity: 0.8;">
@@ -34,6 +38,7 @@ const router = new VueRouter({
 
 const app = new Vue({
     name: 'app',
+    apolloProvider,
     router,
     template: '<router-view></router-view>',
 });
