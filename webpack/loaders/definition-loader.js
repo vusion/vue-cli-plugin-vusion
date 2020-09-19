@@ -9,7 +9,7 @@ module.exports = function (source, map) {
         next && next.forEach((child, index) => walk(child, func, node, index));
     }
 
-    const methods = definition.logics.map((logic) => {
+    const methods = (definition.logics || []).map((logic) => {
         walk(logic.definition, (node, parent, index) => {
             if (node.type === 'Start' || node.type === 'End') {
                 node.type = 'Noop';
@@ -59,6 +59,14 @@ module.exports = function (source, map) {
     const output = `export default function (Component) {
         const definition = Component.options.__definition = ${source};
         const methods = Component.options.methods = Component.options.methods || {};
+        const data = function () {
+            const oldData = Component.options.data ? Component.options.data.call(this) : {};
+
+            return Object.assign(oldData, {
+                ${(definition.variables || []).map((param) => param.name + ': undefined').join(',\n')}
+            });
+        }
+        Component.options.data = data;
         
         ${methods.join('\n\n')}
     }`;
