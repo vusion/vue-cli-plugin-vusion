@@ -290,6 +290,7 @@ export default {
 <style module>
 .root {
     position: relative;
+    z-index: 9999;
     min-width: 28px;
     vertical-align: 3px;
     user-select: none;
