@@ -1,18 +1,16 @@
 const generate = require('@babel/generator').default;
 const babel = require('@babel/core');
-const ScriptHandler = require('vusion-api/out/fs/ScriptHandler').default;
 
-function walk(node, func, parent = null, index) {
-    func(node, parent, index);
-    const next = node.body || (node.consequent && node.consequent.body) || (node.alternate && node.alternate.body);
-    next && next.forEach((child, index) => walk(child, func, node, index));
-    node.left && walk(node.left, func, node);
-    node.right && walk(node.right, func, node);
-}
-
-exports.definitionLoader = function (source, script) {
+module.exports = function (source) {
     const definition = JSON.parse(source);
-    const $js = new ScriptHandler(script);
+
+    function walk(node, func, parent = null, index) {
+        func(node, parent, index);
+        const next = node.body || (node.consequent && node.consequent.body) || (node.alternate && node.alternate.body);
+        next && next.forEach((child, index) => walk(child, func, node, index));
+        node.left && walk(node.left, func, node);
+        node.right && walk(node.right, func, node);
+    }
 
     const methods = (definition.logics || []).map((logic) => {
         walk(logic.definition, (node, parent, index) => {
@@ -35,26 +33,33 @@ exports.definitionLoader = function (source, script) {
 
         const returnIdentifier = logic.definition.returns[0] ? logic.definition.returns[0].name : 'result';
 
-        return `async ${logic.name}(${logic.definition.params.map((param) => param.name).join(', ')}) {
+        return `methods['${logic.name}'] = async function (${logic.definition.params.map((param) => param.name).join(', ')}) {
             ${logic.definition.variables.length ? 'let ' + logic.definition.variables.map((variable) => variable.name).join(', ') + ';' : ''}
             let ${returnIdentifier};
-    
+
             ${generate({
         type: 'Program',
         body: logic.definition.body,
     }).code}
-    
+
             return ${returnIdentifier};
         }`;
     });
 
     const data = (definition.variables || []).map((param) => param.name + ': undefined').join(',\n');
 
-    const newScript = `export default { data(){ return { ${data} }}, methods:{ ${methods.join(',\n')} }}`;
+    const output = `
+        const methods = componentOptions.methods = componentOptions.methods || {};
+        const data = function () {
+            const oldData = componentOptions.data && componentOptions.data !== data ? componentOptions.data.call(this) : {};
 
-    $js.merge(new ScriptHandler(newScript));
-    return $js.generate({
-        retainLines: false,
-        comments: false,
-    });
+            return Object.assign(oldData, {
+                ${data}
+            });
+        };
+        componentOptions.data = data;
+        ${methods.join('\n\n')}
+    `;
+
+    return output;
 };

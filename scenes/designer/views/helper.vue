@@ -20,8 +20,8 @@ import { MPublisher } from 'cloud-ui.vusion';
 import VueRouter from 'vue-router';
 import sum from 'hash-sum';
 import { postcssParse } from './cssParse';
-import { definitionLoader } from './definitionLoader';
 import initApp from '../../app/initApp';
+const parseDefinition = require('../../../webpack/loaders/definition-loader/parse');
 
 let lastChangedFile = '';
 const oldRerender = api.rerender;
@@ -860,11 +860,7 @@ export default {
             const children = route.children;
             children.forEach((node) => {
                 const comp = node.component;
-                let script = comp.script;
-                if (comp.definition) {
-                    script = definitionLoader(comp.definition, script);
-                }
-                const code = this.parseScript(script);
+                const code = this.parseScript(comp.script, comp.definition);
 
                 const hash = sum(comp.vueFilePath);
                 let cssSuffix = '';
@@ -907,10 +903,12 @@ export default {
             document.getElementsByTagName('head')[0].appendChild(style);
             return cssSuffix;
         },
-        parseScript(source) {
-            const content = source.trim().replace(/export default |module\.exports +=/, '');
+        parseScript(source, definitionSource) {
+            let content = source.trim().replace(/export default |module\.exports +=/, '');
+            const definition = parseDefinition(definitionSource || '{}');
+            content = `const componentOptions = ${content};${definition}`;
             /* eslint-disable no-eval */
-            return eval('(function(){return ' + content + '})()');
+            return eval(`(function(){ ${content}; return componentOptions;})()`);
         },
         getHighLighter(id) {
             const oldHover = this.hover;
