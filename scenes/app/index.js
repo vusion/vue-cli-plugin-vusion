@@ -13,9 +13,10 @@ import filters from '@/global/features/common/filters';
 installFilters(Vue, filters);
 installComponents(Vue, Components);
 
+import initApp from './initApp';
 import installServices from '@/global/features/service/install';
 import { initMiddleware } from '@/global/middleware';
-import { apolloProvider } from '@/global/features/apollo';
+
 import GueryStrCollect from '@/global/features/apollo/queryStrCollect';
 
 Vue.use(VueRouter);
@@ -36,11 +37,6 @@ const router = new VueRouter({
     ],
 });
 
-const app = new Vue({
-    name: 'app',
-    apolloProvider,
-    router,
-    template: '<router-view></router-view>',
-});
+const app = initApp(router);
 app.$mount('#app');
 document.getElementById('loading').style.display = 'none';

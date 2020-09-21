@@ -1,4 +1,5 @@
 const generate = require('@babel/generator').default;
+const babel = require('@babel/core');
 
 module.exports = function (source, map) {
     const definition = JSON.parse(source);
@@ -7,44 +8,33 @@ module.exports = function (source, map) {
         func(node, parent, index);
         const next = node.body || (node.consequent && node.consequent.body) || (node.alternate && node.alternate.body);
         next && next.forEach((child, index) => walk(child, func, node, index));
+        node.left && walk(node.left, func, node);
+        node.right && walk(node.right, func, node);
     }
 
     const methods = (definition.logics || []).map((logic) => {
         walk(logic.definition, (node, parent, index) => {
-            if (node.type === 'Start' || node.type === 'End') {
+            if (node.type === 'Start' || node.type === 'End' || node.type === 'Comment' || node.type === 'ForEachStatement') {
                 node.type = 'Noop';
             } else if (node.type === 'Call')
                 node.type = 'CallExpression';
             else if (node.type === 'CallMessageShow') {
                 // console.log('STrt!!!')
+                Object.assign(node, babel.parse(`this.$toast.show()`, { filename: 'file.js' }).program.body[0].expression, {
+                    arguments: node.arguments,
+                });
+            } else if (node.type === 'CallGraphQL') {
                 Object.assign(node, {
-                    type: 'CallExpression',
-                    callee: {
-                        type: 'MemberExpression',
-                        object: {
-                            type: 'MemberExpression',
-                            object: {
-                                type: 'ThisExpression',
-                            },
-                            property: {
-                                type: 'Identifier',
-                                name: '$toast',
-                            },
-                            computed: false,
-                        },
-                        property: {
-                            type: 'Identifier',
-                            name: 'show',
-                        },
-                        computed: false,
-                    },
+                    type: 'AwaitExpression',
+                    argument: babel.parse(`this.$graphql.query('${node.queryKey}')`, { filename: 'file.js' }).program.body[0].expression,
                 });
             }
         });
 
         const returnIdentifier = logic.definition.returns[0] ? logic.definition.returns[0].name : 'result';
 
-        return `methods['${logic.name}'] = function (${logic.definition.params.map((param) => param.name).join(', ')}) {
+        return `methods['${logic.name}'] = async function (${logic.definition.params.map((param) => param.name).join(', ')}) {
+            ${logic.definition.variables.length ? 'let ' + logic.definition.variables.map((variable) => variable.name).join(', ') + ';' : ''}
             let ${returnIdentifier};
 
             ${generate({
@@ -60,7 +50,7 @@ module.exports = function (source, map) {
         const definition = Component.options.__definition = ${source};
         const methods = Component.options.methods = Component.options.methods || {};
         const data = function () {
-            const oldData = Component.options.data ? Component.options.data.call(this) : {};
+            const oldData = Component.options.data && Component.options.data !== data ? Component.options.data.call(this) : {};
 
             return Object.assign(oldData, {
                 ${(definition.variables || []).map((param) => param.name + ': undefined').join(',\n')}
