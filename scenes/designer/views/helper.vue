@@ -20,6 +20,7 @@ import { MPublisher } from 'cloud-ui.vusion';
 import VueRouter from 'vue-router';
 import sum from 'hash-sum';
 import { postcssParse } from './cssParse';
+import { definitionLoader } from './definitionLoader';
 import initApp from '../../app/initApp';
 
 let lastChangedFile = '';
@@ -859,7 +860,11 @@ export default {
             const children = route.children;
             children.forEach((node) => {
                 const comp = node.component;
-                const code = this.parseScript(comp.script);
+                let script = comp.script;
+                if (comp.definition) {
+                    script = definitionLoader(comp.definition, script);
+                }
+                const code = this.parseScript(script);
 
                 const hash = sum(comp.vueFilePath);
                 let cssSuffix = '';
