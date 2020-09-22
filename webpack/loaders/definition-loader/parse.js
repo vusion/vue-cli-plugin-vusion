@@ -13,9 +13,13 @@ module.exports = function (source) {
     }
 
     const methods = (definition.logics || []).map((logic) => {
+        const returnIdentifier = logic.definition.returns[0] ? logic.definition.returns[0].name : 'result';
+
         walk(logic.definition, (node, parent, index) => {
-            if (node.type === 'Start' || node.type === 'End' || node.type === 'Comment' || node.type === 'ForEachStatement') {
+            if (node.type === 'Start' || node.type === 'Comment' || node.type === 'ForEachStatement') {
                 node.type = 'Noop';
+            } else if (node.type === 'End') {
+                Object.assign(node, babel.parse(`return ${returnIdentifier}`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'Call')
                 node.type = 'CallExpression';
             else if (node.type === 'CallMessageShow') {
@@ -28,10 +32,20 @@ module.exports = function (source) {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$graphql.query('${node.queryKey}')`, { filename: 'file.js' }).program.body[0].expression,
                 });
+            } else if (node.type === 'JSONSerialize') {
+                Object.assign(node, babel.parse(`JSON.stringify()`, { filename: 'file.js' }).program.body[0].expression, {
+                    arguments: node.arguments,
+                });
+            } else if (node.type === 'JSONDeserialize') {
+                Object.assign(node, babel.parse(`JSON.parse()`, { filename: 'file.js' }).program.body[0].expression, {
+                    arguments: node.arguments,
+                });
+            } else if (node.type === 'RaiseException') {
+                const throwStatement = babel.parse(`throw new Error()`, { filename: 'file.js' }).program.body[0];
+                throwStatement.argument.arguments = node.arguments;
+                Object.assign(node, throwStatement);   
             }
         });
-
-        const returnIdentifier = logic.definition.returns[0] ? logic.definition.returns[0].name : 'result';
 
         console.info('JSON generate:', JSON.stringify(logic.definition.body));
 
@@ -44,8 +58,6 @@ module.exports = function (source) {
         type: 'Program',
         body: logic.definition.body,
     }).code}
-
-                return ${returnIdentifier};
             }
         }`;
     });
