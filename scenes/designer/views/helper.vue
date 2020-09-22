@@ -908,7 +908,9 @@ export default {
             const definition = parseDefinition(definitionSource || '{}');
             content = `const componentOptions = ${content};${definition}`;
             /* eslint-disable no-eval */
-            return eval(`(function(){ ${content}; return componentOptions;})()`);
+            try {
+                return eval(`(function(){ ${content}; return componentOptions;})()`);
+            } catch (e) {}
         },
         getHighLighter(id) {
             const oldHover = this.hover;

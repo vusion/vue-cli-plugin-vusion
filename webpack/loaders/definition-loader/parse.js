@@ -6,8 +6,8 @@ module.exports = function (source) {
 
     function walk(node, func, parent = null, index) {
         func(node, parent, index);
-        const next = node.body || (node.consequent && node.consequent.body) || (node.alternate && node.alternate.body);
-        next && next.forEach((child, index) => walk(child, func, node, index));
+        const next = (node.body && (Array.isArray(node.body) ? node.body : node.body.body)) || (node.consequent && node.consequent.body) || (node.alternate && node.alternate.body);
+        next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
         node.left && walk(node.left, func, node);
         node.right && walk(node.right, func, node);
     }
@@ -33,31 +33,38 @@ module.exports = function (source) {
 
         const returnIdentifier = logic.definition.returns[0] ? logic.definition.returns[0].name : 'result';
 
-        return `methods['${logic.name}'] = async function (${logic.definition.params.map((param) => param.name).join(', ')}) {
-            ${logic.definition.variables.length ? 'let ' + logic.definition.variables.map((variable) => variable.name).join(', ') + ';' : ''}
-            let ${returnIdentifier};
+        console.info('JSON generate:', JSON.stringify(logic.definition.body));
 
-            ${generate({
+        return `methods['${logic.name}'] = async function (${logic.definition.params.map((param) => param.name).join(', ')}) {
+            with (this) {
+                ${logic.definition.variables.length ? 'let ' + logic.definition.variables.map((variable) => variable.name).join(', ') + ';' : ''}
+                let ${returnIdentifier};
+
+                ${generate({
         type: 'Program',
         body: logic.definition.body,
     }).code}
 
-            return ${returnIdentifier};
+                return ${returnIdentifier};
+            }
         }`;
     });
 
-    const data = (definition.variables || []).map((param) => param.name + ': undefined').join(',\n');
+    const data = (definition.variables || []).map((param) => param.name + `: ${param.defaultValue}`).join(',\n');
 
     const output = `
         const methods = componentOptions.methods = componentOptions.methods || {};
         const data = function () {
-            const oldData = componentOptions.data && componentOptions.data !== data ? componentOptions.data.call(this) : {};
-
-            return Object.assign(oldData, {
-                ${data}
-            });
+            with (this) {
+                const oldData = componentOptions.data && componentOptions.data !== data ? componentOptions.data.call(this) : {};
+    
+                return Object.assign(oldData, {
+                    ${data}
+                });
+            }
         };
         componentOptions.data = data;
+
         ${methods.join('\n\n')}
     `;
 
