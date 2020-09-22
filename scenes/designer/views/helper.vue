@@ -910,7 +910,10 @@ export default {
             /* eslint-disable no-eval */
             try {
                 return eval(`(function(){ ${content}; return componentOptions;})()`);
-            } catch (e) {}
+            } catch (e) {
+                console.error(e);
+                return {};
+            }
         },
         getHighLighter(id) {
             const oldHover = this.hover;
@@ -994,7 +997,7 @@ iframe {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 99999000;
+    z-index: -99999000;
     background: hsla(216, 60%, 15%, 0.25);
 }
 </style>
