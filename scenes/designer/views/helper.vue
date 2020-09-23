@@ -5,6 +5,7 @@
     <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
     <div v-show="subVM" :class="$style.mask" :style="subMaskStyle" @click="selectContextView"></div>
     <d-drop ref="drop" :info="targetNode" :target-position="targetPosition"></d-drop>
+    <d-ctrl :list="ctrlList" :init-style="ctrlStyle"></d-ctrl>
 </div>
 </template>
 
@@ -69,11 +70,16 @@ export default {
             slotsMap: new WeakMap(),
             maskStyle: {},
             subMaskStyle: {},
+            ctrlStyle: {
+                top: 0,
+                left: 0,
+            },
             dragging: false,
             targetNode: {},
             targetPosition: {},
             requests: new Map(),
             allNodesAPI: {},
+            ctrlList: [],
         };
     },
     watch: {
@@ -369,6 +375,11 @@ export default {
             this.maskStyle = {};
             if (this.contextVM) {
                 const contextRect = utils.getVisibleRect(this.contextVM.$el);
+
+                this.ctrlStyle = {
+                    left: contextRect.left,
+                    top: contextRect.top,
+                };
                 contextRect.left -= 20;
                 // contextRect.top -= 20;
                 contextRect.right += 20;

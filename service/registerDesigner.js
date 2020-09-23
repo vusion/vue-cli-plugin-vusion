@@ -10,7 +10,7 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
 
         vueConfig.pages = {
             designer: {
-                entry: [require.resolve('../scenes/designer/views/index.js'), require.resolve('../scenes/app/index.js')],
+                entry: [require.resolve('../scenes/app/index.js'), require.resolve('../scenes/designer/views/index.js')],
                 filename: 'designer.html',
                 template: path.resolve(require.resolve('../scenes/app/index.js'), '../index.html'),
                 inject: true,

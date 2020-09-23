@@ -1,13 +1,14 @@
 <template>
 <div v-show="rectStyle" :class="$style.root" :mode="mode" :tag="info.tag" :style="rectStyle"
-    :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp"
-    draggable="true" @dragstart="onDragStart($event)" @dragend="onDragEnd($event)">
+     :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp"
+     draggable="true" @dragstart="onDragStart($event)" @dragend="onDragEnd($event)">
     <div :class="$style.bar">
         <span :class="$style.tag">{{ info.title || info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
         <span :class="$style.icon" role="duplicate"></span> -->
         <span :class="$style.icon" title="创建副本" role="duplicate" @click="duplicate"></span>
         <span :class="$style.icon" title="删除" role="remove" @click="remove"></span>
+        <span :class="$style.icon" title="编辑模态框" role="edit" @click="edit(item)" v-for="(item, index) in ctrlList" :key="index"></span>
     </div>
 </div>
 </template>
@@ -24,17 +25,47 @@ export default {
     data() {
         return {
             rectStyle: undefined,
+            ctrlList: [],
         };
     },
     watch: {
         info: {
             handler(info) {
                 this.computeStyle();
+                const el = this.info.el;
+                if (el) {
+                    const ctrl = info.el.getAttribute('ctrl') || '[]';
+                    this.ctrlList = JSON.parse(ctrl).filter((i) => i);
+                    this.ctrlList.forEach((item) => {
+                        item.el = el;
+                    });
+                }
             },
             immediate: true,
         },
     },
     methods: {
+        edit(item) {
+            this.closeAll();
+            let node = item.el.querySelector(item.selector);
+            while (node && !node.__vue__) {
+                node = node.parentElement;
+            }
+            if (node && node !== item.el && item.el.contains(node)) {
+                node.__vue__[item.ctrl] = !node.__vue__[item.ctrl];
+            }
+        },
+        closeAll() {
+            this.ctrlList.forEach((item) => {
+                let node = item.el.querySelector(item.selector);
+                while (node && !node.__vue__) {
+                    node = node.parentElement;
+                }
+                if (node && node !== item.el && item.el.contains(node)) {
+                    node.__vue__[item.ctrl] = false;
+                }
+            });
+        },
         computeStyle() {
             const el = this.info.el;
             if (el && el.nodeType === 1) {
@@ -194,6 +225,9 @@ export default {
 
 .icon[role="remove"]::before {
     icon-font: url('../assets/delete.svg');
+}
+.icon[role="edit"]::before {
+    icon-font: url('../assets/edit.svg');
 }
 
 .icon[role="duplicate"]::before {

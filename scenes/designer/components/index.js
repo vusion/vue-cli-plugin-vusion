@@ -6,5 +6,6 @@ export { default as DHighlighter } from './d-highlighter.vue';
 export { default as DProgress } from './d-progress.vue';
 export { default as DExpression } from './d-expression.vue';
 export { default as DDrop } from './d-drop.vue';
+export { default as DCtrl } from './d-ctrl.vue';
 export { default as DPlaceholder } from './d-placeholder.vue';
 export { default as DRouteView } from './d-router-view.vue';

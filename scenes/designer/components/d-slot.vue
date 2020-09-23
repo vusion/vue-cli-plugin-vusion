@@ -1,9 +1,9 @@
 <template>
 <div :class="$style.root" :display="display" :position="position" :opened="opened" title="快捷添加"
-    :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
-    v-if="slotsProps.visible" @click="onClickAdd">
+     :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
+     v-if="slotsProps.visible" @click="onClickAdd">
     <u-popup ref="popup" :class="$style.popup" :dragover="dragover" placement="bottom" @toggle="onToggle"
-        @dragover.native.prevent="onDragOver" @dragleave.native.prevent="onDragLeave" @drop.native.prevent="onDrop">
+             @dragover.native.prevent="onDragOver" @dragleave.native.prevent="onDragLeave" @drop.native.prevent="onDrop">
         <div v-if="mode !== 'layout'" :class="$style.mode">
             <div :class="$style.close" @click="close()"></div>
             <u-linear-layout :class="$style.actions" direction="vertical" layout="block" gap="small">
@@ -144,7 +144,7 @@ export default {
                 const cloudui = this.api[this.nodeTag || this.nodeInfo.tag];
                 const slots = cloudui && cloudui.slots || [];
                 const slot = slots.find((item) => item.name === this.slotName);
-                const acceptType = slot && slot['accept-type'] ? slot['accept-type'] : 'all';
+                const acceptType = slot && slot.support ? slot.support : 'all';
                 let needLayout = true;
                 if (Array.isArray(acceptType)) {
                     needLayout = acceptType.includes('block');

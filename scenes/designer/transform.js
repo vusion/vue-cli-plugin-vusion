@@ -157,6 +157,33 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                     Object.assign(text, tmp);
                 });
             }
+            // 后续根据组件说明判断是否需要加控制器
+            const modals = children.filter((item) => item.tag === 'u-modal');
+            if (modals.length) {
+                const queue = modals.map((item, index) => {
+                    const name = `ctrl` + index;
+                    const value = (node.attrsMap['vusion-node-path'] || '') + '_u-modal' + index;
+                    item.attrsList.push({ name, value });
+                    item.attrsMap[name] = value;
+                    const attr = { name, value: JSON.stringify(value) };
+                    item.attrs.push(attr);
+                    item.rawAttrsMap[name] = attr;
+                    item.plain = false;
+                    return {
+                        selector: `[${name}="${value}"]`,
+                        type: 'modal',
+                        ctrl: 'currentVisible',
+                    };
+                });
+                const name = `ctrl`;
+                const value = JSON.stringify(queue);
+                node.attrsList.push({ name, value });
+                node.attrsMap[name] = value;
+                const attr = { name, value: JSON.stringify(value) };
+                node.attrs.push(attr);
+                node.rawAttrsMap[name] = attr;
+                node.plain = false;
+            }
 
             // 表达式处添加占位，用于添加节点操作
             const expressions = children.filter((item) => item.type === 2);

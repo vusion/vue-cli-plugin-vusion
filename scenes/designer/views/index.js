@@ -3,6 +3,7 @@ import './dragEvents';
 // import './designer.css';
 
 import Helper from './helper.vue';
+import '../components/d-ctrl/inject';
 
 // 自动注册本地组件
 const requires = require.context('../components/', true, /\.vue$/);
