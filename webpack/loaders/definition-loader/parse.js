@@ -73,7 +73,7 @@ module.exports = function (source) {
             } else if (node.type === 'CallGraphQL') {
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.serviceName}', '${node.queryKey}')`, { filename: 'file.js' }).program.body[0].expression,
+                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}')`, { filename: 'file.js' }).program.body[0].expression,
                 });
                 if (node.variables) {
                     node.argument.arguments.push(node.variables);
