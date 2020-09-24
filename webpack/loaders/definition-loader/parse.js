@@ -44,6 +44,10 @@ module.exports = function (source) {
         return param.name + `: ${param.init.value}`;
     }).join(',\n');
 
+    const lifecycles = (definition.lifecycles || []).map((lifecycle) => `componentOptions['${lifecycle.name}'] = function () {
+            return this.${lifecycle.definition}();
+        }`);
+
     const methods = (definition.logics || []).map((logic) => {
         const returnIdentifier = logic.definition.returns[0] ? logic.definition.returns[0].name : 'result';
 
@@ -129,6 +133,7 @@ module.exports = function (source) {
 
     const output = `
         const methods = componentOptions.methods = componentOptions.methods || {};
+        const computed = componentOptions.computed = componentOptions.computed || {};
         const data = function () {
             const oldData = componentOptions.data && componentOptions.data !== data ? componentOptions.data.call(this) : {};
 
@@ -137,6 +142,11 @@ module.exports = function (source) {
             });
         };
         componentOptions.data = data;
+
+        const meta = componentOptions.meta = componentOptions.meta || {};
+        Object.assign(meta, {title: '${definition.title}', crumb: '${definition.crumb}'});
+
+        ${lifecycles.join('\n\n')}
 
         ${methods.join('\n\n')}
     `;
