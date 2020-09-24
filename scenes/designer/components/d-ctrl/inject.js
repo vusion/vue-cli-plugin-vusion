@@ -37,11 +37,32 @@ Vue.component('UModal', {
         closeHandler() {
             this.$refs.modal.currentVisible = false;
         },
+        remove() {
+            let p = this;
+            while (!p.$options._scopeId) {
+                p = p.$parent;
+            }
+            if (p) {
+                this.send({
+                    command: 'removeNode',
+                    type: 'component',
+                    tag: 'u-modal',
+                    scopeId: p.$options._scopeId,
+                    nodePath: this.$attrs['vusion-node-path'],
+                });
+            }
+        },
+        send(data) {
+            const dataString = JSON.stringify(data);
+            console.info('[vusion:designer] Send: ' + dataString); // (dataString.length > 100 ? dataString.slice(0, 100) + '...' : dataString));
+            window.parent.postMessage({ protocol: 'vusion', sender: 'designer', data }, '*');
+        },
     },
     render(h) {
         const ctrlSlot = h('d-ctrl', {
             on: {
-                click: this.closeHandler,
+                close: this.closeHandler,
+                remove: this.remove,
             },
         });
         const slots = normalizeSlots(this.$slots, this.$vnode.context) || [];

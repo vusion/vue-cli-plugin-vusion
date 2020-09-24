@@ -8,7 +8,7 @@
         <span :class="$style.icon" role="duplicate"></span> -->
         <span :class="$style.icon" title="创建副本" role="duplicate" @click="duplicate"></span>
         <span :class="$style.icon" title="删除" role="remove" @click="remove"></span>
-        <span :class="$style.icon" title="编辑模态框" role="edit" @click="edit(item)" v-for="(item, index) in ctrlList" :key="index"></span>
+        <span :class="$style.icon" title="编辑模态框" role="modal" @click="edit(item)" v-for="(item, index) in ctrlList" :key="index"></span>
     </div>
 </div>
 </template>
@@ -226,8 +226,13 @@ export default {
 .icon[role="remove"]::before {
     icon-font: url('../assets/delete.svg');
 }
-.icon[role="edit"]::before {
-    icon-font: url('../assets/edit.svg');
+.icon[role="modal"]::before {
+    font-size: 18px;
+    line-height: 12px;
+    vertical-align: middle;
+    margin-top: -1px;
+    display: inline-block;
+    icon-font: url('../assets/弹窗.svg');
 }
 
 .icon[role="duplicate"]::before {

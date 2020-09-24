@@ -5,7 +5,6 @@
     <div v-show="contextVM" :class="$style.mask" :style="maskStyle" @click="selectContextView"></div>
     <div v-show="subVM" :class="$style.mask" :style="subMaskStyle" @click="selectContextView"></div>
     <d-drop ref="drop" :info="targetNode" :target-position="targetPosition"></d-drop>
-    <d-ctrl :list="ctrlList" :init-style="ctrlStyle"></d-ctrl>
 </div>
 </template>
 
