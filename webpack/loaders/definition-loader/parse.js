@@ -40,8 +40,8 @@ module.exports = function (source) {
 
     const dataMap = {};
     const data = (definition.variables || []).map((param) => {
-        dataMap[param.name] = param.defaultValue;
-        return param.name + `: ${param.defaultValue}`;
+        dataMap[param.name] = param.init || {};
+        return param.name + `: ${param.init.value}`;
     }).join(',\n');
 
     const methods = (definition.logics || []).map((logic) => {
