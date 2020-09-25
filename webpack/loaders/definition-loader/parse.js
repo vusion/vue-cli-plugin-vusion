@@ -39,9 +39,10 @@ module.exports = function (source) {
     }
 
     const dataMap = {};
-    const data = (definition.variables || []).map((param) => {
-        dataMap[param.name] = param.init || {};
-        return param.name + `: ${param.init.value}`;
+    const data = (definition.variables || []).map((variable) => {
+        variable.init = variable.init || { type: 'StringLiteral', value: '' };
+        dataMap[variable.name] = variable.init;
+        return variable.name + `: ${generate(variable.init).code}`;
     }).join(',\n');
 
     const lifecycles = (definition.lifecycles || []).map((lifecycle) => `componentOptions['${lifecycle.name}'] = function () {
@@ -59,18 +60,50 @@ module.exports = function (source) {
                     type: 'ReturnStatement',
                     argument: { type: 'Identifier', name: returnIdentifier },
                 });
-            } else if (node.type === 'Call')
-                node.type = 'CallExpression';
-            else if (node.type === 'Identifier') {
+            } else if (node.type === 'CallLogic') {
+                Object.assign(node, {
+                    type: 'AwaitExpression',
+                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}')`, { filename: 'file.js' }).program.body[0].expression,
+                });
+                if (node.variables) {
+                    node.argument.arguments.push(node.variables);
+                }
+            } else if (node.type === 'CallInterface') {
+                const key = node.interfaceKey;
+                const arr = key.split('/');
+                Object.assign(node, {
+                    type: 'AwaitExpression',
+                    argument: babel.parse(`this.$services['${arr[0]}']['${arr[1]}']({
+                        query: {
+                            taskId: undefined,
+                        },
+                        body: {},
+                    })`, { filename: 'file.js' }).program.body[0].expression,
+                });
+
+                const objectExpression = node.argument.arguments[0];
+                if (node.query) {
+                    objectExpression.properties[1].properties[1] = node.query;
+                }
+                if (node.body) {
+                    objectExpression.properties[1] = node.body;
+                }
+            } else if (node.type === 'CallFlow') {
+                Object.assign(node, {
+                    type: 'AwaitExpression',
+                    argument: babel.parse(`this.$services.process.${node.action}()`, { filename: 'file.js' }).program.body[0].expression,
+                });
+                if (node.variables) {
+                    node.argument.arguments.push(node.variables);
+                }
+            } else if (node.type === 'Identifier') {
                 if (dataMap[node.name])
                     node.name = 'this.' + node.name;
             } else if (node.type === 'CallMessageShow') {
-                // console.log('STrt!!!')
                 Object.assign(node, babel.parse(`this.$toast.show()`, { filename: 'file.js' }).program.body[0].expression, {
                     arguments: node.arguments,
                 });
             } else if (node.type === 'CallDestination') {
-                // console.log('STrt!!!')
                 Object.assign(node, babel.parse(`this.$destination()`, { filename: 'file.js' }).program.body[0].expression, {
                     arguments: node.arguments,
                 });
