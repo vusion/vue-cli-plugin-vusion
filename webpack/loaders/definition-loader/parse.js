@@ -71,23 +71,38 @@ module.exports = function (source) {
             } else if (node.type === 'CallInterface') {
                 const key = node.interfaceKey;
                 const arr = key.split('/');
+                const getParams = (key) => {
+                    const data = (node.params || []).filter((param) => param.in === key);
+                    return data.map((param) => {
+                        let name = param.value.name;
+                        if (dataMap[name]) {
+                            name = `this.${name}`;
+                        }
+                        return `${param.key}: ${name}`;
+                    });
+                };
                 Object.assign(node, {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$services['${arr[0]}']['${arr[1]}']({
-                        query: {
-                            taskId: undefined,
+                        path:{
+                            ${getParams('path').join(',\n')}
                         },
-                        body: {},
+                        query: {
+                            ${getParams('query').join(',\n')}
+                        },
+                        body: {
+                            ${getParams('body').join(',\n')}
+                        },
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
 
-                const objectExpression = node.argument.arguments[0];
-                if (node.query) {
-                    objectExpression.properties[1].properties[1] = node.query;
-                }
-                if (node.body) {
-                    objectExpression.properties[1] = node.body;
-                }
+                // const objectExpression = node.argument.arguments[0];
+                // if (node.query) {
+                //     objectExpression.properties[1].properties[1] = node.query;
+                // }
+                // if (node.body) {
+                //     objectExpression.properties[1] = node.body;
+                // }
             } else if (node.type === 'CallFlow') {
                 Object.assign(node, {
                     type: 'AwaitExpression',
