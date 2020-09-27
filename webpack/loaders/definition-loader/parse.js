@@ -61,13 +61,25 @@ module.exports = function (source) {
                     argument: { type: 'Identifier', name: returnIdentifier },
                 });
             } else if (node.type === 'CallLogic') {
+                // Object.assign(node, {
+                //     type: 'AwaitExpression',
+                //     argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}')`, { filename: 'file.js' }).program.body[0].expression,
+                // });
+                // if (node.variables) {
+                //     node.argument.arguments.push(node.variables);
+                // }
+                const getArgument = () => node.arguments.map((argument) => {
+                    let name = argument.name;
+                    if (dataMap[name]) {
+                        name = `this.${name}`;
+                    }
+                    return name;
+                });
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}')`, { filename: 'file.js' }).program.body[0].expression,
+                    argument: babel.parse(`this.${node.callee}(${getArgument().join(',')})`,
+                        { filename: 'file.js' }).program.body[0].expression,
                 });
-                if (node.variables) {
-                    node.argument.arguments.push(node.variables);
-                }
             } else if (node.type === 'CallInterface') {
                 const key = node.interfaceKey;
                 const arr = key.split('/');
