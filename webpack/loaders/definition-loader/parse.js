@@ -45,12 +45,14 @@ module.exports = function (source) {
         return variable.name + `: ${generate(variable.init).code}`;
     }).join(',\n');
 
-    const lifecycles = (definition.lifecycles || []).map((lifecycle) => `componentOptions['${lifecycle.name}'] = function () {
+    const lifecycles = (definition.lifecycles || []).filter((lifecycle) => lifecycle.name).map((lifecycle) => `componentOptions['${lifecycle.name}'] = function () {
             return this.${lifecycle.definition}();
         }`);
 
     const methods = (definition.logics || []).map((logic) => {
-        const returnIdentifier = logic.definition.returns[0] ? logic.definition.returns[0].name : 'result';
+        let returnObj = { type: 'Identifier', name: 'result', init: { type: 'Identifier', name: 'undefined' } };
+        if (logic.definition.returns[0])
+            returnObj = logic.definition.returns[0];
 
         walk(logic.definition, (node, parent, index) => {
             if (node.type === 'Start' || node.type === 'Comment') {
@@ -58,7 +60,7 @@ module.exports = function (source) {
             } else if (node.type === 'End') {
                 Object.assign(node, {
                     type: 'ReturnStatement',
-                    argument: { type: 'Identifier', name: returnIdentifier },
+                    argument: { type: 'Identifier', name: returnObj.name },
                 });
             } else if (node.type === 'CallLogic') {
                 // Object.assign(node, {
@@ -86,25 +88,26 @@ module.exports = function (source) {
                 const getParams = (key) => {
                     const data = (node.params || []).filter((param) => param.in === key);
                     return data.map((param) => {
-                        let name = param.value.name;
-                        if (dataMap[name]) {
-                            name = `this.${name}`;
+                        let value = generate(param.value).code;
+                        if (dataMap[value]) {
+                            value = `this.${value}`;
                         }
-                        return `${param.key}: ${name}`;
+                        if (key === 'body')
+                            return value || 'undefined';
+                        else
+                            return `${param.name}: ${value}`;
                     });
                 };
                 Object.assign(node, {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$services['${arr[0]}']['${arr[1]}']({
-                        path:{
+                        path: {
                             ${getParams('path').join(',\n')}
                         },
                         query: {
                             ${getParams('query').join(',\n')}
                         },
-                        body: {
-                            ${getParams('body').join(',\n')}
-                        },
+                        body: ${getParams('body')},
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
 
@@ -135,13 +138,26 @@ module.exports = function (source) {
                     arguments: node.arguments,
                 });
             } else if (node.type === 'CallGraphQL') {
+                const getParams = (key) => {
+                    const data = (node.params || []); // .filter((param) => param.in === key);
+                    return data.map((param) => {
+                        let value = generate(param.value).code;
+                        if (dataMap[value]) {
+                            value = `this.${value}`;
+                        }
+                        if (key === 'body')
+                            return value || 'undefined';
+                        else
+                            return `${param.name}: ${value}`;
+                    });
+                };
+
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}')`, { filename: 'file.js' }).program.body[0].expression,
+                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}', {
+                        ${getParams('query').join(',\n')}
+                    })`, { filename: 'file.js' }).program.body[0].expression,
                 });
-                if (node.variables) {
-                    node.argument.arguments.push(node.variables);
-                }
             } else if (node.type === 'WhileStatement') {
                 if (Array.isArray) {
                     node.body = {
@@ -181,8 +197,8 @@ module.exports = function (source) {
         console.info('JSON generate:', JSON.stringify(logic.definition.body));
 
         return `methods['${logic.name}'] = async function (${logic.definition.params.map((param) => param.name).join(', ')}) {
-            ${logic.definition.variables.length ? 'let ' + logic.definition.variables.map((variable) => variable.name).join(', ') + ';' : ''}
-            let ${returnIdentifier};
+            ${logic.definition.variables.length ? 'let ' + logic.definition.variables.map((variable) => variable.name + ' = ' + (generate(variable.init).code || '')).join(';\n') + '' : ''}
+            let ${returnObj.name} = ${generate(returnObj.init).code || ''};
 
             ${generate({
         type: 'Program',
@@ -204,7 +220,7 @@ module.exports = function (source) {
         componentOptions.data = data;
 
         const meta = componentOptions.meta = componentOptions.meta || {};
-        Object.assign(meta, {title: '${definition.title}', crumb: '${definition.crumb}'});
+        Object.assign(meta, {title: ${JSON.stringify(definition.title)}, crumb: ${JSON.stringify(definition.crumb)} });
 
         ${lifecycles.join('\n\n')}
 
