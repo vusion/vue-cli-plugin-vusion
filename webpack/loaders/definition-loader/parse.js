@@ -63,13 +63,6 @@ module.exports = function (source) {
                     argument: { type: 'Identifier', name: returnObj.name },
                 });
             } else if (node.type === 'CallLogic') {
-                // Object.assign(node, {
-                //     type: 'AwaitExpression',
-                //     argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}')`, { filename: 'file.js' }).program.body[0].expression,
-                // });
-                // if (node.variables) {
-                //     node.argument.arguments.push(node.variables);
-                // }
                 const getArgument = () => node.arguments.map((argument) => {
                     let name = argument.name;
                     if (dataMap[name]) {
@@ -79,7 +72,7 @@ module.exports = function (source) {
                 });
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.${node.callee}(${getArgument().join(',')})`,
+                    argument: babel.parse(`this.${node.calleeCode}(${getArgument().join(',')})`,
                         { filename: 'file.js' }).program.body[0].expression,
                 });
             } else if (node.type === 'CallInterface') {
@@ -119,12 +112,21 @@ module.exports = function (source) {
                 //     objectExpression.properties[1] = node.body;
                 // }
             } else if (node.type === 'CallFlow') {
+                let params = '';
+                if (node.action === 'getList') {
+                    params = `{
+                        body: {
+                            includeProcessVariables: true,
+                        },
+                    }`;
+                }
+
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$services.process.${node.action}()`, { filename: 'file.js' }).program.body[0].expression,
+                    argument: babel.parse(`this.$services.process.${node.action}(${params})`, { filename: 'file.js' }).program.body[0].expression,
                 });
                 if (node.variables) {
-                    node.argument.arguments.push(node.variables);
+                    node.argument.arguments.push();
                 }
             } else if (node.type === 'Identifier') {
                 if (dataMap[node.name])
@@ -145,10 +147,10 @@ module.exports = function (source) {
                         if (dataMap[value]) {
                             value = `this.${value}`;
                         }
-                        if (key === 'body')
-                            return value || 'undefined';
-                        else
-                            return `${param.name}: ${value}`;
+                        // if (key === 'body')
+                        //     return value || 'undefined';
+                        // else
+                        return `${param.name}: ${value}`;
                     });
                 };
 
