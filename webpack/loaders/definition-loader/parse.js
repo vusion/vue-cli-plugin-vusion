@@ -135,10 +135,19 @@ module.exports = function (source) {
                 Object.assign(node, babel.parse(`this.$toast.show()`, { filename: 'file.js' }).program.body[0].expression, {
                     arguments: node.arguments,
                 });
-            } else if (node.type === 'CallDestination') {
-                Object.assign(node, babel.parse(`this.$destination()`, { filename: 'file.js' }).program.body[0].expression, {
-                    arguments: node.arguments,
+            } else if (node.type === 'Destination') {
+                const params = (node.params || []).map((param) => {
+                    if (param.value.type === 'Identifier') {
+                        let name = param.value.name;
+                        if (dataMap[name])
+                            name = 'this.' + name;
+                        return param.key.name + '=${' + name + '}';
+                    } else {
+                        return param.key.name + '=' + param.value.value;
+                    }
                 });
+                const url = '`/' + node.page + node.url + '?' + params.join('&') + '`';
+                Object.assign(node, babel.parse(`this.$destination(${url})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallGraphQL') {
                 const getParams = (key) => {
                     const data = (node.params || []); // .filter((param) => param.in === key);
