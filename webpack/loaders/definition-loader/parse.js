@@ -136,7 +136,7 @@ module.exports = function (source) {
                     arguments: node.arguments,
                 });
             } else if (node.type === 'Destination') {
-                const params = (node.params || []).map((param) => {
+                const params = (node.params || []).filter((param) => param.key && param.value).map((param) => {
                     if (param.value.type === 'Identifier') {
                         let name = param.value.name;
                         if (dataMap[name])
