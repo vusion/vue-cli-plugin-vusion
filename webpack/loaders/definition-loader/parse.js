@@ -79,17 +79,25 @@ module.exports = function (source) {
                 const key = node.interfaceKey;
                 const arr = key.split('/');
                 const getParams = (key) => {
-                    const data = (node.params || []).filter((param) => param.in === key);
-                    return data.map((param) => {
-                        let value = generate(param.value).code;
-                        if (dataMap[value]) {
-                            value = `this.${value}`;
-                        }
-                        if (key === 'body')
-                            return value || 'undefined';
-                        else
-                            return `${param.name}: ${value}`;
-                    });
+                    if (key === 'body') {
+                        const body = (node.params || []).find((param) => param.in === key);
+                        if (body) {
+                            let value = generate(body.value).code;
+                            if (dataMap[value])
+                                value = `this.${value}`;
+                            return value || undefined;
+                        } else
+                            return undefined;
+                    } else {
+                        return (node.params || [])
+                            .filter((param) => param.in === key)
+                            .map((param) => {
+                                let value = generate(param.value).code;
+                                if (dataMap[value])
+                                    value = `this.${value}`;
+                                return `${param.name}: ${value}`;
+                            });
+                    }
                 };
                 Object.assign(node, {
                     type: 'AwaitExpression',
@@ -113,11 +121,58 @@ module.exports = function (source) {
                 // }
             } else if (node.type === 'CallFlow') {
                 let params = '';
-                if (node.action === 'getList') {
+                const variables = generate(node.variables).code || undefined;
+                if (node.action === 'start') {
                     params = `{
                         body: {
+                            processDefinitionKey: '${node.processDefinitionKey}',
+                            returnVariables: true,
+                            variables: ${variables},
+                        }
+                    }`;
+                } else if (node.action === 'complete') {
+                    params = `{
+                        path: {
+                            taskId: '${generate(node.taskId).node || undefined}',
+                        },
+                        body: {
+                            action: 'complete',
+                            variables: ${variables},
+                        }
+                    }`;
+                } else if (node.action === 'getList') {
+                    params = `{
+                        body: {
+                            processDefinitionKey: '${node.processDefinitionKey}',
+                            processInstanceId: ${generate(node.processInstanceId).code || undefined},
                             includeProcessVariables: true,
                         },
+                    }`;
+                } else if (node.action === 'get') {
+                    params = `{
+                        path: {
+                            taskId: '${generate(node.taskId).node || undefined}',
+                        },
+                    }`;
+                } else if (node.action === 'getProcessInstanceList') {
+                    params = `{
+                        body: {
+                            processDefinitionKey: '${node.processDefinitionKey}',
+                            includeProcessVariables: true,
+                        }
+                    }`;
+                } else if (node.action === 'getProcessInstance') {
+                    params = `{
+                        path: {
+                            processInstanceId: '${generate(node.processInstanceId).node || undefined}',
+                        },
+                    }`;
+                } else if (node.action === 'updateVariables') {
+                    params = `{
+                        path: {
+                            processInstanceId: '${generate(node.processInstanceId).node || undefined}',
+                        },
+                        body: ${variables},
                     }`;
                 }
 
@@ -125,9 +180,6 @@ module.exports = function (source) {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$services.process.${node.action}(${params})`, { filename: 'file.js' }).program.body[0].expression,
                 });
-                if (node.variables) {
-                    node.argument.arguments.push();
-                }
             } else if (node.type === 'Identifier') {
                 if (dataMap[node.name])
                     node.name = 'this.' + node.name;
