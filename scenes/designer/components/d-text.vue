@@ -1,14 +1,16 @@
 <template>
 <span :class="$style.root"
-    contenteditable="true"
-    tabindex="1"
-    @blur="onBlur"
-    @keydown="onKeyDown"
+    @dblclick="onDblclick"
     @click="cancelEvent"
     :vusion-node-path="nodePath"
     :vusion-parent-node-path="parentNodePath"
-    :vusion-slot-name="slotName"
-    ref="edit">{{ text }}</span>
+    :vusion-slot-name="slotName">
+    <span v-if="!contenteditable" key="noEdit">{{ text }}</span>
+    <span v-else contenteditable="true" tabindex="0" key="edit"
+        @blur="onBlur"
+        @keydown="onKeyDown"
+        ref="edit" focus="true">{{ text }}</span>
+</span>
 </template>
 
 <script>
@@ -20,12 +22,18 @@ export default {
         parentNodePath: String,
         slotName: String,
     },
+    data() {
+        return {
+            contenteditable: false,
+        };
+    },
     methods: {
         cancelEvent(event) {
             event.stopImmediatePropagation();
             event.preventDefault();
         },
         onBlur(event) {
+            this.contenteditable = false;
             this.$emit('d-text:blur', this);
             const value = event.target.innerText;
             if (value === this.text)
@@ -55,15 +63,27 @@ export default {
         send(data) {
             return this.$root.$emit('d-slot:send', data);
         },
+        onDblclick() {
+            this.contenteditable = true;
+            this.$nextTick(() => {
+                this.$refs.edit && (this.$refs.edit.focus());
+            });
+        },
     },
 };
 </script>
 
 <style module>
-.root:focus{
+.root{
+    cursor: pointer !important;
+}
+.root span:focus{
+    outline:none;
+}
+.root span[contenteditable="true"]:focus{
     outline: 1px dashed #4a88e8;
 }
-.root:empty:before{
+.root span[contenteditable="true"]:empty:before{
     content:'X';
     opacity: 0;
 }
