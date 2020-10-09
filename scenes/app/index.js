@@ -17,12 +17,14 @@ installComponents(Vue, Components);
 
 import initApp from './initApp';
 import installServices from '@/global/features/service/install';
+import installUtils from '@/global/features/utils/install';
 import { initMiddleware } from '@/global/middleware';
 
 import GueryStrCollect from '@/global/features/apollo/queryStrCollect';
 
 Vue.use(VueRouter);
 Vue.use(installServices);
+Vue.use(installUtils);
 Vue.use(GueryStrCollect);
 
 const Index = Vue.extend({

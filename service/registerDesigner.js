@@ -1,4 +1,5 @@
 const predesigner = require('./predesigner');
+const EventHooksWebpackPlugin = require('event-hooks-webpack-plugin');
 const { CallbackTask } = require('event-hooks-webpack-plugin/lib/tasks');
 const path = require('path');
 
@@ -68,12 +69,13 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
                 args[0].files = ['designer.html'];
                 return args;
             });
-            config.plugin(`html-index`).tap((args) => {
-                args[0].emit = new CallbackTask((compilation, done) => {
-                    done();
-                });
-                return args;
-            });
+            config.plugin('html-index').use(EventHooksWebpackPlugin, [
+                {
+                    emit: new CallbackTask((compilation, done) => {
+                        done();
+                    }),
+                },
+            ]);
 
             // config.module.rule('designer-config')
             //     .test(/vue-cli-plugin-vusion[\\/]scenes[\\/]designer[\\/]views[\\/]empty\.js$/)
