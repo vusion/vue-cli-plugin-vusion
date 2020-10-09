@@ -1,5 +1,6 @@
 const generate = require('@babel/generator').default;
 const babel = require('@babel/core');
+const { TransforClientQuery: genQuery } = require('apollo-plugin-loader');
 
 function switchCase2If(cases) {
     const cas = cases.unshift();
@@ -248,9 +249,20 @@ module.exports = function (source) {
                     });
                 };
 
+                const getOperationName = (schemaRef = '', name) => {
+                    const arr = schemaRef.split('/');
+                    arr.pop();
+                    arr.push(name);
+                    arr.shift();
+                    return arr.join('_');
+                };
+
+                node.operationName = getOperationName(node.schemaRef, node.resolverName);
+                const graphqlClient = node.querySchemaMap ? genQuery(node) : `query test{}`;
+
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}', {
+                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}', ${'`' + `${graphqlClient}` + '`'}, {
                         ${getParams('query').join(',\n')}
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
