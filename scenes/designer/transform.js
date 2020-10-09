@@ -189,7 +189,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             const expressions = children.filter((item) => item.type === 2);
             if (expressions.length) {
                 expressions.forEach((expression) => {
-                    const tmp = compiler.compile(`<d-placeholder nodePath="${expression.nodePath}" parentNodePath="${node.nodePath}">${expression.text}</d-placeholder>`).ast;
+                    const tmp = compiler.compile(`<d-placeholder nodePath="${expression.nodePath}" parentNodePath="${node.nodePath}" name="${expression.text}">${expression.text}</d-placeholder>`).ast;
                     tmp.parent = node;
                     Object.assign(expression, tmp);
                 });

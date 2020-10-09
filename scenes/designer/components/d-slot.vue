@@ -1,9 +1,9 @@
 <template>
 <div :class="$style.root" :display="display" :position="position" :opened="opened" title="快捷添加"
-     :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
-     v-if="slotsProps.visible" @click="onClickAdd">
+    :dragover="dragover" @dragover.prevent="onDragOver" @dragleave.prevent="onDragLeave" @drop.prevent="onDrop"
+    v-if="slotsProps.visible" @click="onClickAdd">
     <u-popup ref="popup" :class="$style.popup" :dragover="dragover" placement="bottom" @toggle="onToggle"
-             @dragover.native.prevent="onDragOver" @dragleave.native.prevent="onDragLeave" @drop.native.prevent="onDrop">
+        @dragover.native.prevent="onDragOver" @dragleave.native.prevent="onDragLeave" @drop.native.prevent="onDrop">
         <div v-if="mode !== 'layout'" :class="$style.mode">
             <div :class="$style.close" @click="close()"></div>
             <u-linear-layout :class="$style.actions" direction="vertical" layout="block" gap="small">
