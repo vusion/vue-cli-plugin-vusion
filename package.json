@@ -38,7 +38,7 @@
     "@vusion/postcss-calc": "^7.0.3",
     "@vusion/routes-loader": "^0.3.0",
     "@vusion/utils": "^0.4.9",
-    "apollo-plugin-loader": "^1.0.6",
+    "apollo-plugin-loader": "^1.0.8",
     "babel-loader": "^8.0.6",
     "codesandbox": "^2.1.12",
     "color": "^3.1.2",

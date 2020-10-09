@@ -27,6 +27,16 @@ function switchCase2If(cases) {
     return result;
 }
 
+// 参数是数组的情况需要处理
+function objectToQuerystring(obj = {}) {
+    return Object.keys(obj).reduce((str, key, i) => {
+        const delimiter = (i === 0) ? '' : '&';
+        key = encodeURIComponent(key);
+        const val = encodeURIComponent(obj[key]);
+        return [str, delimiter, key, '=', val].join('');
+    }, '');
+}
+
 module.exports = function (source) {
     const definition = JSON.parse(source);
 
@@ -124,7 +134,7 @@ module.exports = function (source) {
                         if (body)
                             return safeGenerate(body.value);
                         else
-                            return undefined;
+                            return '{}';
                     } else {
                         return (node.params || [])
                             .filter((param) => param.in === key)
@@ -134,6 +144,7 @@ module.exports = function (source) {
                             });
                     }
                 };
+                // 如果是 interface 判断接口参数类型window.location.href
                 Object.assign(node, {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$services['${arr[0]}']['${arr[1]}']({
@@ -143,7 +154,7 @@ module.exports = function (source) {
                         query: {
                             ${getParams('query').join(',\n')}
                         },
-                        body: ${getParams('body')},
+                        body: ${getParams('body') || '{}'},
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
 
@@ -211,7 +222,7 @@ module.exports = function (source) {
                         path: {
                             processInstanceId: ${safeGenerate(node.processInstanceId)},
                         },
-                        body: ${variables},
+                        body: ${variables || '{}'},
                     }`;
                 }
 
@@ -243,26 +254,59 @@ module.exports = function (source) {
             } else if (node.type === 'CallGraphQL') {
                 const getParams = (key) => {
                     const data = (node.params || []); // .filter((param) => param.in === key);
-                    return data.map((param) => {
-                        const value = safeGenerate(param.value);
-                        return `${param.name}: ${value}`;
-                    });
+                    const result = [];
+                    const pathparams = data.filter((param) => param.in === 'path');
+                    if (pathparams.length > 0) {
+                        pathparams.forEach((param) => {
+                            const value = safeGenerate(param.value);
+                            result.push(`${param.name}: ${value}`);
+                        });
+                    }
+
+                    const queryparams = data.filter((param) => param.in === 'query');
+                    if (queryparams.length > 0) {
+                        const valueObject = {};
+                        queryparams.forEach((param) => {
+                            const value = safeGenerate(param.value);
+                            valueObject[`${param.name}`] = `${value}`;
+                        });
+                        // key：value 转化成 queryString
+                        result.push(`query: ${objectToQuerystring(valueObject)}`);
+                    }
+
+                    const bodyparams = data.filter((param) => param.in === 'body');
+                    if (bodyparams.length > 0) {
+                        const bodyValue = bodyparams.map((param) => {
+                            const value = safeGenerate(param.value);
+                            return `${param.name}:${value}`;
+                        });
+                        // 如果是 body 需要转化成对象
+                        result.push(`body: {
+                            ${bodyValue.join(',\n')}
+                        }`);
+                    }
+
+                    // 最后再把按照 key 组装后的结果返回给页面
+                    return result;
                 };
 
-                const getOperationName = (schemaRef = '', name) => {
+                const getOperationName = (schemaRef = '', name = '') => {
                     const arr = schemaRef.split('/');
+                    const entityName = arr[3];
+                    // 处理全局查询的单复数问题
+                    const singlename = name.indexOf('getAll') > -1 ? `getAll${entityName}` : name;
                     arr.pop();
-                    arr.push(name);
+                    arr.push(singlename);
                     arr.shift();
                     return arr.join('_');
                 };
 
                 node.operationName = getOperationName(node.schemaRef, node.resolverName);
                 const graphqlClient = node.querySchemaMap ? genQuery(node) : `query test{}`;
-
+                console.info('graphqlClient', graphqlClient);
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.resolverName}', ${'`' + `${graphqlClient}` + '`'}, {
+                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.operationName}', ${'`' + `${graphqlClient}` + '`'}, {
                         ${getParams('query').join(',\n')}
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
