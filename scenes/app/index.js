@@ -7,6 +7,8 @@ import '@/global/styles/theme.css';
 import '@/global/features/page-init';
 import '@/global/styles/index.css';
 
+install(Vue, Library);
+
 import * as Components from '@/global/components';
 import filters from '@/global/features/common/filters';
 
@@ -20,7 +22,6 @@ import { initMiddleware } from '@/global/middleware';
 import GueryStrCollect from '@/global/features/apollo/queryStrCollect';
 
 Vue.use(VueRouter);
-install(Vue, Library);
 Vue.use(installServices);
 Vue.use(GueryStrCollect);
 

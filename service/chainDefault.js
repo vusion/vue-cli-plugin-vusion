@@ -65,7 +65,7 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
         config.module.rule('definition-loader')
             .resourceQuery(/blockType=definition/)
             .use('definition-loader')
-            .loader(require.resolve('../webpack/loaders/definition-loader.js'));
+            .loader(require.resolve('../webpack/loaders/definition-loader/index.js'));
 
         // config.module.rules.delete('postcss');
         // config.module.rules.delete('scss');

@@ -429,7 +429,7 @@ export default {
         },
         onMouseOver(e) {
             if (this.$el.contains(e.target)) { // helperVM 中的事件不拦截、不处理
-                if (this.isInSubMask(event)) {
+                if (this.isInSubMask(e) && !this.isInModal(e.target)) {
                     const nodeInfo = this.getNodeInfo(this.subVM.$el.parentElement);
                     this.hover = nodeInfo;
                 } else {
@@ -490,7 +490,7 @@ export default {
 
             this.cancelEvent(e);
 
-            if (!(this.contextVM && this.contextVM.$el.contains(e.target))) { // 不在 contextVM 中，视为选中 contextView
+            if (!(this.contextVM && this.contextVM.$el.contains(e.target) || this.isInModal(e.target))) { // 不在 contextVM 中，视为选中 contextView
                 return this.selectContextView();
             }
 
@@ -514,6 +514,17 @@ export default {
             // slot 属性可编辑
             this.editSlotAttribute(e, nodeInfo);
         },
+        isInModal(el) {
+            let parent = el;
+
+            while (parent) {
+                if (parent.className.startsWith('u-modal_'))
+                    return true;
+                parent = parent.parentElement;
+            }
+
+            return false;
+        },
         select(nodeInfo) {
             if (nodeInfo.el === this.selected.el)
                 return;
@@ -523,8 +534,8 @@ export default {
         /**
          * 不选具体组件，只选页面
          */
-        selectContextView(event) {
-            if (this.isInSubMask(event)) {
+        selectContextView(e) {
+            if (this.isInSubMask(e) && !this.isInModal(e.target)) {
                 const nodeInfo = this.getNodeInfo(this.subVM.$el.parentElement);
                 this.select(nodeInfo);
             } else {
@@ -640,39 +651,6 @@ export default {
                 // overlay && (overlay.style.display = 'none');
             }
         },
-        rerenderView(data) {
-            const scopeId = this.contextVM.$options._scopeId || '';
-            let cssSuffix = '';
-            if (data.content && data.content.style) {
-                cssSuffix = this.setStyle(data.content.style, data.content.template, scopeId.replace('data-v-', ''));
-            }
-            const options = {
-                scopeId,
-                whitespace: 'condense',
-                cssSuffix,
-            };
-
-            /**
-             * 更新 render 函数
-             */
-            const puppetOptions = Object.assign({
-                plugins: [compilerPlugin],
-            }, options);
-            // const puppetEl = flatted.parse(flatted.stringify(copts.__template.ast));
-            // compilerPlugin(puppetEl, puppetOptions, compiler);
-            // const result = compiler.generate(puppetEl, puppetOptions);
-            const template = data.content && data.content.template || '';
-            const result = compiler.compile(template, puppetOptions);
-
-            /* eslint-disable no-new-func */
-            api.rerender(scopeId.replace(/^data-v-/, ''), {
-                __file: data.__file,
-                render: new Function(result.render),
-                staticRenderFns: result.staticRenderFns.map((code) => new Function(code)),
-            }, true);
-
-            lastChangedFile = data.__file;
-        },
         run(expression, self) {
             return Function(`with (${self}) { return ${expression} }`).call(this);
         },
@@ -692,9 +670,9 @@ export default {
             this.dragging = false;
             this.targetNode = {};
         },
-        handlerDrag(event) {
-            if (this.isDropComponent(event.target)) {
-                if (this.isDslotComponent(event.target)) {
+        handlerDrag(e) {
+            if (this.isDropComponent(e.target)) {
+                if (this.isDslotComponent(e.target)) {
                     this.targetNode = {};
                 }
                 return;
@@ -703,14 +681,14 @@ export default {
                 this.targetNode = {};
                 return;
             }
-            let target = event.target;
-            if (this.isInSubMask(event)) {
+            let target = e.target;
+            if (this.isInSubMask(e) && !this.isInModal(e.target)) {
                 target = this.subVM.$el.parentElement;
             }
             const node = this.getNodeInfo(target);
             this.targetPosition = {
-                x: event.x,
-                y: event.y,
+                x: e.x,
+                y: e.y,
             };
             if (Object.keys(node).length
                 && (this.targetNode.nodePath !== node.nodePath
@@ -863,6 +841,51 @@ export default {
                 this.send({ command: 'loading', status: false });
             }, 0);
         },
+        rerenderView(data) {
+            const scopeId = this.contextVM.$options._scopeId || '';
+            let cssSuffix = '';
+            if (data.content && data.content.style) {
+                cssSuffix = this.setStyle(data.content.style, data.content.template, scopeId.replace('data-v-', ''));
+            }
+            const options = {
+                scopeId,
+                whitespace: 'condense',
+                cssSuffix,
+            };
+
+            /**
+             * 更新 render 函数
+             */
+            const puppetOptions = Object.assign({
+                plugins: [compilerPlugin],
+            }, options);
+            // const puppetEl = flatted.parse(flatted.stringify(copts.__template.ast));
+            // compilerPlugin(puppetEl, puppetOptions, compiler);
+            // const result = compiler.generate(puppetEl, puppetOptions);
+            const template = data.content && data.content.template || '';
+            const result = compiler.compile(template, puppetOptions);
+
+            /* eslint-disable no-new-func */
+            api.rerender(scopeId.replace(/^data-v-/, ''), {
+                __file: data.__file,
+                render: new Function(result.render),
+                staticRenderFns: result.staticRenderFns.map((code) => new Function(code)),
+            }, true);
+
+            lastChangedFile = data.__file;
+        },
+        reloadView(data) {
+            if (!this.contextVM)
+                return;
+            const scopeId = this.contextVM.$options._scopeId || '';
+            const id = scopeId.replace(/^data-v-/, '');
+            const components = window.__VUE_HOT_MAP__[id];
+            if (components) {
+                const options = Object.assign({}, components.options);
+                Object.assign(options, this.parseScript(data.script));
+                api.reload(id, options, true);
+            }
+        },
         parseRoute(route) {
             if (!route.children)
                 return;
@@ -890,6 +913,7 @@ export default {
                 const result = compiler.compile(comp.template, puppetOptions);
 
                 code.render = new Function(result.render);
+                code.__file = comp.vueFilePath;
                 code._scopeId = scopeId;
                 const newComp = Vue.extend(code);
                 node.component = newComp;
@@ -917,8 +941,8 @@ export default {
             let content = source.trim().replace(/export default |module\.exports +=/, '');
             const definition = parseDefinition(definitionSource || '{}');
             content = `const componentOptions = ${content};${definition}`;
-            /* eslint-disable no-eval */
             try {
+                /* eslint-disable no-eval */
                 return eval(`(function(){ ${content}; return componentOptions;})()`);
             } catch (e) {
                 console.error(e);
@@ -941,18 +965,6 @@ export default {
                 const nodeInfo = this.getNodeInfo(el);
                 this.select(nodeInfo);
                 this.$refs.selected.computeStyle();
-            }
-        },
-        reloadView(data) {
-            if (!this.contextVM)
-                return;
-            const scopeId = this.contextVM.$options._scopeId || '';
-            const id = scopeId.replace(/^data-v-/, '');
-            const components = window.__VUE_HOT_MAP__[id];
-            if (components) {
-                const options = Object.assign({}, components.options);
-                Object.assign(options, this.parseScript(data.script));
-                api.reload(id, options, true);
             }
         },
     },
@@ -1007,7 +1019,11 @@ iframe {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: -99999000;
+    z-index: 99999000;
     background: hsla(216, 60%, 15%, 0.25);
+}
+
+body [class^="u-modal_"] {
+    z-index: 99999100;
 }
 </style>
