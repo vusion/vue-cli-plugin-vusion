@@ -439,10 +439,10 @@ export default {
             }
             if (this.isDesignerComponent(e.target)) { // d-component 不拦截
                 if (e.target.className && e.target.className.startsWith('d-text')) {
-                    const nodeRect = utils.getVisibleRect(e.target);
-                    const parentRect = utils.getVisibleRect(e.target.parentElement);
+                    const nodeRect = utils.getVisibleRect(e.target.parentElement);
+                    const parentRect = utils.getVisibleRect(e.target.parentElement.parentElement);
                     if (nodeRect.width === parentRect.width || nodeRect.height === parentRect.height) {
-                        const nodeInfo = this.getNodeInfo(e.target.parentElement);
+                        const nodeInfo = this.getNodeInfo(e.target.parentElement.parentElement);
                         this.hover = nodeInfo;
                     }
                 }
@@ -468,7 +468,9 @@ export default {
             }
             if (this.isDesignerComponent(e.target)) {
                 if (e.target.className && e.target.className.startsWith('d-text')) {
-                    const nodeInfo = this.getNodeInfo(e.target.parentElement);
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    const nodeInfo = this.getNodeInfo(e.target.parentElement.parentElement);
                     this.select(nodeInfo);
                     this.send({
                         command: 'selectNode',

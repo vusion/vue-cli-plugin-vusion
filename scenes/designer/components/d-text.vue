@@ -1,11 +1,10 @@
 <template>
 <span :class="$style.root"
     @dblclick="onDblclick"
-    @click="cancelEvent"
     :vusion-node-path="nodePath"
     :vusion-parent-node-path="parentNodePath"
     :vusion-slot-name="slotName">
-    <span v-if="!contenteditable" key="noEdit">{{ text }}</span>
+    <span v-if="!contenteditable" key="noEdit" :class="$style.noedit">{{ text }}</span>
     <span v-else contenteditable="true" tabindex="0" key="edit"
         @blur="onBlur"
         @keydown="onKeyDown"
@@ -28,10 +27,6 @@ export default {
         };
     },
     methods: {
-        cancelEvent(event) {
-            event.stopImmediatePropagation();
-            event.preventDefault();
-        },
         onBlur(event) {
             this.contenteditable = false;
             this.$emit('d-text:blur', this);
@@ -63,7 +58,9 @@ export default {
         send(data) {
             return this.$root.$emit('d-slot:send', data);
         },
-        onDblclick() {
+        onDblclick(event) {
+            event.stopImmediatePropagation();
+            event.preventDefault();
             this.contenteditable = true;
             this.$nextTick(() => {
                 this.$refs.edit && (this.$refs.edit.focus());
@@ -77,6 +74,7 @@ export default {
 .root{
     cursor: pointer !important;
 }
+.root .noedit{}
 .root span:focus{
     outline:none;
 }
