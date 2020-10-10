@@ -223,6 +223,31 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                 });
             }
 
+            const tables = children.filter((item) => item.type === 1 && item.tag === 'u-table-view');
+            if (tables.length) {
+                tables.forEach((table) => {
+                    const children = table.children;
+                    const result = {};
+                    children.forEach((child) => {
+                        if (child.attrsMap.hasOwnProperty('field')) {
+                            result[`${child.attrsMap.field}`] = child.attrsMap.title;
+                        }
+                    });
+                    if (table.attrsMap.hasOwnProperty(':data-source')) {
+                        const data = JSON.stringify([result, result, result]);
+                        table.attrsMap[':data-source'] = data;
+                        const attr = table.attrs.find((attr) => attr.name === 'data-source');
+                        if (attr) {
+                            attr.value = data;
+                        }
+                        const attr1 = table.attrsList.find((attr) => attr.name === ':data-source');
+                        if (attr1) {
+                            attr1.value = data;
+                        }
+                    }
+                });
+            }
+
             if (children.length) {
                 for (let i = children.length - 1; i >= 0; i--) {
                     if (children[i].tag && !children[i].tag.startsWith('d-'))
