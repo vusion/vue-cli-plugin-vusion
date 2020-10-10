@@ -8,6 +8,7 @@
     <span v-else contenteditable="true" tabindex="0" key="edit"
         @blur="onBlur"
         @keydown="onKeyDown"
+        @click="cancelEvent"
         ref="edit" focus="true">{{ text }}</span>
 </span>
 </template>
@@ -27,6 +28,10 @@ export default {
         };
     },
     methods: {
+        cancelEvent(event) {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+        },
         onBlur(event) {
             this.contenteditable = false;
             this.$emit('d-text:blur', this);
@@ -59,8 +64,7 @@ export default {
             return this.$root.$emit('d-slot:send', data);
         },
         onDblclick(event) {
-            event.stopImmediatePropagation();
-            event.preventDefault();
+            this.cancelEvent(event);
             this.contenteditable = true;
             this.$nextTick(() => {
                 this.$refs.edit && (this.$refs.edit.focus());
