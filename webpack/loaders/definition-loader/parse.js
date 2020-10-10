@@ -119,14 +119,14 @@ module.exports = function (source) {
                 const arr = key.split('/');
                 const getParams = (key) => {
                     if (key === 'body') {
-                        const body = (node.params || []).find((param) => param.in === key);
+                        const body = (node.params || []).find((param) => param && param.in === key);
                         if (body)
                             return safeGenerate(body.value);
                         else
                             return undefined;
                     } else {
                         return (node.params || [])
-                            .filter((param) => param.in === key)
+                            .filter((param) => param && param.in === key)
                             .map((param) => {
                                 const value = safeGenerate(param.value);
                                 return `${param.name}: ${value}`;
