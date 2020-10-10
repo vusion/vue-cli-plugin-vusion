@@ -44,21 +44,6 @@ module.exports = function registerDesigner(api, vueConfig, vusionConfig, args) {
             poll: true,
         });
 
-        if (process.env.DESIGNER_SERVER_BEFORE_PATH) {
-            try {
-                vueConfig.devServer.before = require(process.env.DESIGNER_SERVER_BEFORE_PATH);
-            } catch (e) {
-                console.error(e);
-            }
-        }
-        if (process.env.DESIGNER_SERVER_AFTER_PATH) {
-            try {
-                vueConfig.devServer.after = require(process.env.DESIGNER_SERVER_AFTER_PATH);
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
         vueConfig.runtimeCompiler = true;
         vueConfig.productionSourceMap = false;
 
