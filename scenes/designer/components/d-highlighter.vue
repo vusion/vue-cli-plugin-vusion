@@ -1,7 +1,7 @@
 <template>
 <div v-show="rectStyle" :class="$style.root" :mode="mode" :tag="info.tag" :style="rectStyle"
-     :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp"
-     draggable="true" @dragstart="onDragStart($event)" @dragend="onDragEnd($event)">
+    :tabindex="mode === 'selected' ? 0 : ''" @keyup="onKeyUp"
+    draggable="true" @dragstart="onDragStart($event)" @dragend="onDragEnd($event)">
     <div :class="$style.bar">
         <span :class="$style.tag">{{ info.title || info.tag }}</span>
         <!-- <span :class="$style.icon" role="add"></span>
