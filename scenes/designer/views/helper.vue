@@ -853,6 +853,7 @@ export default {
                 scopeId,
                 whitespace: 'condense',
                 cssSuffix,
+                allNodesAPI: this.allNodesAPI,
             };
 
             /**
@@ -908,6 +909,7 @@ export default {
                     scopeId,
                     whitespace: 'condense',
                     cssSuffix,
+                    allNodesAPI: this.allNodesAPI,
                 };
                 const puppetOptions = Object.assign({
                     plugins: [compilerPlugin],

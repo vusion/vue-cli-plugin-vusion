@@ -82,6 +82,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                 delete el.rawAttrsMap[':class'];
             }
         }
+
         // 打包之后
         // if (!el.attrsMap.hasOwnProperty('vusion-scope-id') && !el.attrsMap.hasOwnProperty(':vusion-scope-id')) {
         //     const shortScopeId = options.scopeId.replace(/^data-v-/, '');
@@ -119,6 +120,25 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
     <d-slot tag="${el.tag}" display="${display}" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${el.nodePath}' }"></d-slot>
     </div>`, subOptions).ast;
             children.push(...tmp.children);
+        }
+
+        if (options.allNodesAPI) {
+            const children = el.children = el.children || [];
+            const cloudui = options.allNodesAPI[el.tag];
+            const slots = cloudui && cloudui.slots || [];
+            const hasSupport = slots.some((slot) => slot.support);
+            if (hasSupport) {
+                const subOptions = {
+                    scopeId: options.scopeId,
+                    whitespace: 'condense',
+                };
+
+                const tmp = compiler.compile(`
+                    <div>
+                    <d-slot tag="u-linear-layout" display="inline" slotName="default" nodeTag="${el.tag}" :nodeInfo="{ scopeId: '${options.scopeId}', nodePath: '${el.nodePath}' }"></d-slot>
+                    </div>`, subOptions).ast;
+                children.push(...tmp.children);
+            }
         }
 
         //     if (el.tag === 'div' && (!el.children || !el.children.length || el.children[0].tag === 'router-view')) {
