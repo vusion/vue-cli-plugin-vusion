@@ -125,19 +125,38 @@ module.exports = function (source) {
                     argument: babel.parse(`this.${node.calleeCode}(${getArgument().join(',')})`,
                         { filename: 'file.js' }).program.body[0].expression,
                 });
+            } else if (node.type === 'BuildInFunction') {
+                // 参数
+                const getParams = () =>
+                    // 函数参数有固定顺序的
+                    node.params
+                        .map((param) => {
+                            const value = safeGenerate(param.value);
+                            if (!value) {
+                                return null;
+                            } else {
+                                return `${value}`;
+                            }
+                        });
+
+                // 调用表达式
+                Object.assign(node, babel.parse(`this.$utils['${node.name}'](${getParams().join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallInterface') {
                 const key = node.interfaceKey;
                 const arr = key.split('/');
                 const getParams = (key) => {
+                    // 过滤掉 null 掉 param
+                    const nodeParams = (node.params || []).filter((param) => (param !== null && param !== 'null' && param !== ''));
                     if (key === 'body') {
-                        const body = (node.params || []).find((param) => param && param.in === key);
-                        if (body)
+                        const body = (nodeParams || [])
+                            .find((param) => param.in === key);
+                        if (body) {
                             return safeGenerate(body.value);
-                        else
-                            return '{}';
+                        }
+                        return '{}';
                     } else {
-                        return (node.params || [])
-                            .filter((param) => param && param.in === key)
+                        return nodeParams
+                            .filter((param) => param.in === key)
                             .map((param) => {
                                 const value = safeGenerate(param.value);
                                 return `${param.name}: ${value}`;
