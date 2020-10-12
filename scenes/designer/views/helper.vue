@@ -583,6 +583,7 @@ export default {
                 const nextSibling = context.$el.nextSibling;
                 if (parent && nextSibling) {
                     parent.removeChild(context.$el);
+                    nextSibling.style.fontSize = '';
                     nextSibling.style.display = '';
                 }
             });
@@ -750,7 +751,8 @@ export default {
                         },
                     });
                     e.target.parentElement.insertBefore(dText.$el, e.target);
-                    e.target.style.display = 'none';
+                    e.target.style.fontSize = 0;
+                    e.target.style.display = 'inline-block';
                     setTimeout(() => {
                         dText.$el.focus();
                     });
@@ -774,7 +776,7 @@ export default {
                 children.forEach((item) => {
                     const className = item.className && item.className.replace(/[_]/g, '-');
                     if (item.nodeType === 1
-                        && !(item.className && item.className.startsWith('d-'))
+                        && !(item.className && item.className.startsWith('d-') && !item.className.startsWith('d-text_'))
                         && (className && className.startsWith(selected.tag))
                         && item.hasAttribute('vusion-slot-name')) {
                         const childNodes = item.childNodes;
