@@ -21,15 +21,15 @@ export function findScrollParent(el) {
 
 export function getVisibleRect(el) {
     const rect = JSON.parse(JSON.stringify(el.getBoundingClientRect()));
-    const parentEl = findScrollParent(el);
-    if (parentEl) {
-        const parentRect = parentEl.getBoundingClientRect();
-        rect.y = rect.top = Math.max(rect.top, parentRect.top);
-        rect.x = rect.left = Math.max(rect.left, parentRect.left);
-        rect.bottom = Math.min(rect.bottom, parentRect.bottom);
-        rect.right = Math.min(rect.right, parentRect.right);
-        rect.width = rect.right - rect.left;
-        rect.height = rect.bottom - rect.top;
-    }
+    // const parentEl = findScrollParent(el);
+    // if (parentEl) {
+    //     const parentRect = parentEl.getBoundingClientRect();
+    //     rect.y = rect.top = Math.max(rect.top, parentRect.top);
+    //     rect.x = rect.left = Math.max(rect.left, parentRect.left);
+    //     rect.bottom = Math.min(rect.bottom, parentRect.bottom);
+    //     rect.right = Math.min(rect.right, parentRect.right);
+    //     rect.width = rect.right - rect.left;
+    //     rect.height = rect.bottom - rect.top;
+    // }
     return rect;
 }

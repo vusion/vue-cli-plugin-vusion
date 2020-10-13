@@ -40,7 +40,7 @@ module.exports = function chainCSS(config, vueConfig, vusionConfig) {
 
         const cssOptionsModules = {
             getLocalIdent,
-            localIdentName: '[name]_[local]_[hash:base64:8]',
+            localIdentName: '[name]_[local]__[hash:base64:8]',
         };
 
         if (modules) {

@@ -1008,19 +1008,19 @@ iframe {
     padding-top: 30px;
 } */
 
-[root-app] [class^="d-slot_root"] {
+[root-app] [class^="d-slot__"] {
     display: none;
 }
 
-[root-app][vusion-context-vm] [class^="d-slot_root"], [root-app] [vusion-context-vm] [class^="d-slot_root"] {
+[root-app][vusion-context-vm] [class^="d-slot__"], [root-app] [vusion-context-vm] [class^="d-slot__"] {
     display: block;
 }
 
-[root-app][vusion-context-vm] [class^="d-slot_root"][display="inline"], [root-app] [vusion-context-vm] [class^="d-slot_root"][display="inline"] {
+[root-app][vusion-context-vm] [class^="d-slot__"][display="inline"], [root-app] [vusion-context-vm] [class^="d-slot__"][display="inline"] {
     display: inline-block;
 }
 
-[root-app][vusion-sub-vm] [class^="d-slot_root"][class], [root-app] [vusion-sub-vm] [class^="d-slot_root"][class] {
+[root-app][vusion-sub-vm] [class^="d-slot__"][class], [root-app] [vusion-sub-vm] [class^="d-slot__"][class] {
     display: none;
 }
 
@@ -1034,11 +1034,15 @@ iframe {
     background: hsla(216, 60%, 15%, 0.25);
 }
 
-body [class^="u-modal_root"] {
+body [class^="u-modal__"] {
     z-index: 99999100;
 }
 
-body [class^="u-table-view_root"]::after {
+body [class^="u-modal_dialog"] {
+    vertical-align: top;
+}
+
+body [class^="u-table-view__"]::after {
     display: block;
     content: '';
     position: absolute;

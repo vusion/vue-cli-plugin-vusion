@@ -21,10 +21,10 @@ module.exports = function (loaderContext, localIdentName, localName, options) {
     const vueName = path.basename(tmpPath);
     localIdentName = localIdentName.replace(/\[name\]/gi, vueName);
 
-    // if (localName === 'root')
-    //     localIdentName = localIdentName.replace(/_\[local\]/gi, '');
-    // else
-    localIdentName = localIdentName.replace(/\[local\]/gi, localName);
+    if (localName === 'root')
+        localIdentName = localIdentName.replace(/_\[local\]/gi, '');
+    else
+        localIdentName = localIdentName.replace(/\[local\]/gi, localName);
 
     const hash = loaderUtils.interpolateName(loaderContext, localIdentName, options);
     return hash.replace(new RegExp('[^a-zA-Z0-9\\-_\u00A0-\uFFFF]', 'g'), '-').replace(/^((-?[0-9])|--)/, '_$1');
