@@ -463,6 +463,9 @@ export default {
             this.hover = {};
         },
         onClick(e) {
+            this.send({
+                command: 'onClickDesigner',
+            });
             if (this.$el.contains(e.target)) { // helperVM 中的事件不拦截、不处理
                 return;
             }
@@ -887,7 +890,7 @@ export default {
             const components = window.__VUE_HOT_MAP__[id];
             if (components) {
                 const options = Object.assign({}, components.options);
-                Object.assign(options, this.parseScript(data.script));
+                Object.assign(options, this.parseScript(data.script, data.definition));
                 api.reload(id, options, true);
             }
         },
