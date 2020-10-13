@@ -148,6 +148,9 @@ module.exports = function (source) {
                 Object.assign(node, {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$services['${arr[0]}']['${arr[1]}']({
+                        config: {
+                            download: ${!!(node.interfaceKey.indexOf('export') > -1)},
+                        },
                         path: {
                             ${getParams('path').join(',\n')}
                         },

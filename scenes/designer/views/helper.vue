@@ -474,6 +474,8 @@ export default {
                     e.stopImmediatePropagation();
                     e.preventDefault();
                     const nodeInfo = this.getNodeInfo(e.target.parentElement.parentElement);
+                    if (!nodeInfo)
+                        return;
                     this.select(nodeInfo);
                     this.send({
                         command: 'selectNode',
@@ -1006,19 +1008,19 @@ iframe {
     padding-top: 30px;
 } */
 
-[root-app] [class^="d-slot_"] {
+[root-app] [class^="d-slot_root"] {
     display: none;
 }
 
-[root-app][vusion-context-vm] [class^="d-slot_"], [root-app] [vusion-context-vm] [class^="d-slot_"] {
+[root-app][vusion-context-vm] [class^="d-slot_root"], [root-app] [vusion-context-vm] [class^="d-slot_root"] {
     display: block;
 }
 
-[root-app][vusion-context-vm] [class^="d-slot_"][display="inline"], [root-app] [vusion-context-vm] [class^="d-slot_"][display="inline"] {
+[root-app][vusion-context-vm] [class^="d-slot_root"][display="inline"], [root-app] [vusion-context-vm] [class^="d-slot_root"][display="inline"] {
     display: inline-block;
 }
 
-[root-app][vusion-sub-vm] [class^="d-slot_"][class], [root-app] [vusion-sub-vm] [class^="d-slot_"][class] {
+[root-app][vusion-sub-vm] [class^="d-slot_root"][class], [root-app] [vusion-sub-vm] [class^="d-slot_root"][class] {
     display: none;
 }
 
@@ -1032,7 +1034,18 @@ iframe {
     background: hsla(216, 60%, 15%, 0.25);
 }
 
-body [class^="u-modal_"] {
+body [class^="u-modal_root"] {
     z-index: 99999100;
+}
+
+body [class^="u-table-view_root"]::after {
+    display: block;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(255,255,255,0.8), transparent);
+    left: 0;
+    right: 0;
 }
 </style>

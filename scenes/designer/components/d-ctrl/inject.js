@@ -74,11 +74,7 @@ Vue.component('UModal', {
         } else {
             console.error('搭建平台不允许使用此 slot');
         }
-        return h('div', {
-            style: {
-                display: 'none!important',
-            },
-        }, [
+        return h('div', {}, [
             h('u-modal-source', {
                 class: this.class,
                 style: this.style,
