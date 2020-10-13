@@ -50,6 +50,7 @@ module.exports = function (source) {
         next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
         next = node.arguments;
         next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
+        next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
 
         node.left && walk(node.left, func, node);
         node.right && walk(node.right, func, node);
@@ -91,7 +92,7 @@ module.exports = function (source) {
             return checkThis(node.object);
         }
     }
-    function safeGenerate(node) {
+    function safeGenerate(node, func) {
         if (!node)
             return undefined;
         checkThis(node);
@@ -108,7 +109,7 @@ module.exports = function (source) {
         if (logic.definition.returns[0])
             returnObj = logic.definition.returns[0];
 
-        walk(logic.definition, (node, parent, index) => {
+        const parseFunc = (node, parent, index) => {
             if (node.type === 'Start' || node.type === 'Comment') {
                 node.type = 'Noop';
             } else if (node.type === 'End') {
@@ -125,19 +126,42 @@ module.exports = function (source) {
                     argument: babel.parse(`this.${node.calleeCode}(${getArgument().join(',')})`,
                         { filename: 'file.js' }).program.body[0].expression,
                 });
+            } else if (node.type === 'BuildInFunction') {
+                // 参数
+                const getParams = () =>
+                    // 函数参数有固定顺序的
+                    (node.params || [])
+                        .map((param) => {
+                            // 参数如果是内置对象，继续调用 walk 转化，如果是其他类型再针对性的转化，比如 CallInterface 之类的，也可以走 walk
+                            if (param.value.type === 'BuildInFunction') {
+                                return walk(param.value, parseFunc);
+                            }
+
+                            const value = safeGenerate(param.value);
+                            if (!value) {
+                                return 'null';
+                            } else {
+                                return `${value}`;
+                            }
+                        });
+                // 调用表达式
+                Object.assign(node, babel.parse(`this.$utils['${node.interfaceKey}'](${(getParams() || []).join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallInterface') {
                 const key = node.interfaceKey;
                 const arr = key.split('/');
                 const getParams = (key) => {
+                    // 过滤掉 null 的 param
+                    const nodeParams = (node.params || []).filter((param) => (param !== null && param !== 'null' && param !== ''));
                     if (key === 'body') {
-                        const body = (node.params || []).find((param) => param && param.in === key);
-                        if (body)
+                        const body = (nodeParams || [])
+                            .find((param) => param.in === key);
+                        if (body) {
                             return safeGenerate(body.value);
-                        else
-                            return '{}';
+                        }
+                        return '{}';
                     } else {
-                        return (node.params || [])
-                            .filter((param) => param && param.in === key)
+                        return nodeParams
+                            .filter((param) => param.in === key)
                             .map((param) => {
                                 const value = safeGenerate(param.value);
                                 return `${param.name}: ${value}`;
@@ -347,7 +371,9 @@ module.exports = function (source) {
                 throwStatement.argument.arguments = node.arguments;
                 Object.assign(node, throwStatement);
             }
-        });
+        };
+
+        walk(logic.definition, parseFunc);
 
         console.info('JSON generate:', JSON.stringify(logic.definition.body));
 
