@@ -39,27 +39,10 @@ module.exports = function (source) {
         func(node, parent, index);
         Object.values(node).forEach((value) => {
             if (Array.isArray(value)) {
-                value.forEach((child, index) => traverse(child, func, node, index));
+                value.forEach((child, index) => child && traverse(child, func, node, index));
             } else if (typeof value === 'object')
-                traverse(value, func, parent, index);
+                value && traverse(value, func, parent, index);
         });
-    }
-    function walk(node, func, parent = null, index) {
-        traverse(node, func, parent, index);
-        // func(node, parent, index);
-        // let next = (node.body && (Array.isArray(node.body) ? node.body : node.body.body));
-        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        // next = (node.consequent && (Array.isArray(node.consequent) ? node.consequent : node.consequent.body));
-        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        // next = (node.alternate && node.alternate.body);
-        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        // next = node.arguments;
-        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-
-        // node.left && walk(node.left, func, node);
-        // node.right && walk(node.right, func, node);
-        // node.variables && walk(node.variables, func, node);
     }
 
     const dataMap = {};
@@ -90,6 +73,8 @@ module.exports = function (source) {
     }).join(',\n').trim();
 
     function checkThis(node) {
+        if (!node)
+            return;
         if (node.type === 'Identifier') {
             if (dataMap[node.name] || globalDataMap[node.name])
                 node.name = 'this.' + node.name;
@@ -104,6 +89,12 @@ module.exports = function (source) {
         const code = generate(node).code;
         return code || undefined;
     }
+    function safeKey(key) {
+        if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+            return key;
+        else
+            return `['${key}']`;
+    }
 
     const lifecycles = (definition.lifecycles || []).filter((lifecycle) => lifecycle.name).map((lifecycle) => `componentOptions['${lifecycle.name}'] = function () {
             return this.${lifecycle.definition}();
@@ -114,7 +105,7 @@ module.exports = function (source) {
         if (logic.definition.returns[0])
             returnObj = logic.definition.returns[0];
 
-        walk(logic.definition, (node, parent, index) => {
+        traverse(logic.definition, (node, parent, index) => {
             if (node.type === 'Start' || node.type === 'Comment') {
                 node.type = 'Noop';
             } else if (node.type === 'End') {
@@ -122,8 +113,12 @@ module.exports = function (source) {
                     type: 'ReturnStatement',
                     argument: { type: 'Identifier', name: returnObj.name },
                 });
-            } else if (node.type === 'Identifier' || node.type === 'MemberExpression') {
-                checkThis(node);
+            } else if (node.type === 'Identifier' && node.level === 'expressionNode') {
+                if (!(parent && parent.type === 'MemberExpression' || node.name.startsWith('this.')))
+                    checkThis(node);
+            } else if (node.type === 'AssignmentExpression') {
+                checkThis(node.left);
+                checkThis(node.right);
             } else if (node.type === 'CallLogic') {
                 const getArgument = () => node.arguments.map((argument) => safeGenerate(argument));
                 Object.assign(node, {
@@ -132,13 +127,12 @@ module.exports = function (source) {
                         { filename: 'file.js' }).program.body[0].expression,
                 });
             } else if (node.type === 'BuiltInFunction') {
-                // 参数
-                const getParams = () => (node.params || []).map((param) => safeGenerate(param.value));
-
                 // 调用表达式
-                Object.assign(node, babel.parse(`this.$utils['${node.calleeCode}'](${getParams().join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
+                Object.assign(node, babel.parse(`this.$utils['${node.calleeCode}']()`, { filename: 'file.js' }).program.body[0].expression, {
+                    arguments: (node.params || []).map((param) => param.value),
+                });
             } else if (node.type === 'CallInterface') {
-                const key = node.calleeCode;
+                const key = node.interfaceKey;
                 const arr = key.split('/');
                 const getParams = (key) => {
                     // 过滤掉 null 的 param
@@ -155,7 +149,7 @@ module.exports = function (source) {
                             .filter((param) => param.in === key)
                             .map((param) => {
                                 const value = safeGenerate(param.value);
-                                return `${param.name}: ${value}`;
+                                return `${safeKey(param.name)}: ${value}`;
                             });
                     }
                 };
@@ -249,19 +243,19 @@ module.exports = function (source) {
                     argument: babel.parse(`this.$services.process.${node.action}(${params})`, { filename: 'file.js' }).program.body[0].expression,
                 });
             } else if (node.type === 'CallMessageShow') {
+                checkThis(node.arguments[0]);
                 Object.assign(node, babel.parse(`this.$toast.show()`, { filename: 'file.js' }).program.body[0].expression, {
                     arguments: node.arguments,
                 });
             } else if (node.type === 'CallConsoleLog') {
+                checkThis(node.arguments[0]);
                 Object.assign(node, babel.parse(`console.log()`, { filename: 'file.js' }).program.body[0].expression, {
                     arguments: node.arguments,
                 });
             } else if (node.type === 'Destination') {
                 const params = (node.params || []).filter((param) => param.key && param.value).map((param) => {
                     if (param.value.type === 'Identifier') {
-                        let name = param.value.name;
-                        if (dataMap[name])
-                            name = 'this.' + name;
+                        checkThis(param.value);
                         return param.key.name + '=${' + name + '}';
                     } else {
                         return param.key.name + '=' + param.value.value;
@@ -278,7 +272,7 @@ module.exports = function (source) {
                     if (pathparams.length > 0) {
                         pathparams.forEach((param) => {
                             const value = safeGenerate(param.value);
-                            result.push(`${param.name}: ${value}`);
+                            result.push(`${safeKey(param.name)}: ${value}`);
                         });
                     }
 
@@ -287,7 +281,7 @@ module.exports = function (source) {
                         const queryValue = queryparams.map((param) => {
                             const value = safeGenerate(param.value);
                             console.info('param zxy', value);
-                            return `${param.name}:${value}`;
+                            return `${safeKey(param.name)}:${value}`;
                         });
                         // key：value 转化成 queryString
                         result.push(`query: { ${queryValue.join(',\n')} }`);
@@ -297,7 +291,7 @@ module.exports = function (source) {
                     if (bodyparams.length > 0) {
                         const bodyValue = bodyparams.map((param) => {
                             const value = safeGenerate(param.value);
-                            return `${param.name}:${value}`;
+                            return `${safeKey(param.name)}:${value}`;
                         });
                         // 如果是 body 需要转化成对象
                         result.push(`body: {
@@ -312,7 +306,7 @@ module.exports = function (source) {
                     const arr = schemaRef.split('/');
                     const entityName = arr[3];
                     // 处理全局查询的单复数问题
-                    const singlename = name.indexOf('getAll') > -1 ? `getAll${entityName}` : name;
+                    const singlename = name.includes('getAll') ? `getAll${entityName}` : name;
                     arr.pop();
                     arr.push(singlename);
                     arr.shift();
@@ -324,11 +318,14 @@ module.exports = function (source) {
                 console.info('graphqlClient', graphqlClient);
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.operationName}', \`${graphqlClient}\`}, {
+                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.operationName}', \`${graphqlClient}\`, {
                         ${getParams().join(',\n')}
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
+            } else if (node.type === 'IfStatement') {
+                checkThis(node.test);
             } else if (node.type === 'WhileStatement') {
+                checkThis(node.test);
                 if (Array.isArray) {
                     node.body = {
                         type: 'BlockStatement',
@@ -343,6 +340,8 @@ module.exports = function (source) {
                     const ${node.item.name} = list[${node.index.name}];
                 }`, { filename: 'file.js' }).program.body[0];
 
+                checkThis(node.start);
+                checkThis(node.end);
                 forEach.init.declarations[0].init.left = node.start;
                 forEach.test.right = node.end;
                 forEach.body.body[0].declarations[0].init.object = node.each;
@@ -350,14 +349,17 @@ module.exports = function (source) {
                 forEach.body.body.push(...node.body);
                 Object.assign(node, forEach);
             } else if (node.type === 'JSONSerialize') {
+                checkThis(node.arguments[0]);
                 Object.assign(node, babel.parse(`JSON.stringify()`, { filename: 'file.js' }).program.body[0].expression, {
                     arguments: node.arguments,
                 });
             } else if (node.type === 'JSONDeserialize') {
+                checkThis(node.arguments[0]);
                 Object.assign(node, babel.parse(`JSON.parse()`, { filename: 'file.js' }).program.body[0].expression, {
                     arguments: node.arguments,
                 });
             } else if (node.type === 'RaiseException') {
+                checkThis(node.arguments[0]);
                 const throwStatement = babel.parse(`throw new Error()`, { filename: 'file.js' }).program.body[0];
                 throwStatement.argument.arguments = node.arguments;
                 Object.assign(node, throwStatement);
