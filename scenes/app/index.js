@@ -17,16 +17,16 @@ installComponents(Vue, Components);
 
 import initApp from './initApp';
 import installServices from '@/global/features/service/install';
+import installDataTypes from '@/global/features/dataTypes/install';
 import installUtils from '@/global/features/utils/install';
 import { initMiddleware } from '@/global/middleware';
 import GueryStrCollect from '@/global/features/apollo/queryStrCollect';
-import installDatatypes from '@/global/features/datatypes/install';
 
 Vue.use(VueRouter);
 Vue.use(installServices);
+Vue.use(installDataTypes);
 Vue.use(installUtils);
 Vue.use(GueryStrCollect);
-Vue.use(installDatatypes);
 
 const Index = Vue.extend({
     template: `<div style="background: #111217;height:calc(100vh - 40px);position:relative;opacity: 0.8;">
