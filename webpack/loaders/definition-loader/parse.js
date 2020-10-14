@@ -27,16 +27,6 @@ function switchCase2If(cases) {
     return result;
 }
 
-// 参数是数组的情况需要处理
-function objectToQuerystring(obj = {}) {
-    return Object.keys(obj).reduce((str, key, i) => {
-        const delimiter = (i === 0) ? '' : '&';
-        key = encodeURIComponent(key);
-        const val = encodeURIComponent(obj[key]);
-        return [str, delimiter, key, '=', val].join('');
-    }, '');
-}
-
 module.exports = function (source) {
     const definition = JSON.parse(source);
 
@@ -279,9 +269,10 @@ module.exports = function (source) {
                 const url = '`/' + node.page + node.url + '?' + params.join('&') + '`';
                 Object.assign(node, babel.parse(`this.$destination(${url})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallGraphQL') {
-                const getParams = (key) => {
+                const getParams = () => {
                     const data = (node.params || []); // .filter((param) => param.in === key);
                     const result = [];
+                    // 目前主要 id，如果字段多了之后会有严格的顺序要求， 并且 path 里面不能使用名字为 query，body，这两个参数作为需要特殊处理的 key
                     const pathparams = data.filter((param) => param.in === 'path');
                     if (pathparams.length > 0) {
                         pathparams.forEach((param) => {
@@ -292,13 +283,13 @@ module.exports = function (source) {
 
                     const queryparams = data.filter((param) => param.in === 'query');
                     if (queryparams.length > 0) {
-                        const valueObject = {};
-                        queryparams.forEach((param) => {
+                        const queryValue = queryparams.map((param) => {
                             const value = safeGenerate(param.value);
-                            valueObject[`${param.name}`] = `${value}`;
+                            console.info('param zxy', value);
+                            return `${param.name}:${value}`;
                         });
                         // key：value 转化成 queryString
-                        result.push(`query: ${objectToQuerystring(valueObject)}`);
+                        result.push(`query: { ${queryValue.join(',\n')} }`);
                     }
 
                     const bodyparams = data.filter((param) => param.in === 'body');
@@ -312,7 +303,6 @@ module.exports = function (source) {
                             ${bodyValue.join(',\n')}
                         }`);
                     }
-
                     // 最后再把按照 key 组装后的结果返回给页面
                     return result;
                 };
@@ -334,7 +324,7 @@ module.exports = function (source) {
                 Object.assign(node, {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.operationName}', ${'`' + `${graphqlClient}` + '`'}, {
-                        ${getParams('query').join(',\n')}
+                        ${getParams().join(',\n')}
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
             } else if (node.type === 'WhileStatement') {
