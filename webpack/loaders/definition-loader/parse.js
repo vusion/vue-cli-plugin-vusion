@@ -116,14 +116,14 @@ module.exports = function (source) {
                     argument: babel.parse(`this.${node.calleeCode}(${getArgument().join(',')})`,
                         { filename: 'file.js' }).program.body[0].expression,
                 });
-            } else if (node.type === 'BuildInFunction') {
+            } else if (node.type === 'BuiltInFunction') {
                 // 参数
                 const getParams = () =>
                     // 函数参数有固定顺序的
                     (node.params || [])
                         .map((param) => {
                             // 参数如果是内置对象，继续调用 walk 转化，如果是其他类型再针对性的转化，比如 CallInterface 之类的，也可以走 walk
-                            if (param.value.type === 'BuildInFunction') {
+                            if (param.value.type === 'BuiltInFunction') {
                                 return walk(param.value, parseFunc);
                             }
 
@@ -135,9 +135,9 @@ module.exports = function (source) {
                             }
                         });
                 // 调用表达式
-                Object.assign(node, babel.parse(`this.$utils['${node.interfaceKey}'](${(getParams() || []).join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
+                Object.assign(node, babel.parse(`this.$utils['${node.calleeCode}'](${(getParams() || []).join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallInterface') {
-                const key = node.interfaceKey;
+                const key = node.calleeCode;
                 const arr = key.split('/');
                 const getParams = (key) => {
                     // 过滤掉 null 的 param
@@ -163,7 +163,7 @@ module.exports = function (source) {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$services['${arr[0]}']['${arr[1]}']({
                         config: {
-                            download: ${!!(node.interfaceKey.indexOf('export') > -1)},
+                            download: ${node.interfaceKey.includes('export')},
                         },
                         path: {
                             ${getParams('path').join(',\n')}
