@@ -209,7 +209,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             const expressions = children.filter((item) => item.type === 2);
             if (expressions.length) {
                 expressions.forEach((expression) => {
-                    const tmp = compiler.compile(`<d-placeholder nodePath="${expression.nodePath}" parentNodePath="${node.nodePath}" name="${expression.text}">${expression.text}</d-placeholder>`).ast;
+                    const tmp = compiler.compile(`<d-placeholder nodePath="${expression.nodePath}" parentNodePath="${node.nodePath}" name="${expression.text}"></d-placeholder>`).ast;
                     tmp.parent = node;
                     Object.assign(expression, tmp);
                 });
@@ -266,6 +266,27 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                         }
                     }
                 });
+            }
+
+            // 去掉元素上绑定的属性和方法。u-table-view的:data-source保留
+            if (node.type === 1) {
+                const excludes = [':data-source'];
+                Object.keys(node.attrsMap).forEach((attrKey) => {
+                    if (attrKey.startsWith(':') && !excludes.includes(attrKey)
+                        || attrKey.startsWith('@')) {
+                        delete node.attrsMap[attrKey];
+                        const attrName = attrKey.replace(':', '').replace('@', '');
+                        const attrIndex = node.attrs.findIndex((attr) => attr.name === attrName);
+                        ~attrIndex && node.attrs.splice(attrIndex, 1);
+                        const attrIndex1 = node.attrsList.findIndex((attr) => attr.name === attrKey);
+                        ~attrIndex1 && node.attrsList.splice(attrIndex1, 1);
+                        if (attrKey.startsWith('@')) {
+                            delete node.events[attrName];
+                        }
+                    }
+                });
+                delete node.if;
+                delete node.ifConditions;
             }
 
             if (children.length) {
