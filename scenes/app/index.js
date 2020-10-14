@@ -22,10 +22,13 @@ import { initMiddleware } from '@/global/middleware';
 
 import GueryStrCollect from '@/global/features/apollo/queryStrCollect';
 
+import installDatatypes from '@/global/features/datatypes/install';
+
 Vue.use(VueRouter);
 Vue.use(installServices);
 Vue.use(installUtils);
 Vue.use(GueryStrCollect);
+Vue.use(installDatatypes);
 
 const Index = Vue.extend({
     template: `<div style="background: #111217;height:calc(100vh - 40px);position:relative;opacity: 0.8;">
