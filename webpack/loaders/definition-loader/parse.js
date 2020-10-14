@@ -30,27 +30,42 @@ function switchCase2If(cases) {
 module.exports = function (source) {
     const definition = JSON.parse(source);
 
-    function walk(node, func, parent = null, index) {
+    function traverse(
+        node,
+        func,
+        parent,
+        index,
+    ) {
         func(node, parent, index);
-        let next = (node.body && (Array.isArray(node.body) ? node.body : node.body.body));
-        next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        next = (node.consequent && (Array.isArray(node.consequent) ? node.consequent : node.consequent.body));
-        next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        next = (node.alternate && node.alternate.body);
-        next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        next = node.arguments;
-        next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
-        next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
+        Object.values(node).forEach((value) => {
+            if (Array.isArray(value)) {
+                value.forEach((child, index) => traverse(child, func, node, index));
+            } else if (typeof value === 'object')
+                traverse(value, func, parent, index);
+        });
+    }
+    function walk(node, func, parent = null, index) {
+        traverse(node, func, parent, index);
+        // func(node, parent, index);
+        // let next = (node.body && (Array.isArray(node.body) ? node.body : node.body.body));
+        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
+        // next = (node.consequent && (Array.isArray(node.consequent) ? node.consequent : node.consequent.body));
+        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
+        // next = (node.alternate && node.alternate.body);
+        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
+        // next = node.arguments;
+        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
+        // next && Array.isArray(next) && next.forEach((child, index) => walk(child, func, node, index));
 
-        node.left && walk(node.left, func, node);
-        node.right && walk(node.right, func, node);
-        node.variables && walk(node.variables, func, node);
+        // node.left && walk(node.left, func, node);
+        // node.right && walk(node.right, func, node);
+        // node.variables && walk(node.variables, func, node);
     }
 
     const dataMap = {};
     const globalDataMap = {
         $route: true,
-        $auth: true,
+        $global: true,
         $refs: true,
     };
 
@@ -82,7 +97,7 @@ module.exports = function (source) {
             return checkThis(node.object);
         }
     }
-    function safeGenerate(node, func) {
+    function safeGenerate(node) {
         if (!node)
             return undefined;
         checkThis(node);
@@ -99,7 +114,7 @@ module.exports = function (source) {
         if (logic.definition.returns[0])
             returnObj = logic.definition.returns[0];
 
-        const parseFunc = (node, parent, index) => {
+        walk(logic.definition, (node, parent, index) => {
             if (node.type === 'Start' || node.type === 'Comment') {
                 node.type = 'Noop';
             } else if (node.type === 'End') {
@@ -118,24 +133,10 @@ module.exports = function (source) {
                 });
             } else if (node.type === 'BuiltInFunction') {
                 // 参数
-                const getParams = () =>
-                    // 函数参数有固定顺序的
-                    (node.params || [])
-                        .map((param) => {
-                            // 参数如果是内置对象，继续调用 walk 转化，如果是其他类型再针对性的转化，比如 CallInterface 之类的，也可以走 walk
-                            if (param.value.type === 'BuiltInFunction') {
-                                return walk(param.value, parseFunc);
-                            }
+                const getParams = () => (node.params || []).map((param) => safeGenerate(param.value));
 
-                            const value = safeGenerate(param.value);
-                            if (!value) {
-                                return 'null';
-                            } else {
-                                return `${value}`;
-                            }
-                        });
                 // 调用表达式
-                Object.assign(node, babel.parse(`this.$utils['${node.calleeCode}'](${(getParams() || []).join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
+                Object.assign(node, babel.parse(`this.$utils['${node.calleeCode}'](${getParams().join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallInterface') {
                 const key = node.calleeCode;
                 const arr = key.split('/');
@@ -323,7 +324,7 @@ module.exports = function (source) {
                 console.info('graphqlClient', graphqlClient);
                 Object.assign(node, {
                     type: 'AwaitExpression',
-                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.operationName}', ${'`' + `${graphqlClient}` + '`'}, {
+                    argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.operationName}', \`${graphqlClient}\`}, {
                         ${getParams().join(',\n')}
                     })`, { filename: 'file.js' }).program.body[0].expression,
                 });
@@ -361,9 +362,7 @@ module.exports = function (source) {
                 throwStatement.argument.arguments = node.arguments;
                 Object.assign(node, throwStatement);
             }
-        };
-
-        walk(logic.definition, parseFunc);
+        });
 
         console.info('JSON generate:', JSON.stringify(logic.definition.body));
 
