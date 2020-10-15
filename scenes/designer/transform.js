@@ -273,7 +273,8 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                 const excludes = [':data-source'];
                 Object.keys(node.attrsMap).forEach((attrKey) => {
                     if (attrKey.startsWith(':') && !excludes.includes(attrKey)
-                        || attrKey.startsWith('@')) {
+                        || attrKey.startsWith('@')
+                        || attrKey.startsWith('v-')) { // v-on,v-bind,v-model
                         delete node.attrsMap[attrKey];
                         const attrName = attrKey.replace(':', '').replace('@', '');
                         const attrIndex = node.attrs.findIndex((attr) => attr.name === attrName);
@@ -284,9 +285,15 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                             delete node.events[attrName];
                         }
                     }
+                    if (attrKey.startsWith('v-') && node.directives) {
+                        const directiveIndex = node.directives.findIndex((directive) => directive.rawName === attrKey);
+                        ~directiveIndex && node.directives.splice(directiveIndex, 1);
+                    }
                 });
                 delete node.if;
+                delete node.elseif;
                 delete node.ifConditions;
+                delete node.for;
             }
 
             if (children.length) {
