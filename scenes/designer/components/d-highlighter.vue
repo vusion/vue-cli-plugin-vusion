@@ -182,7 +182,7 @@ export default {
     width: 200px;
     height: 200px;
     z-index: 99999999;
-    outline: 1px dashed #4a88e8;
+    outline: 1px solid #4a88e8;
     outline-offset:  -1px;
     pointer-events: none;
 }

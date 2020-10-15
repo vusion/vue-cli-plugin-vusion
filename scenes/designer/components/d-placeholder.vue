@@ -5,7 +5,7 @@
     :vusion-parent-node-path="parentNodePath"
     @dblclick="onDblclick">
     <!-- <slot>{{ text }}</slot> -->
-    {{ name }}
+    {{ format(name) }}
 </span>
 </template>
 
@@ -19,6 +19,9 @@ export default {
         parentNodePath: String,
     },
     methods: {
+        format(name = '') {
+            name.length <= 10 ? name : name.slice(0, 10) + '...';
+        },
         onDblclick() {
             this.send({
                 command: 'editExpression',
@@ -35,7 +38,7 @@ export default {
 
 <style module>
 .root{
-    background: #ddd;
+    background: rgba(0,0,0,0.3);
     display: inline-block;
     min-width:10px;
     cursor: pointer !important;
