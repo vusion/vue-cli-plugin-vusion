@@ -41,7 +41,7 @@ module.exports = function (source) {
             if (Array.isArray(value)) {
                 value.forEach((child, index) => child && traverse(child, func, node, index));
             } else if (typeof value === 'object')
-                value && traverse(value, func, parent, index);
+                value && traverse(value, func, node, index);
         });
     }
 
