@@ -249,11 +249,11 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                     const children = table.children;
                     const result = {};
                     children.forEach((child) => {
-                        if (child.attrsMap.hasOwnProperty('field')) {
+                        if (child.attrsMap && child.attrsMap.hasOwnProperty('field')) {
                             result[`${child.attrsMap.field}`] = child.attrsMap.title;
                         }
                     });
-                    if (table.attrsMap.hasOwnProperty(':data-source')) {
+                    if (table.attrsMap && table.attrsMap.hasOwnProperty(':data-source')) {
                         const data = JSON.stringify([result, result, result]);
                         table.attrsMap[':data-source'] = data;
                         const attr = table.attrs.find((attr) => attr.name === 'data-source');

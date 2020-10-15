@@ -213,15 +213,28 @@ export default {
             Array.from(dataTransfer.items).forEach((item) => console.info('[drop]', item.type, item.kind, dataTransfer.getData(item.type)));
 
             const code = dataTransfer.getData('text/plain');
-            const nodeData = dataTransfer.getData('application/json') || '{}';
-            this.send({
-                command: 'addCode',
-                position: this.position,
-                code,
-                nodePath: this.nodeInfo.nodePath,
-                scopeId: this.nodeInfo.scopeId,
-                nodeData,
-            });
+            const nodeData = JSON.parse(dataTransfer.getData('application/json') || '{}');
+            if (nodeData && nodeData.command === 'changeNode') {
+                // 父拖到子里面，不允许，返回
+                if (this.nodeInfo.nodePath.startsWith(nodeData.nodePath))
+                    return;
+                this.send({
+                    command: 'changeNode',
+                    originPath: nodeData.nodePath,
+                    targetPath: this.nodeInfo.nodePath,
+                    parentNodePath: this.nodeInfo.parentNodePath,
+                    position: this.position,
+                });
+            } else {
+                this.send({
+                    command: 'addCode',
+                    position: this.position,
+                    code,
+                    nodePath: this.nodeInfo.nodePath,
+                    scopeId: this.nodeInfo.scopeId,
+                    nodeData: JSON.stringify(nodeData),
+                });
+            }
 
             this.close();
         },
