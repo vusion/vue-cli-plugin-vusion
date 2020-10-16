@@ -137,7 +137,7 @@ module.exports = function (source) {
                 // 调用表达式
                 Object.assign(node, babel.parse(`this.$utils['${node.interfaceKey}'](${(getParams() || []).join(',\n')})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallInterface') {
-                const key = node.interfaceKey;
+                const key = node.interfaceKey || '';
                 const arr = key.split('/');
                 const getParams = (key) => {
                     // 过滤掉 null 的 param
