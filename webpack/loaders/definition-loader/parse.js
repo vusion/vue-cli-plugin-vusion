@@ -132,7 +132,7 @@ module.exports = function (source) {
                     arguments: (node.params || []).map((param) => param.value),
                 });
             } else if (node.type === 'CallInterface') {
-                const key = node.interfaceKey;
+                const key = node.interfaceKey || '';
                 const arr = key.split('/');
                 const getParams = (key) => {
                     // 过滤掉 null 的 param
