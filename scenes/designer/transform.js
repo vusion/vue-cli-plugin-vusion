@@ -272,7 +272,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
             if (node.type === 1) {
                 const excludes = [':data-source'];
                 Object.keys(node.attrsMap).forEach((attrKey) => {
-                    if (attrKey.startsWith(':') && !excludes.includes(attrKey)
+                    if (attrKey.startsWith(':') && !(node.tag === 'u-table-view' && attrKey === ':data-source')
                         || attrKey.startsWith('@')
                         || attrKey.startsWith('v-')) { // v-on,v-bind,v-model
                         delete node.attrsMap[attrKey];
@@ -294,6 +294,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                 delete node.elseif;
                 delete node.ifConditions;
                 delete node.for;
+                delete node.key;
             }
 
             if (children.length) {

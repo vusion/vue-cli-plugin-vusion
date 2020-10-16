@@ -114,7 +114,7 @@ module.exports = function (source) {
                     argument: { type: 'Identifier', name: returnObj.name },
                 });
             } else if (node.type === 'Identifier' && node.level === 'expressionNode') {
-                if (!(parent && parent.type === 'MemberExpression' || node.name.startsWith('this.')))
+                if (!(parent && parent.type === 'MemberExpression' && node === parent.object || node.name.startsWith('this.')))
                     checkThis(node);
             } else if (node.type === 'AssignmentExpression') {
                 checkThis(node.left);
