@@ -89,15 +89,9 @@
 </template>
 
 <script>
-import { MSubscriber } from 'cloud-ui.vusion';
+import globalData from '../utils/global.data';
 export default {
     name: 'd-slot',
-    mixins: [MSubscriber],
-    subscribe: {
-        allNodesAPI(api) {
-            this.api = api;
-        },
-    },
     props: {
         tag: { type: String, default: 'div' },
         display: { type: String, default: 'block' },
@@ -117,7 +111,7 @@ export default {
                 text: '<template> 文字 </template>',
                 expression: "<template> {{ 'value' }} </template>",
             },
-            api: undefined,
+            api: globalData.allNodesAPI,
         };
     },
     computed: {
