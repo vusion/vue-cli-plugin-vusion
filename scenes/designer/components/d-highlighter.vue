@@ -98,6 +98,7 @@ export default {
                 scopeId: nodeInfo.scopeId,
                 nodePath: nodeInfo.nodePath,
             });
+            this.$parent.reset();
         },
         duplicate() {
             const nodeInfo = this.info;
