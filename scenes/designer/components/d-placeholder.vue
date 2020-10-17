@@ -20,7 +20,7 @@ export default {
     },
     methods: {
         format(name = '') {
-            name.length <= 10 ? name : name.slice(0, 10) + '...';
+            return name.length <= 15 ? name : name.slice(0, 15) + '...';
         },
         onDblclick() {
             this.send({
