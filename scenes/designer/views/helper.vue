@@ -815,6 +815,8 @@ export default {
             slots.length && this.slotsMap.set(selected, slots);
         },
         renderView(data) {
+            this.DEBUG_Data = data;
+
             this.parseRoute(data.rootRoute);
             const root = Vue.extend({ template: '<div><router-view></router-view></div>' });
             const routes = [data.rootRoute];
@@ -849,6 +851,8 @@ export default {
             }, 0);
         },
         rerenderView(data) {
+            this.DEBUG_template = data;
+
             const scopeId = this.contextVM.$options._scopeId || '';
             let cssSuffix = '';
             if (data.content && data.content.style) {
