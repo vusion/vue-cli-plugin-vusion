@@ -16,12 +16,12 @@ import Vue from 'vue';
 import * as utils from '../utils';
 import throttle from 'lodash/throttle';
 import { v4 as uuidv4 } from 'uuid';
-import { MPublisher } from 'cloud-ui.vusion';
 import VueRouter from 'vue-router';
 import sum from 'hash-sum';
 import { postcssParse } from './cssParse';
 import initApp from '../../app/initApp';
 const parseDefinition = require('../../../webpack/loaders/definition-loader/parse');
+import globalData from '../utils/global.data';
 
 let lastChangedFile = '';
 const oldRerender = api.rerender;
@@ -50,10 +50,6 @@ api.reload = function (id, options, live) {
 
 export default {
     name: 'helper',
-    mixins: [MPublisher],
-    publish: {
-        allNodesAPI: 'allNodesAPI',
-    },
     data() {
         return {
             // appVM: undefined,
@@ -77,7 +73,6 @@ export default {
             targetNode: {},
             targetPosition: {},
             requests: new Map(),
-            allNodesAPI: {},
             ctrlList: [],
         };
     },
@@ -92,8 +87,8 @@ export default {
                 this.slotsMap.delete(old);
             }
 
-            if (selected && this.allNodesAPI) {
-                const cloudui = this.allNodesAPI[selected.tag];
+            if (selected && globalData.allNodesAPI) {
+                const cloudui = globalData.allNodesAPI[selected.tag];
                 const slots = cloudui && cloudui.slots || [];
                 if (slots.length)
                     this.attribute2slot(selected);
@@ -125,7 +120,7 @@ export default {
             // this.router.afterEach((to, from) => this.onNavigate(to.path));
             // this.onNavigate();
 
-            this.getExternalLibrary();
+            // this.getExternalLibrary();
 
             this.sendCommand('ready', {
                 routerMode: this.router.options.mode,
@@ -305,8 +300,8 @@ export default {
                 parentNodePath = node.getAttribute('vusion-parent-node-path') || '/';
             }
             let title = tag;
-            if (this.allNodesAPI) {
-                title = this.allNodesAPI[tag] && this.allNodesAPI[tag].title;
+            if (globalData.allNodesAPI) {
+                title = globalData.allNodesAPI[tag] && globalData.allNodesAPI[tag].title;
             }
             return {
                 el: node,
@@ -733,13 +728,15 @@ export default {
                 return false;
             }
         },
-        getExternalLibrary() {
-            // this.execCommand('startInit').then(([pageNodesAPI, app]) => {
-            //     this.allNodesAPI = pageNodesAPI;
-            // });
-        },
+        // getExternalLibrary() {
+        //     this.execCommand('getAllNodesAPI').then((allNodesAPI) => {
+        //         if (allNodesAPI) {
+        //             globalData.allNodesAPI = allNodesAPI;
+        //         }
+        //     });
+        // },
         getAllNodesAPI(data) {
-            this.allNodesAPI = data.allNodesAPI;
+            globalData.allNodesAPI = data.allNodesAPI;
         },
         editSlotAttribute(e, selected) {
             if (e.target && e.target.nodeType === 1 && e.target.hasAttribute('vusion-slot-name')) {
@@ -758,6 +755,7 @@ export default {
                     e.target.parentElement.insertBefore(dText.$el, e.target);
                     e.target.style.fontSize = 0;
                     e.target.style.display = 'inline-block';
+                    e.target.style.verticalAlign = 'middle';
                     setTimeout(() => {
                         dText.$el.focus();
                     });
@@ -824,7 +822,7 @@ export default {
             routes[0].component = root;
             const router = new VueRouter({ routes });
 
-            this.appVM.$destroy();
+            this.appVM && this.appVM.$destroy();
             // 重新生成实例
             const appVM = initApp(router).$mount(this.appVM.$el);
             document.getElementById('loading').style.display = 'none';
@@ -860,7 +858,7 @@ export default {
                 scopeId,
                 whitespace: 'condense',
                 cssSuffix,
-                allNodesAPI: this.allNodesAPI,
+                allNodesAPI: globalData.allNodesAPI,
             };
 
             /**
@@ -916,7 +914,7 @@ export default {
                     scopeId,
                     whitespace: 'condense',
                     cssSuffix,
-                    allNodesAPI: this.allNodesAPI,
+                    allNodesAPI: globalData.allNodesAPI,
                 };
                 const puppetOptions = Object.assign({
                     plugins: [compilerPlugin],
