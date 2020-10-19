@@ -393,7 +393,7 @@ module.exports = function (source) {
         componentOptions.data = data;
 
         const meta = componentOptions.meta = componentOptions.meta || {};
-        Object.assign(meta, {title: ${JSON.stringify(definition.title)}, crumb: ${JSON.stringify(definition.crumb)} });
+        Object.assign(meta, {title: ${JSON.stringify(definition.title)}, crumb: ${JSON.stringify(definition.crumb)}, first: ${JSON.stringify(definition.first)} });
 
         ${lifecycles.join('\n\n')}
 
