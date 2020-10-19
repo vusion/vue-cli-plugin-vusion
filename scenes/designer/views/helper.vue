@@ -155,7 +155,7 @@ export default {
                     this.select(nodeInfo);
                     this.$refs.selected.computeStyle();
                 }
-            });
+            }, 100);
         };
 
         // https://github.com/vuejs/vue-devtools/blob/dev/packages/app-backend/src/component-selector.js
