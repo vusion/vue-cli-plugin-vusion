@@ -303,12 +303,14 @@ export default {
             if (globalData.allNodesAPI) {
                 title = globalData.allNodesAPI[tag] && globalData.allNodesAPI[tag].title;
             }
+            let nodePath = node.getAttribute('vusion-node-path');
+            nodePath = nodePath === null ? node.__vue__ && node.__vue__.$attrs['vusion-node-path'] : nodePath;
             return {
                 el: node,
                 type,
                 tag,
                 scopeId,
-                nodePath: node.getAttribute('vusion-node-path'),
+                nodePath,
                 parentNodePath,
                 title,
             };
