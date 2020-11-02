@@ -1057,4 +1057,8 @@ body [class^="u-table-view__"]::after {
     left: 0;
     right: 0;
 }
+
+body [class^="u-uploader_file__"] {
+    display: none;
+}
 </style>

@@ -206,6 +206,7 @@ module.exports = function (source) {
                             includeProcessVariables: true,
                             sort: 'startTime',
                             order: 'desc',
+                            finished: ${node.finished},
                         },
                     }`;
                 } else if (node.action === 'get') {
@@ -280,7 +281,6 @@ module.exports = function (source) {
                     if (queryparams.length > 0) {
                         const queryValue = queryparams.map((param) => {
                             const value = safeGenerate(param.value);
-                            console.info('param zxy', value);
                             return `${safeKey(param.name)}:${value}`;
                         });
                         // key：value 转化成 queryString
@@ -315,7 +315,6 @@ module.exports = function (source) {
 
                 node.operationName = getOperationName(node.schemaRef, node.resolverName);
                 const graphqlClient = node.querySchemaMap ? genQuery(node) : `query test{}`;
-                console.info('graphqlClient', graphqlClient);
                 Object.assign(node, {
                     type: 'AwaitExpression',
                     argument: babel.parse(`this.$graphql.${node.action || 'query'}('${node.schemaRef}', '${node.operationName}', \`${graphqlClient}\`, {
