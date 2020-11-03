@@ -3,14 +3,14 @@ const babel = require('@babel/core');
 const { TransforClientQuery: genQuery } = require('apollo-plugin-loader');
 
 function switchCase2If(cases) {
-    const cas = cases.unshift();
+    const cas = cases.shift();
 
     const result = {
         type: 'IfStatement',
         test: cas.test,
         consequent: {
             type: 'BlockStatement',
-            body: cas.consequent,
+            body: cas.consequent || [],
         },
         alternate: null,
     };
@@ -18,9 +18,9 @@ function switchCase2If(cases) {
     if (cases.length) {
         result.alternate = switchCase2If(cases);
     } else {
-        result.alternate = {
+        return {
             type: 'BlockStatement',
-            body: cas.alternate,
+            body: cas.consequent || [],
         };
     }
 
