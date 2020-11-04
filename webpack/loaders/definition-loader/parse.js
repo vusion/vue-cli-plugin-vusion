@@ -368,7 +368,7 @@ module.exports = function (source) {
         console.info('JSON generate:', JSON.stringify(logic.definition.body));
 
         return `methods['${logic.name}'] = async function (${logic.definition.params.map((param) => param.name).join(', ')}) {
-            ${logic.definition.variables.length ? 'let ' + logic.definition.variables.map((variable) => variable.name + ' = ' + (safeGenerate(variable.init))).join(';\n') + '' : ''}
+            ${logic.definition.variables.length ? logic.definition.variables.map((variable) => 'let ' + variable.name + ' = ' + (safeGenerate(variable.init))).join(';\n') + '' : ''}
             let ${returnObj.name} = ${safeGenerate(returnObj.init)};
 
             ${generate({
@@ -392,7 +392,11 @@ module.exports = function (source) {
         componentOptions.data = data;
 
         const meta = componentOptions.meta = componentOptions.meta || {};
-        Object.assign(meta, {title: ${JSON.stringify(definition.title)}, crumb: ${JSON.stringify(definition.crumb)}, first: ${JSON.stringify(definition.first)} });
+        Object.assign(meta, {
+            title: ${JSON.stringify(definition.title)},
+            crumb: ${JSON.stringify(definition.crumb)},
+            first: ${JSON.stringify(definition.first)},
+        });
 
         ${lifecycles.join('\n\n')}
 
