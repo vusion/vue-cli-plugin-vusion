@@ -176,11 +176,20 @@ export default {
         send(data) {
             if (this.transform && data.code) {
                 const slotName = this.slotName;
+                let slotKey = slotName;
+                if (this.api) {
+                    const cloudui = this.api[this.nodeTag || this.nodeInfo.tag];
+                    const slots = cloudui && cloudui.slots || [];
+                    const slot = slots.find((item) => item.name === this.slotName);
+                    if (slot.props) {
+                        slotKey = `${slotKey}="scope"`;
+                    }
+                }
                 let code = data.code.replace(/^<template>\s*/, '').replace(/\s*<\/template>\s*$/, '') + '\n';
                 if (this.transform.value) {
                     code = this.transform.value + code;
                 }
-                code = `<template> <template #${slotName}> ${code} </template> </template>`;
+                code = `<template> <template #${slotKey}> ${code} </template> </template>`;
                 data.code = code;
             }
             this.$root.$emit('d-slot:send', data);
