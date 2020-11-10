@@ -222,6 +222,8 @@ module.exports = function (source) {
                             includeProcessVariables: true,
                             sort: 'startTime',
                             order: 'desc',
+                            finished: ${node.finished},
+                            startedBy: ${safeGenerate(node.startedBy)},
                         }
                     }`;
                 } else if (node.action === 'getProcessInstance') {
