@@ -178,6 +178,23 @@ module.exports = function (source) {
                 //     objectExpression.properties[1] = node.body;
                 // }
             } else if (node.type === 'CallFlow') {
+                const bodyParams = (node.params || [])
+                    .filter((param) => param.in === undefined)  // 放在body内部的参数
+                    .filter((param) => safeGenerate(param.value) !== undefined)
+                    .map((param) => `${safeKey(param.name)}: ${safeGenerate(param.value)}`)
+                    .join(',\n');
+                
+                const getObj = (type) => (node.params || [])
+                    .filter((param) => param.in === type)
+                    .reduce((obj, param) => {
+                        const key = safeKey(param.name);
+                        const value = safeGenerate(param.value);
+                        obj[key] = value;
+                        return obj;
+                    }, {});
+                const pathObj = getObj('path');
+                const bodyObj = getObj('body');
+
                 let params = '';
                 const variables = safeGenerate(node.variables);
                 if (node.action === 'start') {
@@ -186,16 +203,18 @@ module.exports = function (source) {
                             processDefinitionKey: '${node.processDefinitionKey}',
                             returnVariables: true,
                             variables: ${variables},
+                            ${bodyParams}
                         }
                     }`;
                 } else if (node.action === 'complete') {
                     params = `{
                         path: {
-                            taskId: ${safeGenerate(node.taskId)},
+                            taskId: ${pathObj.taskId || safeGenerate(node.taskId)},
                         },
                         body: {
                             action: 'complete',
                             variables: ${variables},
+                            ${bodyParams}
                         }
                     }`;
                 } else if (node.action === 'getList') {
@@ -207,12 +226,13 @@ module.exports = function (source) {
                             sort: 'startTime',
                             order: 'desc',
                             finished: ${node.finished},
+                            ${bodyParams}
                         },
                     }`;
                 } else if (node.action === 'get') {
                     params = `{
                         path: {
-                            taskId: '${safeGenerate(node.taskId)}',
+                            taskId: '${pathObj.taskId || safeGenerate(node.taskId)}',
                         },
                     }`;
                 } else if (node.action === 'getProcessInstanceList') {
@@ -224,20 +244,21 @@ module.exports = function (source) {
                             order: 'desc',
                             finished: ${node.finished},
                             startedBy: ${safeGenerate(node.startedBy)},
+                            ${bodyParams}
                         }
                     }`;
                 } else if (node.action === 'getProcessInstance') {
                     params = `{
                         path: {
-                            processInstanceId: ${safeGenerate(node.processInstanceId)},
+                            processInstanceId: ${pathObj.processInstanceId || safeGenerate(node.processInstanceId)},
                         },
                     }`;
                 } else if (node.action === 'updateVariables') {
                     params = `{
                         path: {
-                            processInstanceId: ${safeGenerate(node.processInstanceId)},
+                            processInstanceId: ${pathObj.processInstanceId || safeGenerate(node.processInstanceId)},
                         },
-                        body: ${variables || '{}'},
+                        body: ${bodyObj.variables || variables || '{}'},
                     }`;
                 }
 
