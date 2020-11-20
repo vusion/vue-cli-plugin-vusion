@@ -533,6 +533,7 @@ export default {
             if (nodeInfo.el === this.selected.el)
                 return;
 
+            this.hover = {};
             this.selected = nodeInfo;
         },
         /**
