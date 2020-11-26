@@ -559,6 +559,23 @@ export default {
             dText.$parent = this;
             return dText;
         },
+        onDTextBlur(context) {
+            setTimeout(() => {
+                const parent = context.$el.parentElement;
+                if (parent) {
+                    parent.removeChild(context.$el);
+                    parent.style.color = window.getComputedStyle(context.$el, null).getPropertyValue('color');
+                }
+            });
+        },
+        clearDTexts() {
+            const dtexts = document.getElementsByClassName('d-text-autoadd');
+            const dtextsArr = Array.from(dtexts);
+            dtextsArr.forEach((dtext) => {
+                dtext.parentElement.style.color = window.getComputedStyle(dtext, null).getPropertyValue('color');
+                dtext.parentElement.removeChild(dtext);
+            });
+        },
         createDSlot(options) {
             const Ctor = Vue.component('d-slot');
             const el = document.createElement('div');
@@ -579,17 +596,6 @@ export default {
         },
         onDSlotModeChange($event) {
             setTimeout(() => this.updateStyle());
-        },
-        onDTextBlur(context) {
-            setTimeout(() => {
-                const parent = context.$el.parentElement;
-                const nextSibling = context.$el.nextSibling;
-                if (parent && nextSibling) {
-                    parent.removeChild(context.$el);
-                    nextSibling.style.fontSize = '';
-                    nextSibling.style.display = '';
-                }
-            });
         },
         send(data) {
             const dataString = JSON.stringify(data);
@@ -755,10 +761,14 @@ export default {
                             slotName: name,
                         },
                     });
-                    e.target.parentElement.insertBefore(dText.$el, e.target);
-                    e.target.style.fontSize = 0;
-                    e.target.style.display = 'inline-block';
-                    e.target.style.verticalAlign = 'middle';
+                    dText.$el.classList.add('d-text-autoadd');
+                    e.target.insertBefore(dText.$el, textNode[0]);
+                    const rect = e.target.firstChild.getBoundingClientRect();
+                    e.target.firstChild.style.marginRight = -rect.width + 'px';
+                    e.target.firstChild.style.position = 'relative';
+                    e.target.firstChild.style.color = window.getComputedStyle(e.target, null).getPropertyValue('color');
+                    e.target.style.color = 'transparent';
+
                     setTimeout(() => {
                         dText.$el.focus();
                     });
@@ -785,7 +795,7 @@ export default {
                         && !(item.className && item.className.startsWith('d-') && !item.className.startsWith('d-text_'))
                         && (className && className.startsWith(selected.tag))
                         && item.hasAttribute('vusion-slot-name')) {
-                        const childNodes = item.childNodes;
+                        const childNodes = Array.from(item.childNodes).filter((node) => !(node.className && node.className.startsWith('d-text_')));
                         const name = item.getAttribute('vusion-slot-name');
                         if (!childNodes.length || (childNodes.length === 1 && childNodes[0].nodeType === 3)) {
                             const nodeInfo = this.getNodeInfo(item);
@@ -854,6 +864,10 @@ export default {
             }, 0);
         },
         rerenderView(data) {
+            // 由slot手动插入的dtext，在点击其他区域后没有清空，会导致rerender的时候有缓存
+            // 如表格的列的增删，title的展示会保留上一列，看起来像有缓存
+            this.clearDTexts();
+
             this.DEBUG_template = data;
 
             const scopeId = this.contextVM.$options._scopeId || '';

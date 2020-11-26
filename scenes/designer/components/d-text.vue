@@ -4,12 +4,12 @@
     :vusion-node-path="nodePath"
     :vusion-parent-node-path="parentNodePath"
     :vusion-slot-name="slotName">
-    <span v-if="!contenteditable" key="noEdit" :class="$style.noedit">{{ text }}</span>
+    <span v-if="!contenteditable" key="noEdit" :class="$style.noedit">{{ currentText }}</span>
     <span v-else contenteditable="true" tabindex="0" key="edit"
         @blur="onBlur"
         @keydown="onKeyDown"
         @click="cancelEvent"
-        ref="edit" focus="true">{{ text }}</span>
+        ref="edit" focus="true">{{ currentText }}</span>
 </span>
 </template>
 
@@ -25,6 +25,7 @@ export default {
     data() {
         return {
             contenteditable: false,
+            currentText: this.text,
         };
     },
     methods: {
@@ -36,6 +37,7 @@ export default {
             this.contenteditable = false;
             this.$emit('d-text:blur', this);
             const value = event.target.innerText;
+            this.currentText = value;
             if (value === this.text)
                 return;
             if (this.slotName) {
