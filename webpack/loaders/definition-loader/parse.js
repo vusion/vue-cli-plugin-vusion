@@ -257,11 +257,11 @@ module.exports = function (source) {
                 });
             } else if (node.type === 'Destination') {
                 const params = (node.params || []).filter((param) => param.key && param.value).map((param) => {
-                    if (param.value.type === 'Identifier') {
-                        checkThis(param.value);
-                        return param.key.name + '=${' + name + '}';
+                    const value = safeGenerate(param.value);
+                    if (param.value.type === 'StringLiteral' || param.value.type === 'NumericLiteral') {
+                        return safeKey(param.key.name) + '=' + param.value.value;
                     } else {
-                        return param.key.name + '=' + param.value.value;
+                        return safeKey(param.key.name) + '=${' + value + '}';
                     }
                 });
                 let url = `/${node.page}`;
@@ -269,9 +269,10 @@ module.exports = function (source) {
                     url = `/${node.page}${node.url}`;
                 }
                 if (params.length) {
-                    url = `${url}?${params.join('&')}`;
+                    url = '`' + url + '?' + params.join('&') + '`';
+                } else {
+                    url = '`' + url + '`';
                 }
-                url = `'${url}'`;
                 Object.assign(node, babel.parse(`this.$destination(${url})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallGraphQL') {
                 const getParams = () => {
