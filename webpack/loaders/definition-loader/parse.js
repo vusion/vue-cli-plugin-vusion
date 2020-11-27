@@ -264,7 +264,14 @@ module.exports = function (source) {
                         return param.key.name + '=' + param.value.value;
                     }
                 });
-                const url = '`/' + node.page + node.url + '?' + params.join('&') + '`';
+                let url = `/${node.page}`;
+                if (node.url && node.url.startsWith('/')) {
+                    url = `/${node.page}${node.url}`;
+                }
+                if (params.length) {
+                    url = `${url}?${params.join('&')}`;
+                }
+                url = `'${url}'`;
                 Object.assign(node, babel.parse(`this.$destination(${url})`, { filename: 'file.js' }).program.body[0].expression);
             } else if (node.type === 'CallGraphQL') {
                 const getParams = () => {
