@@ -279,9 +279,7 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                         let babelResult = babel.parse(`${node.attrsMap[attrKey]}`,
                             { filename: 'file.js' });
                         babelResult = babelResult && babelResult.program.body[0] && babelResult.program.body[0].expression;
-                        if (babelResult && (babelResult.type === 'StringLiteral'
-                            || babelResult.type === 'NumericLiteral'
-                            || babelResult.type === 'BooleanLiteral')) {
+                        if (babelResult && babelResult.type.endsWith('Literal')) {
                             return;
                         }
                         delete node.attrsMap[attrKey];
