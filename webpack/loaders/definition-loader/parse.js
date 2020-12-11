@@ -264,10 +264,7 @@ module.exports = function (source) {
                         return safeKey(param.key.name) + '=${' + value + '}';
                     }
                 });
-                let url = `/${node.page}`;
-                if (node.url && node.url.startsWith('/')) {
-                    url = `/${node.page}${node.url}`;
-                }
+                let url = node.url;
                 if (params.length) {
                     url = '`' + url + '?' + params.join('&') + '`';
                 } else {
