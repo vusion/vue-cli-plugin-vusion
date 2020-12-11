@@ -1,4 +1,5 @@
 const TemplateHandler = require('vusion-api/out/fs/TemplateHandler').default;
+const babel = require('@babel/core');
 
 const getClassName = function (styleStr) {
     if (/^\$style\[['"](.*)['"]\]$/g.test(styleStr)) {
@@ -275,6 +276,14 @@ exports.compilerPlugin = function compilerPlugin(ast, options, compiler) {
                     if (attrKey.startsWith(':') && !(node.tag === 'u-table-view' && attrKey === ':data-source')
                         || attrKey.startsWith('@')
                         || attrKey.startsWith('v-')) { // v-on,v-bind,v-model
+                        let babelResult = babel.parse(`${node.attrsMap[attrKey]}`,
+                            { filename: 'file.js' });
+                        babelResult = babelResult && babelResult.program.body[0] && babelResult.program.body[0].expression;
+                        if (babelResult && (babelResult.type === 'StringLiteral'
+                            || babelResult.type === 'NumericLiteral'
+                            || babelResult.type === 'BooleanLiteral')) {
+                            return;
+                        }
                         delete node.attrsMap[attrKey];
                         const attrName = attrKey.replace(':', '').replace('@', '');
                         const attrIndex = node.attrs.findIndex((attr) => attr.name === attrName);
