@@ -369,6 +369,22 @@ module.exports = function (source) {
                 const throwStatement = babel.parse(`throw new Error()`, { filename: 'file.js' }).program.body[0];
                 throwStatement.argument.arguments = node.arguments;
                 Object.assign(node, throwStatement);
+            } else if (node.type === 'JSBlock') {
+                Object.assign(node, babel.parse(
+                    `{
+                        const jsBlock_${index} = async () => {
+                            with(this) {
+                                ${node.code}
+                            }
+                        }
+                    
+                        await jsBlock_${index}();
+                    }`, { 
+                    filename: 'file.js',
+                    parserOpts: {
+                        allowAwaitOutsideFunction: true,
+                    },
+                }).program.body[0]);
             }
         });
 
