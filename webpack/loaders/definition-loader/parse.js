@@ -53,7 +53,8 @@ module.exports = function (source) {
     };
 
     const paramsData = (definition.params || []).map((param) => {
-        param.init = param.init || { type: 'StringLiteral', value: '' };
+        // pass schema to genInitData function, transform init realtime after datatypes changed
+        param.init = babel.parse('this.$transforSchemaWithDataTypes(' + JSON.stringify(param.schema) + ')', { filename: 'file.js' }).program.body[0].expression || { type: 'StringLiteral', value: '' };
         dataMap[param.name] = param.init;
         if (param.schema.type === 'boolean')
             return param.name + `: this.$route.query.hasOwnProperty('${param.name}') || this.$route.query.${param.name} === 'true'`;
@@ -67,7 +68,8 @@ module.exports = function (source) {
             return param.name + `: this.$route.query.${param.name}`;
     }).join(',\n').trim();
     const variablesData = (definition.variables || []).map((variable) => {
-        variable.init = variable.init || { type: 'StringLiteral', value: '' };
+        variable.init = babel.parse('this.$transforSchemaWithDataTypes(' + JSON.stringify(variable.schema) + ')', { filename: 'file.js' }).program.body[0].expression
+         || { type: 'StringLiteral', value: '' };
         dataMap[variable.name] = variable.init;
         return variable.name + `: ${generate(variable.init).code || undefined}`;
     }).join(',\n').trim();
@@ -132,7 +134,7 @@ module.exports = function (source) {
                     arguments: (node.params || []).map((param) => param.value),
                 });
             } else if (node.type === 'CallInterface') {
-                const key = node.interfaceKey;
+                const key = node.interfaceKey || '';
                 const arr = key.split('/');
                 const getParams = (key) => {
                     // 过滤掉 null 的 param
@@ -396,9 +398,11 @@ module.exports = function (source) {
         console.info('JSON generate:', JSON.stringify(logic.definition.body));
 
         return `methods['${logic.name}'] = async function (${logic.definition.params.map((param) => param.name).join(', ')}) {
-            ${logic.definition.variables.length ? logic.definition.variables.map((variable) => 'let ' + variable.name + ' = ' + (safeGenerate(variable.init))).join(';\n') + '' : ''}
-            let ${returnObj.name} = ${safeGenerate(returnObj.init)};
-
+            ${logic.definition.variables.length ? logic.definition.variables.map((variable) => 'let ' + variable.name + ' = '
+                + safeGenerate(babel.parse('this.$transforSchemaWithDataTypes(' + JSON.stringify(variable.schema) + ')', { filename: 'file.js' }).program.body[0].expression)).join(';\n') + '' : ''}
+            let ${returnObj.name} = ${
+    safeGenerate(babel.parse('this.$transforSchemaWithDataTypes(' + JSON.stringify(returnObj.schema) + ')', { filename: 'file.js' }).program.body[0].expression)
+};
             ${generate({
         type: 'Program',
         body: logic.definition.body,
@@ -418,7 +422,6 @@ module.exports = function (source) {
             });
         };
         componentOptions.data = data;
-
         const meta = componentOptions.meta = componentOptions.meta || {};
         Object.assign(meta, {
             title: ${JSON.stringify(definition.title)},
