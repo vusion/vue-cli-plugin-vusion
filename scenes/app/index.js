@@ -28,6 +28,8 @@ Vue.use(installDataTypes);
 Vue.use(installUtils);
 Vue.use(GueryStrCollect);
 
+Vue.prototype.$env.VUE_APP_DESIGNER = true;
+
 const Index = Vue.extend({
     template: `<div style="background: #111217;height:calc(100vh - 40px);position:relative;opacity: 0.8;">
                 <u-loading style="position: absolute;width:48px;height:48px;top:calc(50% - 24px);left:calc(50% - 24px);"></u-loading>

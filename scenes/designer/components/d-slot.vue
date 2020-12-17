@@ -111,7 +111,7 @@ export default {
                 text: '<template> 文字 </template>',
                 expression: "<template> {{ 'value' }} </template>",
             },
-            api: globalData.allNodesAPI,
+            globalData,
         };
     },
     computed: {
@@ -122,8 +122,8 @@ export default {
                 return 'default';
         },
         slotsProps() {
-            if (this.slotName && this.api) {
-                const cloudui = this.api[this.nodeTag || this.nodeInfo.tag];
+            if (this.slotName && this.globalData.allNodesAPI) {
+                const cloudui = this.globalData.allNodesAPI[this.nodeTag || this.nodeInfo.tag];
                 const slots = cloudui && cloudui.slots || [];
                 const slot = slots.find((item) => item.name === this.slotName);
 
@@ -177,8 +177,8 @@ export default {
             if (this.transform && data.code) {
                 const slotName = this.slotName;
                 let slotKey = slotName;
-                if (this.api) {
-                    const cloudui = this.api[this.nodeTag || this.nodeInfo.tag];
+                if (this.globalData.allNodesAPI) {
+                    const cloudui = this.globalData.allNodesAPI[this.nodeTag || this.nodeInfo.tag];
                     const slots = cloudui && cloudui.slots || [];
                     const slot = slots.find((item) => item.name === this.slotName);
                     if (slot.props) {
@@ -292,7 +292,7 @@ export default {
 <style module>
 .root {
     position: relative;
-    z-index: 9999;
+    z-index: 999;
     min-width: 28px;
     vertical-align: 3px;
     user-select: none;
