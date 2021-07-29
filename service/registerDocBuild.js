@@ -26,11 +26,12 @@ module.exports = function registerDocBuild(api, vueConfig, vusionConfig) {
                         { from: './dist-theme', to: 'dist-theme', ignore: ['.*'] },
                     ]]);
 
+                const assets = (vusionConfig.assets || 'https://static-vusion.163yun.com').replace(/\/$/g, '');
                 config.plugin('html-tags').after('html')
                     .use(HTMLTagsPlugin, [
                         { tags: [
                             'dist-theme/index.css',
-                            { path: 'https://static-vusion.163yun.com/packages/vue@2/dist/vue.min.js', hash: false },
+                            { path: `${assets}/packages/vue@2/dist/vue.min.js`, hash: false },
                             'dist-theme/index.js',
                         ], append: false, hash: true },
                     ]);
