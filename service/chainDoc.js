@@ -189,16 +189,16 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
                 version = pkg.dependencies['cloud-ui.vusion'];
             version = version.replace(/^[^\d]+/, '').split('.').slice(0, 2).join('.');
 
-            const assets = (vusionConfig.assets || 'https://static-vusion.163yun.com').replace(/\/$/g, '');
+            const docStaticURL = (vusionConfig.docStaticURL || 'https://static-vusion.163yun.com').replace(/\/$/g, '');
 
             config.plugin('html-tags').after('html')
                 .use(HTMLTagsPlugin, [
                     { tags: [
-                        `${assets}/packages/vue@2/dist/vue${process.env.NODE_ENV === 'development' ? '' : '.min'}.js`,
-                        `${assets}/packages/cloud-ui.vusion@${version}/dist-theme/index.css`,
-                        `${assets}/packages/cloud-ui.vusion@${version}/dist-theme/index.js`,
-                        `${assets}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.css`,
-                        `${assets}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.js`,
+                        `${docStaticURL}/packages/vue@2/dist/vue${process.env.NODE_ENV === 'development' ? '' : '.min'}.js`,
+                        `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-theme/index.css`,
+                        `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-theme/index.js`,
+                        `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.css`,
+                        `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.js`,
                     ], append: false, hash: false },
                 ]);
         }
