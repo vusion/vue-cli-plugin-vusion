@@ -24,15 +24,18 @@ if (process.env.NODE_ENV === 'development')
     window.$docs = $docs; // 方便开发时调试
 
 import 'themeCSS';
-import * as Library from 'cloud-ui.vusion';
+import * as CloudUI from 'cloud-ui.vusion';
+import * as Library from '@';
 if ($docs.install === 'option-name') {
     Object.keys(Library).forEach((key) => {
         const Component = Library[key];
         const name = typeof Component === 'function' ? Component.options.name : Component.name;
         name && Vue.component(name, Component);
     });
-} else
+} else {
+    install(Vue, CloudUI);
     install(Vue, Library);
+}
 
 /* eslint-disable no-undef */
 /* DOCS_COMPONENTS_PATH start */

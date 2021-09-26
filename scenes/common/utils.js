@@ -129,7 +129,7 @@ exports.normalizeMaterials = function (basePath, materials, type) {
     const isComponentsType = ['components', 'blocks', 'vendors', 'layouts'].includes(type);
 
     materials.forEach((material) => {
-        const relativeReadmePath = (material.scope ? `@${material.scope}/` : '') + material.name + (isComponentsType ? '.vue/README.md' : '/README.md');
+        const relativeReadmePath = (material.scope ? `@${material.scope}/` : '') + material.name + (isComponentsType ? '/README.md' : '/README.md');
 
         if (material.path) {
             if (material.path[0] === '.')
@@ -216,7 +216,7 @@ exports.getMaterials = function (basePath, materials, type) {
             const materialsMap = {};
 
             // 目录中的组件
-            globby.sync(['*.vue'], { cwd: basePath })
+            globby.sync(['*'], { cwd: basePath })
                 .forEach((fileName) => {
                     const vueName = fileName.slice(0, -4);
                     const markdownPath = path.resolve(basePath, fileName + '/README.md').replace(/\\/g, '/');

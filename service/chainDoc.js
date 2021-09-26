@@ -98,7 +98,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
             .loader(autoLoaderPath)
             .options(vusionConfig);
 
-        const docsPath = path.resolve(process.cwd(), 'docs');
+        const docsPath = path.resolve(process.cwd(), vusionConfig.docsPath);
         const docsComponentsPath = path.resolve(docsPath, 'components');
         const docsViewsPath = path.resolve(docsPath, 'views');
         const docsImportsPath = path.resolve(docsPath, 'imports.js');

@@ -43,10 +43,11 @@ module.exports = function (content) {
         // 动态生成组件、区块、指令、过滤器、工具
         // @compat:
         let componentsPath = path.join(libraryPath, 'components');
-        if (!fs.existsSync(componentsPath))
-            componentsPath = libraryPath;
         components = _.getMaterials(componentsPath, config.docs && config.docs.components, 'components');
-        flatRoutesList[0]['/components'] && _.setChildren(flatRoutesList[0]['/components'], components);
+        let componentsPath2 = path.join(libraryPath, '../src');
+        const components2 = _.getMaterials(componentsPath2, config.docs && config.docs.components, 'components');
+        // components.push(...components2);
+        flatRoutesList[0]['/components'] && _.setChildren(flatRoutesList[0]['/components'], [].concat(components, components2));
         components.forEach((component) => {
             // 监听 docs 目录的变更
             if (component.path && component.path.endsWith('api.yaml'))
