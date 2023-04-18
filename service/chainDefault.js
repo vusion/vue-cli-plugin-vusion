@@ -92,6 +92,56 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             config.module.rules.delete('js');
 
         config.plugins.delete('case-sensitive-paths');
+
+        /**
+         * Support ifdef-loader
+         * https://github.com/nippur72/ifdef-loader
+         *
+         * 只在 development 才生效的代码示例
+         *
+         * js:
+         * // #if process.env.mode === 'development'
+         * import 'test.css';
+         * // #endif
+         *
+         * css:
+         * /*
+         * // #if process.env.mode === 'development'
+         * *\/
+         * @import 'test.css';
+         * /*
+         * // #endif
+         * *\/
+         */
+        const ifdefLoaderOptions = {
+            'ifdef-verbose': true,
+            'ifdef-triple-slash': false,
+            'ifdef-fill-with-blanks': true,
+            'ifdef-uncomment-prefix': '// #code ',
+        };
+
+        config
+            .module
+            .rule('js-code')
+            .test(/\.(j|t)sx?$/)
+            .use('ifdef-loader')
+            .loader('ifdef-loader')
+            .options(ifdefLoaderOptions)
+            .end()
+            .end()
+            .rule('vue')
+            .use('ifdef-loader')
+            .loader('ifdef-loader')
+            .options(ifdefLoaderOptions)
+            .end()
+            .end()
+            .rule('css')
+            .oneOfs.store.forEach((childRule) => {
+                childRule
+                    .use('ifdef-loader')
+                    .loader('ifdef-loader')
+                    .options(ifdefLoaderOptions);
+            });
     });
 
     // Hack for devServer options
