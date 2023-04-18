@@ -77,7 +77,7 @@
     "uslug": "^1.0.4",
     "uuid": "^7.0.3",
     "vue-component-analyzer": "^0.2.0",
-    "vue-loader": "~15.9.2",
+    "vue-loader": "15.9.8",
     "vue-router": "^3.0.1",
     "vusion-api": "^0.7.36",
     "vusion-loader": "^0.5.1"
