@@ -100,13 +100,13 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
          * 只在 development 才生效的代码示例
          *
          * js:
-         * // #if process.env.mode === 'development'
+         * // #if process.env.NODE_ENV === 'development'
          * import 'test.css';
          * // #endif
          *
          * css:
          * /*
-         * // #if process.env.mode === 'development'
+         * // #if process.env.NODE_ENV === 'development'
          * *\/
          * @import 'test.css';
          * /*
