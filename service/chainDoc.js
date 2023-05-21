@@ -85,6 +85,7 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
         if (vusionConfig.type === 'library')
             config.entry('docs').add(require.resolve('../scenes/doc/views/library.js'));
         else if (vusionConfig.type === 'component' || vusionConfig.type === 'block')
+            // config.entry('docs').add(require.resolve('../scenes/doc/views/library.js'));
             config.entry('docs').add(require.resolve('../scenes/doc/views/material.js'));
 
         // Make sure vue & vue-router unique
@@ -197,8 +198,8 @@ module.exports = function chainDoc(api, vueConfig, vusionConfig) {
                         `${docStaticURL}/packages/vue@2/dist/vue${process.env.NODE_ENV === 'development' ? '' : '.min'}.js`,
                         `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-theme/index.css`,
                         `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-theme/index.js`,
-                        `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.css`,
-                        `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.js`,
+                        // `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.css`,
+                        // `${docStaticURL}/packages/cloud-ui.vusion@${version}/dist-doc-entry/index.js`,
                     ], append: false, hash: false },
                 ]);
         }

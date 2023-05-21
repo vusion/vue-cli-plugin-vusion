@@ -37,14 +37,14 @@ module.exports = function (content) {
 
     let components; let vendors; let blocks; let directives; let filters; let utils; let misc; let layouts;
     if (config.type === 'component' || config.type === 'block') {
-        components = _.getMaterial(srcPath, 'components');
+        components = _.getMaterials(srcPath, config.docs && config.docs.components, 'components');
         flatRoutesList[0]['/components'] && _.setChildren(flatRoutesList[0]['/components'], components);
     } else {
         // 动态生成组件、区块、指令、过滤器、工具
         // @compat:
-        let componentsPath = path.join(libraryPath, 'components');
+        const componentsPath = path.join(libraryPath, 'components');
         components = _.getMaterials(componentsPath, config.docs && config.docs.components, 'components');
-        let componentsPath2 = path.join(libraryPath, '../src');
+        const componentsPath2 = path.join(libraryPath, '../src');
         const components2 = _.getMaterials(componentsPath2, config.docs && config.docs.components, 'components');
         // components.push(...components2);
         flatRoutesList[0]['/components'] && _.setChildren(flatRoutesList[0]['/components'], [].concat(components, components2));

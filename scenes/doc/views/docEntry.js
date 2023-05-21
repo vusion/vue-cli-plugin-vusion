@@ -28,17 +28,15 @@ export default ($docs, Components, NODE_ENV) => {
     if (process.env.NODE_ENV === 'development')
         window.$docs = $docs; // 方便开发时调试
 
-    if (Object.keys(Components).length > 1)
+    if (Object.keys(Components).length > 1) {
         install(Vue, Components);
-    else {
+    } else {
         const name = ((packageName) => {
             const cap = /([a-zA-Z0-9-_]+)(\.vue)?$/.exec(packageName);
             return (cap ? cap[1] : packageName).replace(/(?:^|-)([a-zA-Z0-9])/g, (m, $1) => $1.toUpperCase());
         })($docs.package.name);
         install(Vue, { [name]: Components.default });
     }
-    $docs.routes[0] = $docs.routes[0].children[1].children[1];
-    $docs.routes[0].path = '/';
 
     const router = new VueRouter({
         mode: $docs.mode,

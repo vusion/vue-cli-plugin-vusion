@@ -1,7 +1,7 @@
 <template>
 <l-page>
     <u-navbar slot="head">
-        <u-logo slot="left">{{ logo }}</u-logo>
+        <!-- <u-logo slot="left">{{ logo }}</u-logo> -->
         <u-navbar-item v-for="item in navbar" :key="item.text" :to="item.to" :href="item.href" :target="item.target">{{ item.text }}</u-navbar-item>
     </u-navbar>
     <router-view></router-view>
