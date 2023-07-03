@@ -6,7 +6,7 @@ module.exports = postcss.plugin('fix-priority-plugin', ({ loaderContext, classLi
     // - 业务中加 [class]
     const compPath = path.join('src', 'components');
     const globalCompPath = path.join('src', 'global', 'components');
-    const suffix = loaderContext.context && (loaderContext.context.includes(compPath) || loaderContext.context.includes(globalCompPath)) ? '' : '[class]';
+    const suffix = loaderContext.context && (loaderContext.context.includes(compPath) || loaderContext.context.includes(globalCompPath)) ? ':not(iframe)' : '[class]';
     styles.walkRules((rule) => {
         rule.selector = replaceSelector(rule.selector, classList, suffix);
     });
