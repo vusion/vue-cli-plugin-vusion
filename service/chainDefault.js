@@ -124,6 +124,9 @@ module.exports = function chainDefault(api, vueConfig, vusionConfig) {
             .module
             .rule('js-code')
             .test(/\.(j|t)sx?$/)
+            .exclude
+            .add(/node_modules/)
+            .end()
             .use('ifdef-loader')
             .loader('ifdef-loader')
             .options(ifdefLoaderOptions)
