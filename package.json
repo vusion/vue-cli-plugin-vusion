@@ -96,8 +96,7 @@
     "shelljs": "^0.8.3",
     "strip-ansi": "^6.0.0",
     "vusion-hooks": "^0.3.0",
-    "webpack": "^4.35.3",
-    "worker-loader": "^3.0.8"
+    "webpack": "^4.35.3"
   },
   "peerDependencies": {
     "cloud-ui.vusion": ">=0.6.18",
