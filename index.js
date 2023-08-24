@@ -1,6 +1,7 @@
 const vusion = require('vusion-api');
 
 const chainDefault = require('./service/chainDefault');
+const chainWebWorker = require('./service/chainWebWorker');
 const registerLibraryBuild = require('./service/registerLibraryBuild');
 const registerDoc = require('./service/registerDoc');
 const registerDocBuild = require('./service/registerDocBuild');
@@ -19,6 +20,7 @@ module.exports = function (api, vueConfig) {
     const vusionConfig = vusion.config.resolve(process.cwd(), configPath, args);
 
     chainDefault(api, vueConfig, vusionConfig);
+    chainWebWorker(api);
     registerLibraryBuild(api, vueConfig, vusionConfig);
     registerDoc(api, vueConfig, vusionConfig);
     registerDocBuild(api, vueConfig, vusionConfig);
